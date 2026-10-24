@@ -1,8 +1,9 @@
 # macOS
 .DS_Store
 
-# ACECode 会话临时目录
-.acecode/tmp/
+# 任意层级下名为 tmp 的目录（gitignore 中不带前导 / 的规则自动匹配任意深度，
+# 已覆盖 .acecode/tmp/、app/xxx/tmp/ 等；.acecode/tmp 也在此列）
+tmp/
 
 # Swift Package Manager / Xcode 构建产物
 .build/
