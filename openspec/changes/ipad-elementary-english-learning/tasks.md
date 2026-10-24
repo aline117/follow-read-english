@@ -16,8 +16,8 @@
 - [x] 2.3 定义学习记录模型：LearningSession、WordProgress、ReviewSchedule
 - [x] 2.4 创建 JSON 内容加载器和解析器
 - [ ] 2.5 统一内容身份：内容实体用业务码 String（`UnitWord.id="758201"`、`Sentence.id="s1"`、`Unit.id="u1"`、`Volume.id="shangce"`）；条目统一编码 `itemCode`（`w:758201` / `s:u1-s1`），单词与句型共用同一套进度/复习/评分表；`ReviewSchedule.wordID: UUID` → `itemCode: String`，`LearningSession.courseID: UUID` → `unitCode` + `volumeCode`；`ItemProgress` 用 `#Unique([\.profileID, \.itemCode])`（决策见 design Decision 6）
-- [ ] 2.6 调整模型形态：删除 4 个内容型 `@Model`（`CurriculumCourse` / `Lesson` / `Word` / `Sentence`），内容只保留 `Decodable` struct（新增 `Sentence` 的 `Decodable` 版：`en` / `zh` / `pattern` / `chunks` / `audio`）；`WordProgress` 改名 `ItemProgress` 并加 `itemKind`（word/sentence）；新增 `Attempt` 明细模型（`profileID` / `sessionID` / `itemCode` / `itemKind` / `unitCode` / `kind` / `passed` / `at`，加 `#Index([\.profileID, \.at])`）；`LearningSession` 只留会话边界与时长（删 `correctCount` / `totalCount` / `accuracy`）；`Reward` 聚合模型改为 `StarLedger` 流水（`grantKey` 唯一，`#Unique`）；`Schema([...])` 最终为 9 个类型（决策见 design「指标口径与数据字典」+「健壮性与合规约定」）
-- [ ] 2.7 实现 `ProfileDataPurger`：按 `profileID` 逐表删除 7 张表（幂等），不依赖 `@Relationship` cascade（见 design Decision 5）
+- [ ] 2.6 调整模型形态：删除 4 个内容型 `@Model`（`CurriculumCourse` / `Lesson` / `Word` / `Sentence`），内容只保留 `Decodable` struct（新增 `Sentence` 的 `Decodable` 版：`en` / `zh` / `pattern` / `chunks` / `audio`）；`WordProgress` 改名 `ItemProgress` 并加 `itemKind`（word/sentence）；新增 `Attempt` 明细模型（`profileID` / `sessionID` / `itemCode` / `itemKind` / `unitCode` / `kind` / `passed` / `at`，加 `#Index([\.profileID, \.at])`）；新增 `LearningSettings`（每个孩子一份练习强度设置，字段见 design「可调设置」）；`LearningSession` 只留会话边界与时长（删 `correctCount` / `totalCount` / `accuracy`）；`Reward` 聚合模型改为 `StarLedger` 流水（`grantKey` 唯一，`#Unique`）；`Schema([...])` 最终为 10 个类型（决策见 design「指标口径与数据字典」+「健壮性与合规约定」）
+- [ ] 2.7 实现 `ProfileDataPurger`：按 `profileID` 逐表删除 8 张表（`ItemProgress` / `Attempt` / `LearningSession` / `ReviewSchedule` / `StarLedger` / `Badge` / `Redemption` / `LearningSettings`，幂等），不依赖 `@Relationship` cascade（见 design Decision 5）
 
 ## 3. 年级与课程模块
 
@@ -32,15 +32,15 @@
 
 - [ ] 4.1 实现"听"模块：音频播放器 + 图片/文字展示（**新学默认慢速、复习默认常速**；慢速用 `AVAudioEngine` + `AVAudioUnitTimePitch`，变速不变调）
 - [ ] 4.2 实现"说"模块：录音功能 + 简单语音评测（音量+时长）
-- [ ] 4.3 实现"认"模块：图片-单词拖拽配对
+- [ ] 4.3 实现"认"模块：图片-单词配对；每屏配对数读 `LearningSettings`（默认 3 对），单元全部词覆盖完算 1 轮，达到「最少练习轮数」才计完成
 - [ ] 4.4 实现"游戏"模块：听音选图小游戏
-- [ ] 4.5 实现"复习"模块：间隔重复调度器（队列按 design「今日任务与学习调度」生成：到期优先、上限 20；间隔规则见「奖励与防沉迷参数」，每次作答写 `Attempt(kind="review")`）
+- [ ] 4.5 实现"复习"模块：间隔重复调度器（队列按 design「今日任务与学习调度」生成：到期优先、上限读 `LearningSettings`；间隔规则见「奖励与防沉迷参数」，每次作答写 `Attempt(kind="review")`）
 - [ ] 4.6 实现学习单元拆分逻辑（5-8分钟/单元）
 - [ ] 4.7 实现音频会话管理：category 切换（playback / playAndRecord+defaultToSpeaker）、interruption / routeChange / mediaServicesWereReset 三类通知、录音被打断时丢弃半截 Attempt（见 design「健壮性与合规约定」）
 - [ ] 4.8 实现麦克风权限流程：说明页 → `AVAudioApplication.requestRecordPermission` → 拒绝后降级（跳过说环节、正确率显示 `—`、去设置深链）
 - [ ] 4.9 实现缺失资产降级：占位图 / 静音 3 秒推进 / debug 断言 / 本地诊断日志
 - [ ] 4.10 实现句子学习环节（首版范围 A）：听整句（含慢速）、跟读整句（沿用音量+时长口径）、词块排序（`chunks` 拖拽）、听音补全（3 选 1）、整句复习（共用 `ReviewSchedule`）
-- [ ] 4.11 实现「先跳过」机制：同一环节连续失败 3 次后出现跳过入口；不写 `ItemProgress`、不计星、记一条 `Attempt(passed=false)`、不进复习调度
+- [ ] 4.11 实现「先跳过」机制：连续失败次数读 `LearningSettings`（默认 3 次，可关闭）后出现跳过入口；不写 `ItemProgress`、不计星、记一条 `Attempt(passed=false)`、不进复习调度
 
 ## 5. 激励系统
 
@@ -53,11 +53,12 @@
 
 - [ ] 6.1 实现家长验证（4 位 PIN + Keychain salt/哈希；忘记 PIN 用 6 位恢复码重置）
 - [ ] 6.2 实现学习报告页面（时长、正确率、进度；正确率按 `AccuracyRule.countedKinds` 聚合 `Attempt`，不读 `LearningSession` 聚合字段——见 design「指标口径与数据字典」）
-- [ ] 6.3 实现兑换规则管理（创建/编辑/删除）
+- [ ] 6.3 实现兑换规则管理：`RedemptionRule` 补全 11 个字段（id / title / icon / category / starCost / dailyLimit / weeklyLimit / cooldownDays / requiresApproval / isActive / sortOrder）+ 奖励库页（预置模板启停与改价）+ 兑换限制开关（必须完成今日任务 / 单日 1 次 / 大额二次确认）——见 design「奖励体系」
 - [ ] 6.4 实现兑换审核流程
-- [ ] 6.5 实现多 Profile 切换与生命周期管理（创建上限 4 个、切换时 `profileID` 持久化、删除级联清理 6 张表且至少保留 1 个、家长 Tab 可改年级——见 design Decision 5）
+- [ ] 6.5 实现多 Profile 切换与生命周期管理（创建上限 4 个、切换时 `profileID` 持久化、删除时逐表清理 8 张表且至少保留 1 个、家长 Tab 可改年级——见 design Decision 5）
 - [ ] 6.6 实现设置页合规项：卸载即清空的明示、学习记录导出 JSON、本地诊断日志查看
 - [ ] 6.7 实现家长手动解锁单元（应对学校进度超前；只放行访问，不改星星与进度统计）
+- [ ] 6.8 实现「练习强度」设置页（6 项，按 Profile 保存，档位选择，即时生效并重算首页预计时长）：认环节每屏配对数 / 每单元最少练习轮数 / 连续失败几次可跳过 / 每日新词数 / 每日新句型数 / 单次复习上限（见 design「可调设置」）
 
 ## 7. 内容资源
 
