@@ -67,7 +67,7 @@
 <div class="nav">
   <a href="#c1">C1 奖励</a><a href="#c2">C2 PIN</a><a href="#c3">C3 报告</a><a href="#c4">C4 内容管理</a><a href="#c5">C5 手动解锁</a>
   <a href="#c6">C6 兑换申请</a><a href="#c7">C7 审核</a><a href="#c8">C8 设置</a><a href="#c9">C9 孩子切换</a><a href="#c10">C10 练习强度</a>
-  <a href="#c11">C11 奖励库</a><a href="#c12">C12 兑换限制</a>
+  <a href="#c11">C11 奖励库</a><a href="#c12">C12 兑换限制</a><a href="#c13">C13 找回 PIN</a><a href="#c14">C14 家长模式</a>
 </div>
 
 <!-- C1 奖励 -->
@@ -167,10 +167,10 @@
       <div class="key">1</div><div class="key">2</div><div class="key">3</div>
       <div class="key">4</div><div class="key">5</div><div class="key">6</div>
       <div class="key">7</div><div class="key">8</div><div class="key">9</div>
-      <a class="key" href="#c8" style="font-size:14px;color:var(--muted);text-decoration:none">忘记</a><div class="key">0</div><div class="key" style="font-size:18px">⌫</div>
+      <a class="key" href="#c13" style="font-size:14px;color:var(--muted);text-decoration:none">忘记</a><div class="key">0</div><div class="key" style="font-size:18px">⌫</div>
     </div>
-    <div class="muted" style="font-size:12.5px">连续输错 5 次锁定 1 分钟 · 忘记 PIN 用 6 位恢复码重置</div>
-    <a class="btn ghost sm" href="#c3">（演示）验证通过 → 报告</a>
+    <div class="muted" style="font-size:12.5px">连续输错 5 次锁定 1 分钟 · 忘记 PIN 可用设备密码或恢复码找回</div>
+    <a class="btn ghost sm" href="#c14">（演示）验证通过 → 家长模式</a>
   </div>
 </div>
 
@@ -336,6 +336,7 @@
         </div>
         <span class="pill" id="reviewState" style="background:var(--orange-soft);border-color:#FFD9A6;color:var(--orange-d)">待审核</span>
       </div>
+      <div class="muted" style="font-size:11.5px;margin-top:6px">审核人会记录在案（例：妈妈同意了 / 爸爸拒绝了）</div>
       <div class="row" style="margin-top:12px;gap:10px">
         <button class="btn sm" id="approveBtn">同意并扣 100 ★</button>
         <button class="btn ghost sm" id="rejectBtn">拒绝</button>
@@ -393,11 +394,17 @@
       <div class="muted" style="font-size:12.5px;margin-top:8px">按孩子单独保存，改完立即生效；首页「预计 X 分钟」会跟着重算。</div>
     </div>
     <div class="card">
-      <b style="font-size:16px">家长 PIN</b>
+      <b style="font-size:16px">安全（家长凭据）</b>
       <div class="row" style="justify-content:space-between;margin-top:10px">
         <span style="font-size:14px">修改 PIN</span><button class="btn ghost sm">修改</button></div>
       <div class="row" style="justify-content:space-between;margin-top:8px">
-        <span style="font-size:14px">重置 PIN（需要 6 位恢复码）</span><button class="btn ghost sm">去重置</button></div>
+        <span style="font-size:14px">重新生成恢复码（旧码立即失效）</span><button class="btn ghost sm">重新生成</button></div>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <span style="font-size:14px">允许用设备密码 / Face ID 找回</span>
+        <div class="seg" data-k="s1"><button class="on">开</button><button>关</button></div></div>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <span style="font-size:14px">家长面板进入记录</span><a class="btn ghost sm" href="#c13">查看</a></div>
+      <div class="muted" style="font-size:12.5px;margin-top:8px">PIN 与恢复码只存 salt + 哈希；忘记时可走 <a href="#c13" style="color:var(--orange-d)">四层找回</a>，不再需要重装清空数据。</div>
     </div>
     <div style="flex:1"></div>
     <div class="row" style="gap:10px"><a class="btn ghost sm" href="#c3">返回报告</a>
@@ -579,6 +586,106 @@
   </div>
 </div>
 
+<!-- C13 忘记 PIN：四层找回 -->
+<div class="frame" id="c13">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c2" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">找回家长 PIN</b><div style="flex:1"></div><span class="pill">4 种方式</span></div>
+  <div class="pad" style="gap:11px">
+    <div class="muted" style="font-size:13px">任一种通过即可重设 PIN，学习记录一律保留。按推荐顺序排列。</div>
+
+    <div class="card" style="display:flex;align-items:center;gap:14px;border-color:var(--orange)">
+      <div class="badge" style="background:linear-gradient(150deg,#FFE0AE,#FFB74D);font-size:18px">1</div>
+      <div style="flex:1"><b style="font-size:16px">用 iPad 设备密码 / Face ID</b>
+        <div class="muted" style="font-size:12.5px">零记忆负担 · 只用于"忘记 PIN"流程，不能替代日常验证</div></div>
+      <button class="btn sm" id="devAuth">验证并重设</button>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;gap:14px">
+      <div class="badge" style="background:var(--blue-soft);color:#2A7F9B;font-size:18px">2</div>
+      <div style="flex:1"><b style="font-size:16px">输入 6 位恢复码</b>
+        <div class="muted" style="font-size:12.5px">首次设置 PIN 时生成，可能已分享到「文件」App 或相册</div></div>
+      <div class="code"><b style="width:38px;height:46px;font-size:18px">_</b><b style="width:38px;height:46px;font-size:18px">_</b><b style="width:38px;height:46px;font-size:18px">_</b><b style="width:38px;height:46px;font-size:18px">_</b><b style="width:38px;height:46px;font-size:18px">_</b><b style="width:38px;height:46px;font-size:18px">_</b></div>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;gap:14px">
+      <div class="badge" style="background:var(--green-soft);color:#2E9E6B;font-size:18px">3</div>
+      <div style="flex:1"><b style="font-size:16px">恢复码也忘了 → 重新生成一个新的</b>
+        <div class="muted" style="font-size:12.5px">先用第 1 种方式验证身份，生成新码后可复制/分享/存图；旧码立即失效</div></div>
+      <button class="btn ghost sm">生成新码</button>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;gap:14px;opacity:.85">
+      <div class="badge off" style="font-size:18px">4</div>
+      <div style="flex:1"><b style="font-size:16px">调试版：仅清 PIN，保留学习数据</b>
+        <div class="muted" style="font-size:12.5px">仅 Debug 构建可见；靠 Xcode 覆盖安装不会清数据容器</div></div>
+      <span class="pill" style="height:28px;font-size:11.5px">Debug only</span>
+    </div>
+
+    <div class="card" style="background:var(--red-soft);border-color:#F7C9C7;display:flex;align-items:center;gap:12px">
+      <div style="flex:1"><b style="font-size:14px;color:#C0392B">最后手段：重装 App（清空全部学习记录）</b>
+        <div class="muted" style="font-size:12px">上面三种都不可用时才会用到，会丢失进度与星星</div></div>
+      <button class="btn ghost sm" style="color:#C0392B;border-color:#F7C9C7">重装说明</button>
+    </div>
+
+    <div style="flex:1"></div>
+    <div class="row" style="gap:10px">
+      <a class="btn ghost sm" href="#c8">回到设置</a>
+      <div style="flex:1"></div>
+      <span class="muted" style="font-size:12px">最近进入记录：今天 16:02 · PIN</span>
+    </div>
+  </div>
+</div>
+
+<!-- C14 家长模式首页 -->
+<div class="frame" id="c14">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <div style="width:38px;height:38px;border-radius:12px;background:var(--orange-soft);display:flex;align-items:center;justify-content:center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--orange-d)"><path d="M7 10V7a5 5 0 0110 0v3h1a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2h1zm2 0h6V7a3 3 0 00-6 0v3z"/></svg></div>
+    <div><div style="font-size:19px;font-weight:800">家长模式</div>
+      <div class="muted" style="font-size:13px">当前身份：妈妈 · 朵朵 二年级上</div></div>
+    <div style="flex:1"></div>
+    <a class="btn ghost sm" href="proto-a.html#a6">退出家长模式</a>
+  </div>
+  <div class="pad" style="gap:12px">
+    <div class="muted" style="font-size:12.5px">家长独立空间：孩子界面上只有「学习 / 奖励」两个 Tab；孩子要进来得点右上角小锁并验证。</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+      <a class="card" href="#c3" style="text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:13px">
+        <div class="badge" style="background:linear-gradient(150deg,#9BE0F5,#4CC9F0);font-size:19px">报</div>
+        <div><b style="font-size:16px">学习报告</b><div class="muted" style="font-size:12px">本周 92 分钟 · 正确率 78%</div></div></a>
+      <a class="card" href="#c7" style="text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:13px">
+        <div class="badge" style="background:linear-gradient(150deg,#FFD08A,#FF9F1C);font-size:19px">审</div>
+        <div><b style="font-size:16px">兑换审核</b><div class="muted" style="font-size:12px">1 条待审核 · 今天 16:08</div></div></a>
+      <a class="card" href="#c11" style="text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:13px">
+        <div class="badge" style="background:linear-gradient(150deg,#A8E6C9,#57CC99);font-size:19px">奖</div>
+        <div><b style="font-size:16px">奖励库</b><div class="muted" style="font-size:12px">已启用 4 / 16</div></div></a>
+      <a class="card" href="#c10" style="text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:13px">
+        <div class="badge" style="background:var(--blue-soft);color:#2A7F9B;font-size:19px">强</div>
+        <div><b style="font-size:16px">练习强度</b><div class="muted" style="font-size:12px">3 对/屏 · 每日 5 词</div></div></a>
+      <a class="card" href="#c5" style="text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:13px">
+        <div class="badge" style="background:#F1E9DE;color:#8A7C74;font-size:19px">解</div>
+        <div><b style="font-size:16px">解锁单元</b><div class="muted" style="font-size:12px">学校进度超前时用</div></div></a>
+      <a class="card" href="#c4" style="text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:13px">
+        <div class="badge" style="background:#F1E9DE;color:#8A7C74;font-size:19px">内</div>
+        <div><b style="font-size:16px">内容管理</b><div class="muted" style="font-size:12px">已装 二上 · 53MB</div></div></a>
+      <a class="card" href="#c9" style="text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:13px">
+        <div class="badge" style="background:#F1E9DE;color:#8A7C74;font-size:19px">娃</div>
+        <div><b style="font-size:16px">孩子档案</b><div class="muted" style="font-size:12px">2 个 · 切换 / 改年级</div></div></a>
+      <a class="card" href="#c8" style="text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:13px">
+        <div class="badge" style="background:#F1E9DE;color:#8A7C74;font-size:19px">设</div>
+        <div><b style="font-size:16px">设置与安全</b><div class="muted" style="font-size:12px">PIN / 恢复码 / 导出</div></div></a>
+    </div>
+
+    <div style="flex:1"></div>
+    <div class="card" style="background:var(--blue-soft);border-color:#BEE9F7">
+      <span style="font-size:12.5px;line-height:1.7">进入/退出都会写审计日志；删除内容、删除孩子、重置 PIN 会二次确认；身份（妈妈/爸爸）在设置里切换，仅用于审核记录。</span>
+    </div>
+  </div>
+</div>
+
 <script>
   if(!location.hash) location.hash='#c1';
   /* 练习强度：档位切换 + 恢复默认 */
@@ -635,7 +742,7 @@
   if(ap){
     ap.addEventListener('click',function(){
       var s=document.getElementById('reviewState');
-      s.textContent='已同意 · 已扣 100 ★'; s.style.background='var(--green-soft)'; s.style.borderColor='#BFEBD9'; s.style.color='#2E9E6B';
+      s.textContent='妈妈已同意 · 扣 100 ★'; s.style.background='var(--green-soft)'; s.style.borderColor='#BFEBD9'; s.style.color='#2E9E6B';
       document.getElementById('approveBtn').disabled=true;
       document.getElementById('rejectBtn').disabled=true;
     });
