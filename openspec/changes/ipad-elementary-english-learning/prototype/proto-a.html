@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>原型 A · 首次启动 / 首页（可点击）</title>
+<style>
+  :root{--orange:#FF9F1C;--orange-d:#F08A00;--orange-soft:#FFF1DE;--blue:#4CC9F0;--blue-soft:#E6F7FD;
+    --green:#57CC99;--green-soft:#E6F8F0;--red:#EF6F6C;--red-soft:#FDE8E7;
+    --ink:#3A2E2A;--muted:#9A8C86;--bg:#FFF9F2;--line:#F1E5D8;--r:22px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EDE4D9;color:var(--ink);padding:16px;
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif}
+  .frame{display:none;width:960px;height:720px;zoom:.855;background:var(--bg);border-radius:26px;overflow:hidden;
+    position:relative;flex-direction:column;box-shadow:0 18px 40px rgba(96,64,32,.18)}
+  .frame:target{display:flex}
+  /* 状态栏 */
+  .sbar{height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;
+    font-size:13px;font-weight:700;color:#5C4E47;background:transparent}
+  .sbar .r{display:flex;align-items:center;gap:6px}
+  .sbar svg{height:12px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:58px;padding:0 34px;
+    border-radius:18px;border:0;background:var(--orange);color:#fff;font-size:21px;font-weight:700;
+    box-shadow:0 7px 0 var(--orange-d);text-decoration:none;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 6px 0 #EAE0D4}
+  .btn.blue{background:var(--blue);box-shadow:0 7px 0 #35A9CE}
+  .btn.red{background:var(--red);box-shadow:0 7px 0 #D25552}
+  .btn.sm{height:44px;padding:0 20px;font-size:15px;border-radius:13px;box-shadow:0 4px 0 var(--orange-d)}
+  .pill{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 15px;border-radius:999px;
+    background:#fff;border:2px solid var(--line);font-size:15px;font-weight:600}
+  .dots{display:flex;gap:9px}
+  .dots i{width:11px;height:11px;border-radius:50%;background:#E2D5C7}
+  .dots i.on{width:30px;border-radius:99px;background:var(--orange)}
+  .tabbar{position:absolute;left:0;right:0;bottom:0;height:82px;background:#fff;border-top:2px solid var(--line);
+    display:flex;justify-content:space-around;align-items:center}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:13px;font-weight:700;color:#B9ABA2;
+    text-decoration:none}
+  .tab.on{color:var(--orange)}
+  .tab svg{width:25px;height:25px}
+  .welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+    background:radial-gradient(120% 90% at 50% 0%,#FFF3E2 0%,var(--bg) 60%)}
+  .mascot{width:172px;height:172px;border-radius:36px;background:linear-gradient(160deg,#FFCB7D,#FF9F1C);
+    position:relative;box-shadow:0 14px 26px rgba(240,138,0,.28)}
+  .mascot:before,.mascot:after{content:"";position:absolute;top:68px;width:20px;height:24px;border-radius:50%;background:#4A3325}
+  .mascot:before{left:48px}.mascot:after{right:48px}
+  .smile{position:absolute;left:50%;top:102px;transform:translateX(-50%);width:66px;height:34px;
+    border-bottom:8px solid #4A3325;border-radius:0 0 50px 50px}
+  .h1{font-size:40px;font-weight:800}
+  .sub{font-size:18px;color:var(--muted)}
+  .pad{padding:26px 50px;flex:1;display:flex;flex-direction:column}
+  .step-title{font-size:30px;font-weight:800}
+  .muted{color:var(--muted);font-size:16px}
+  .field{height:60px;border-radius:15px;border:2px solid var(--line);background:#fff;display:flex;align-items:center;
+    padding:0 20px;font-size:21px;font-weight:600}
+  .avatars{display:flex;gap:11px;flex-wrap:wrap}
+  .av{width:60px;height:60px;border-radius:19px;display:flex;align-items:center;justify-content:center;
+    font-size:24px;background:#fff;border:3px solid var(--line);cursor:pointer}
+  .av.on{border-color:var(--orange);background:var(--orange-soft)}
+  .grade{width:186px;height:82px;border-radius:17px;background:#fff;border:3px solid var(--orange);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:800;font-size:21px}
+  .grade.off{border-color:var(--line);color:#C6B6A8;background:#FBF6F0}
+  .pins{display:flex;gap:14px}
+  .pin{width:64px;height:76px;border-radius:15px;background:#fff;border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800}
+  .pin.on{border-color:var(--orange);color:var(--orange)}
+  .code{display:flex;gap:9px}
+  .code b{width:48px;height:60px;border-radius:11px;background:#fff;border:2px solid #FFD3A0;color:#A66200;
+    display:flex;align-items:center;justify-content:center;font-size:24px}
+  .pack{display:flex;align-items:center;gap:16px;background:#fff;border:2px solid var(--line);border-radius:17px;
+    padding:14px 18px;margin-bottom:11px;text-decoration:none;color:var(--ink);cursor:pointer;transition:.12s}
+  .pack.on{border-color:var(--orange);background:#FFFCF6}
+  .pack.off{opacity:.5;background:#FBF6F0;cursor:not-allowed}
+  .thumb{width:58px;height:58px;border-radius:16px;background:linear-gradient(150deg,#FFE0AE,#FFB74D);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800;flex:none}
+  .thumb.gray{background:#EFE7DD;color:#B9ABA2}
+  .check{width:30px;height:30px;border-radius:9px;border:3px solid var(--line);display:flex;align-items:center;
+    justify-content:center;color:#fff;font-size:16px;font-weight:800;flex:none}
+  .check.on{background:var(--orange);border-color:var(--orange)}
+  .bar{height:15px;border-radius:99px;background:#F0E6DA;overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#FFC46B,var(--orange));
+    transition:width .9s ease}
+  .topbar{height:84px;display:flex;align-items:center;gap:14px;padding:0 42px;background:#fff;border-bottom:2px solid var(--line)}
+  .avatar{width:54px;height:54px;border-radius:17px;background:linear-gradient(150deg,#9BE0F5,#4CC9F0);
+    display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;color:#fff}
+  .task{margin:18px 42px 0;background:#fff;border-radius:var(--r);border:2px solid var(--line);padding:20px 24px;
+    box-shadow:0 10px 22px rgba(150,110,70,.07)}
+  .row{display:flex;align-items:center;gap:13px}
+  .stat{flex:1;background:var(--orange-soft);border-radius:15px;padding:11px 15px;display:flex;align-items:center;gap:11px}
+  .stat b{font-size:21px}.stat span{font-size:13px;color:var(--muted)}
+  .dot{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff}
+  .nav{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;font-family:system-ui,sans-serif;font-size:12.5px}
+  .nav a{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:99px;background:#fff;
+    border:1px solid #E2D5C7;color:#7A6A62;text-decoration:none;font-weight:600}
+  .nav a:hover{background:#FFF1DE;color:#A66200;border-color:#FFD3A0}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a href="#a1">① 欢迎</a><a href="#a2">② 建档案</a><a href="#a3">③ 家长 PIN</a>
+  <a href="#a4">④ 选择内容</a><a href="#a5">⑤ 下载中</a><a href="#a6">⑥ 首页</a>
+  <a href="#a7">⑦ 空状态</a><a href="#a8">⑧ 下载失败</a><a href="#a9">⑨ 学完整册</a>
+</div>
+
+<!-- A1 欢迎 -->
+<div class="frame" id="a1">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg><svg viewBox="0 0 14 22" fill="#5C4E47"><rect x="1" y="1" width="12" height="20" rx="4" fill="none" stroke="#5C4E47" stroke-width="1.6"/><rect x="3" y="9" width="8" height="10" rx="2"/></svg></div></div>
+  <div class="welcome">
+    <div class="mascot"><div class="smile"></div></div>
+    <div class="h1">跟着课本学英语</div>
+    <div class="sub">二年级 · 沪教版 · 每天 20 分钟，听一听、说一说</div>
+    <a class="btn" href="#a2" style="margin-top:6px">开 始</a>
+    <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+  </div>
+</div>
+
+<!-- A2 创建孩子档案 -->
+<div class="frame" id="a2">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="pad" style="gap:18px">
+    <div class="dots"><i></i><i class="on"></i><i></i><i></i></div>
+    <div class="step-title">创建孩子档案</div>
+    <div style="display:flex;gap:36px;flex:1">
+      <div style="flex:1;display:flex;flex-direction:column;gap:14px">
+        <div><div class="muted" style="font-size:14px;margin-bottom:7px">昵称（1-10 字）</div>
+          <div class="field">朵朵</div></div>
+        <div><div class="muted" style="font-size:14px;margin-bottom:7px">选一个头像</div>
+          <div class="avatars" id="avrow">
+            <div class="av on">🐰</div><div class="av">🐻</div><div class="av">🐱</div><div class="av">🐶</div>
+            <div class="av">🐼</div><div class="av">🦊</div><div class="av">🐨</div><div class="av">🦁</div>
+          </div></div>
+      </div>
+      <div style="width:290px">
+        <div class="muted" style="font-size:14px;margin-bottom:7px">年级</div>
+        <div class="row" style="gap:12px">
+          <div class="grade">二年级<div class="muted" style="font-size:12px;font-weight:600">已支持</div></div>
+          <div class="grade off">五年级<div style="font-size:12px">即将推出</div></div>
+        </div>
+        <div class="muted" style="font-size:12.5px;margin-top:12px;line-height:1.6">首版只提供二年级内容；<br>其他年级逐步加入</div>
+      </div>
+    </div>
+    <div class="row" style="gap:14px"><a class="btn" href="#a3">下一步</a></div>
+  </div>
+</div>
+
+<!-- A3 家长 PIN -->
+<div class="frame" id="a3">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="pad" style="gap:16px">
+    <div class="dots"><i></i><i></i><i class="on"></i><i></i></div>
+    <div class="step-title">设置家长 PIN</div>
+    <div class="muted">用于打开「家长」页（报告、兑换审核、解锁单元），避免孩子误入</div>
+    <div style="display:flex;gap:44px;align-items:flex-start;flex:1">
+      <div>
+        <div class="muted" style="font-size:14px;margin-bottom:9px">输入 4 位数字</div>
+        <div class="pins"><div class="pin on">●</div><div class="pin on">●</div><div class="pin on">●</div><div class="pin">4</div></div>
+        <div class="muted" style="font-size:12.5px;margin-top:9px">4 位相同或连续数字会被拒绝</div>
+      </div>
+      <div style="flex:1;background:#fff;border:2px solid #FFD3A0;border-radius:19px;padding:18px 22px">
+        <b style="font-size:18px">恢复码（请抄下来）</b>
+        <div class="muted" style="font-size:13px;margin:5px 0 11px">忘记 PIN 时用它重置。只显示这一次，App 不保存明文。</div>
+        <div class="code"><b>7</b><b>3</b><b>9</b><b>2</b><b>5</b><b>8</b></div>
+      </div>
+    </div>
+    <div class="row" style="gap:14px">
+      <a class="btn" href="#a4">已抄好，下一步</a>
+      <a class="btn ghost" href="#a4">稍后设置</a>
+    </div>
+  </div>
+</div>
+
+<!-- A4 选择要下载的内容 -->
+<div class="frame" id="a4">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="pad" style="gap:12px">
+    <div class="dots"><i></i><i></i><i></i><i class="on"></i></div>
+    <div class="step-title">选择要下载的内容</div>
+    <div class="muted">内容不打包在 App 里，从家里电脑的内容服务下载，下载后离线可学。</div>
+
+    <div class="pack on" data-size="53"><div class="check on">✓</div><div class="thumb">二上</div>
+      <div style="flex:1"><b style="font-size:19px">二年级上 · 沪教版</b>
+        <div class="muted" style="font-size:13px;margin-top:2px">6 单元 · 33 词 · 18 句 · 53MB</div></div>
+      <span class="pill" style="height:30px;font-size:12.5px;background:var(--blue-soft);border-color:#BEE9F7">建议 Wi-Fi</span></div>
+
+    <div class="pack off"><div class="check"></div><div class="thumb gray">二下</div>
+      <div style="flex:1"><b style="font-size:19px">二年级下 · 沪教版</b>
+        <div class="muted" style="font-size:13px;margin-top:2px">服务端暂未提供（寒假补录）</div></div>
+      <span class="pill" style="height:30px;font-size:12.5px;opacity:.7">暂无</span></div>
+
+    <div class="pack off"><div class="check"></div><div class="thumb gray">三上</div>
+      <div style="flex:1"><b style="font-size:19px">三年级上 · 沪教版</b>
+        <div class="muted" style="font-size:13px;margin-top:2px">内容结构版本 3 &gt; App 支持 2</div></div>
+      <span class="pill" style="height:30px;font-size:12.5px;background:var(--red-soft);border-color:#F7C9C7;color:#C0392B">需要更新 App</span></div>
+
+    <div style="flex:1"></div>
+    <div class="row" style="justify-content:space-between;background:#fff;border:2px solid var(--line);border-radius:17px;padding:13px 18px">
+      <div><b style="font-size:17px" id="selTxt">已选 1 个学期 · 共 53MB</b>
+        <div class="muted" style="font-size:12.5px">可用空间 12.4GB，足够</div></div>
+      <div class="row" style="gap:12px">
+        <a class="btn ghost" style="height:48px;font-size:16px" href="#a6">稍后再说</a>
+        <a class="btn" style="height:48px;font-size:16px" href="#a5">下载所选</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- A5 下载中 -->
+<div class="frame" id="a5">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="pad" style="gap:16px">
+    <div class="dots"><i></i><i></i><i></i><i class="on"></i></div>
+    <div class="step-title">正在下载 二年级上</div>
+    <div class="muted">下载完成后会自动校验并解压，可后台继续。</div>
+    <div style="background:#fff;border:2px solid var(--line);border-radius:19px;padding:22px 26px;margin-top:4px">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <b style="font-size:19px" id="dlTxt">0MB / 53MB</b><span class="muted" id="dlTime">约 15 秒</span></div>
+      <div class="bar"><i id="dlBar" style="width:0%"></i></div>
+      <div class="muted" style="font-size:13px;margin-top:11px" id="dlFile">准备中…</div>
+    </div>
+    <div style="background:var(--blue-soft);border:2px solid #BEE9F7;border-radius:17px;padding:15px 19px;font-size:14px;line-height:1.7">
+      依次完成：<b>校验 sha256</b> → <b>解压到临时目录</b>（ZIPFoundation）→ <b>核对 195 个文件与课程表一致</b> → 原子替换。<br>
+      任何一步失败都不会污染已装内容，直接重试即可。
+    </div>
+    <div style="flex:1"></div>
+    <div class="row" style="gap:14px">
+      <a class="btn ghost" href="#a4">取消</a>
+      <a class="btn" href="#a6">完成，进入首页</a>
+    </div>
+  </div>
+</div>
+
+<!-- A6 首页（新用户） -->
+<div class="frame" id="a6">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar" style="height:74px;border-bottom:0">
+    <div class="avatar">朵</div>
+    <div><div style="font-size:19px;font-weight:800">下午好，朵朵</div>
+      <div class="muted" style="font-size:13px">连续学习 0 天 · 二年级上 · 刚装好</div></div>
+    <div style="flex:1"></div>
+    <div class="pill" style="background:var(--orange-soft);border-color:#FFD9A6"><span style="color:var(--orange-d);font-size:17px">★</span> 0</div>
+  </div>
+  <div class="task">
+    <div class="row" style="justify-content:space-between">
+      <b style="font-size:21px">今天的任务</b><span class="muted">预计 18 分钟</span></div>
+    <div class="bar" style="margin-top:11px"><i style="width:0%"></i></div>
+    <div class="row" style="margin-top:16px;gap:11px">
+      <div class="stat"><div class="dot" style="background:var(--blue)">↻</div><div><b>0</b><br><span>到期复习</span></div></div>
+      <div class="stat" style="background:var(--green-soft)"><div class="dot" style="background:var(--green)">＋</div><div><b>5</b><br><span>新单词</span></div></div>
+      <div class="stat" style="background:var(--blue-soft)"><div class="dot" style="background:#3AA6C9">“</div><div><b>1</b><br><span>新句型</span></div></div>
+    </div>
+    <div class="row" style="margin-top:18px;gap:12px">
+      <a class="btn" style="flex:1" href="proto-b.html#b3">开始学习</a>
+      <a class="btn ghost" style="width:160px;font-size:17px" href="proto-b.html#b1">课程列表</a>
+    </div>
+  </div>
+  <div class="task" style="margin-top:16px;box-shadow:none">
+    <div class="row" style="justify-content:space-between">
+      <b style="font-size:18px">本册进度</b><span class="muted">0 / 51 个条目</span></div>
+    <div class="bar" style="margin-top:11px;height:11px"><i style="width:0%"></i></div>
+    <div class="muted" style="margin-top:9px;font-size:13.5px">当前单元：Unit 1（5 个单词、3 条句型）</div>
+  </div>
+  <div class="tabbar">
+    <a class="tab on" href="#a6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"/></svg>学习</a>
+    <a class="tab" href="proto-c.html#c1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2z"/></svg>奖励</a>
+    <a class="tab" href="proto-c.html#c2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z"/></svg>家长</a>
+  </div>
+</div>
+
+<!-- A7 空状态 -->
+<div class="frame" id="a7">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="welcome">
+    <svg width="132" height="106" viewBox="0 0 150 120" fill="none">
+      <path d="M34 84c-13 0-23-10-23-22s10-22 23-22c4-14 17-24 32-24 17 0 31 12 34 28 13 1 23 11 23 24 0 13-11 24-24 24H34z" fill="#E8DED2"/>
+      <path d="M45 78 105 42" stroke="#EF6F6C" stroke-width="8" stroke-linecap="round"/>
+    </svg>
+    <div class="h1" style="font-size:34px">还没有学习内容</div>
+    <div class="sub" style="text-align:center;line-height:1.7">请在家里电脑上启动内容服务，并确认 iPad 连在同一个 Wi-Fi<br>服务地址：<b style="color:var(--ink)">home-pc.local:8080</b></div>
+    <div class="row" style="gap:14px;margin-top:2px">
+      <a class="btn blue" href="#a4">重试</a><a class="btn ghost" href="#a8">手动填地址</a>
+    </div>
+    <div class="muted" style="font-size:14px">已安装的学期不受影响，可正常离线学习</div>
+  </div>
+</div>
+
+<!-- A8 下载失败 / 内容不兼容 -->
+<div class="frame" id="a8">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="pad" style="gap:14px">
+    <div class="step-title">内容管理</div>
+    <div class="muted">服务地址可手动填写；下载失败会保留已装内容，失败项可单独重试。</div>
+
+    <div class="row" style="gap:10px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 16px">
+      <span class="pill" style="height:32px;font-size:13px;background:var(--red-soft);border-color:#F7C9C7;color:#C0392B">未连接</span>
+      <div style="flex:1"><b style="font-size:16px">http://home-pc.local:8080</b>
+        <div class="muted" style="font-size:12.5px">上次成功连接：昨天 20:14</div></div>
+      <button class="btn sm">改地址</button>
+    </div>
+
+    <div class="pack" style="border-color:#F7C9C7;background:#FFF8F8;cursor:default">
+      <div class="thumb" style="background:linear-gradient(150deg,#FFB3B0,#EF6F6C)">!</div>
+      <div style="flex:1"><b style="font-size:18px">二年级上 · 校验失败</b>
+        <div class="muted" style="font-size:13px;margin-top:2px">解压后缺少 2 个音频文件（audio/17635235_7.mp3 等）</div></div>
+      <button class="btn sm">重新下载</button>
+    </div>
+
+    <div class="pack off" style="opacity:.85">
+      <div class="thumb gray">三上</div>
+      <div style="flex:1"><b style="font-size:18px">三年级上 · 内容不兼容</b>
+        <div class="muted" style="font-size:13px;margin-top:2px">结构版本 3 &gt; App 支持 2，已隔离，不参与今日任务与复习</div></div>
+      <span class="pill" style="height:30px;font-size:12.5px;background:var(--red-soft);border-color:#F7C9C7;color:#C0392B">需要更新 App</span>
+    </div>
+
+    <div style="flex:1"></div>
+    <div class="muted" style="font-size:13px;line-height:1.7">失败不会影响已装学期；隔离的学期在修复前不会出现在今日任务里，也不会崩溃。</div>
+    <div class="row" style="gap:12px"><a class="btn ghost" href="#a6">回首页</a><a class="btn blue" href="#a4">重新检测服务</a></div>
+  </div>
+</div>
+
+<!-- A9 学完整册终态 -->
+<div class="frame" id="a9">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar" style="height:74px;border-bottom:0">
+    <div class="avatar">朵</div>
+    <div><div style="font-size:19px;font-weight:800">下午好，朵朵</div>
+      <div class="muted" style="font-size:13px">连续学习 21 天 · 二年级上</div></div>
+    <div style="flex:1"></div>
+    <div class="pill" style="background:var(--orange-soft);border-color:#FFD9A6"><span style="color:var(--orange-d);font-size:17px">★</span> 386</div>
+  </div>
+  <div class="task" style="background:linear-gradient(150deg,#FFF6E8,#FFF1DE);border-color:#FFE0B8;text-align:center;padding:30px 24px">
+    <div style="font-size:30px;font-weight:800">二上已学完</div>
+    <div class="muted" style="margin-top:6px">全部 51 个条目都学过一遍，今天没有到期复习</div>
+    <div class="row" style="margin-top:20px;gap:12px">
+      <div class="stat" style="background:#fff"><div class="dot" style="background:var(--orange)">天</div><div><b>21</b><br><span>累计学习天数</span></div></div>
+      <div class="stat" style="background:#fff"><div class="dot" style="background:var(--blue)">分</div><div><b>426</b><br><span>累计学习分钟</span></div></div>
+      <div class="stat" style="background:#fff"><div class="dot" style="background:var(--green)">%</div><div><b>82%</b><br><span>平均正确率</span></div></div>
+    </div>
+    <div class="row" style="margin-top:22px;justify-content:center;gap:12px">
+      <a class="btn" href="proto-c.html#c4">去下载其他学期</a>
+      <a class="btn ghost" href="proto-b.html#b1">复习旧单元</a>
+    </div>
+  </div>
+  <div class="task" style="margin-top:16px;box-shadow:none">
+    <div class="row" style="justify-content:space-between"><b style="font-size:18px">徽章进度</b><span class="muted">4 / 6</span></div>
+    <div class="row" style="margin-top:10px;gap:10px">
+      <div style="text-align:center"><div class="badge" style="width:52px;height:52px;border-radius:16px;background:linear-gradient(150deg,#FFE0AE,#FFB74D);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px">★</div><div style="font-size:11.5px;margin-top:4px">初次学习</div></div>
+      <div style="text-align:center"><div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(150deg,#A8E6C9,#57CC99);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800">3</div><div style="font-size:11.5px;margin-top:4px">连学 3 天</div></div>
+      <div style="text-align:center"><div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(150deg,#FFD08A,#FF9F1C);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800">7</div><div style="font-size:11.5px;margin-top:4px">连学 7 天</div></div>
+      <div style="text-align:center"><div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(150deg,#9BE0F5,#4CC9F0);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800">册</div><div style="font-size:11.5px;margin-top:4px">完成整册</div></div>
+      <div style="text-align:center"><div style="width:52px;height:52px;border-radius:16px;background:#F1E9DE;display:flex;align-items:center;justify-content:center;color:#C6B6A8;font-size:18px;font-weight:800">20</div><div style="font-size:11.5px;margin-top:4px;color:#C6B6A8">跟读达人</div></div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <a class="tab on" href="#a9"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"/></svg>学习</a>
+    <a class="tab" href="proto-c.html#c1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2z"/></svg>奖励</a>
+    <a class="tab" href="proto-c.html#c2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z"/></svg>家长</a>
+  </div>
+</div>
+
+<script>
+  if(!location.hash) location.hash='#a1';
+
+  /* 头像选择 */
+  document.querySelectorAll('#avrow .av').forEach(function(el){
+    el.addEventListener('click',function(){
+      document.querySelectorAll('#avrow .av').forEach(function(x){x.classList.remove('on')});
+      el.classList.add('on');
+    });
+  });
+
+  /* 内容选择：点击切换勾选并更新底部汇总 */
+  (function(){
+    var sel={'二上':53};
+    function refresh(){
+      var n=Object.keys(sel).length, s=0; for(var k in sel) s+=sel[k];
+      var t=document.getElementById('selTxt');
+      if(t) t.textContent = n ? ('已选 '+n+' 个学期 · 共 '+s+'MB') : '未选择任何学期';
+    }
+    document.querySelectorAll('#a4 .pack').forEach(function(p){
+      if(p.classList.contains('off')) return;
+      p.addEventListener('click',function(){
+        var id=p.querySelector('b').textContent.split(' ·')[0];
+        p.classList.toggle('on');
+        var c=p.querySelector('.check');
+        c.classList.toggle('on');
+        c.textContent = p.classList.contains('on') ? '✓' : '';
+        if(p.classList.contains('on')) sel[id]=parseInt(p.dataset.size,10); else delete sel[id];
+        refresh();
+      });
+    });
+    refresh();
+  })();
+
+  /* 下载进度动画 */
+  function runDownload(){
+    var bar=document.getElementById('dlBar'), txt=document.getElementById('dlTxt'),
+        tm=document.getElementById('dlTime'), fl=document.getElementById('dlFile');
+    if(!bar) return;
+    var steps=[[62,'33MB / 53MB','约 8 秒','audio/17635233_15.mp3'],
+               [100,'53MB / 53MB','校验中…','sha256 校验通过'],
+               [100,'已完成','','解压 195 个文件 · 核对课程表通过']];
+    bar.style.width='0%'; txt.textContent='0MB / 53MB'; tm.textContent='约 15 秒'; fl.textContent='正在连接内容服务…';
+    steps.forEach(function(s,i){
+      setTimeout(function(){
+        bar.style.width=s[0]+'%'; txt.textContent=s[1]; tm.textContent=s[2]; fl.textContent=s[3];
+      }, 300+i*1300);
+    });
+  }
+  function onHash(){
+    if(location.hash==='#a5') runDownload();
+  }
+  window.addEventListener('hashchange',onHash);
+  onHash();
+</script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>原型 B · 学习流程（可点击）</title>
+<style>
+  :root{--orange:#FF9F1C;--orange-d:#F08A00;--orange-soft:#FFF1DE;--blue:#4CC9F0;--blue-soft:#E6F7FD;
+    --green:#57CC99;--green-soft:#E6F8F0;--red:#EF6F6C;--red-soft:#FDE8E7;
+    --ink:#3A2E2A;--muted:#9A8C86;--bg:#FFF9F2;--line:#F1E5D8;--r:22px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EDE4D9;color:var(--ink);padding:16px;
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;user-select:none}
+  .frame{display:none;width:960px;height:720px;zoom:.855;background:var(--bg);border-radius:26px;overflow:hidden;
+    position:relative;flex-direction:column;box-shadow:0 18px 40px rgba(96,64,32,.18)}
+  .frame:target{display:flex}
+  .sbar{height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;
+    font-size:13px;font-weight:700;color:#5C4E47}
+  .sbar svg{height:12px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:56px;padding:0 30px;
+    border-radius:17px;border:0;background:var(--orange);color:#fff;font-size:20px;font-weight:700;
+    box-shadow:0 6px 0 var(--orange-d);text-decoration:none;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 5px 0 #EAE0D4}
+  .btn.blue{background:var(--blue);box-shadow:0 6px 0 #35A9CE}
+  .btn.sm{height:44px;padding:0 18px;font-size:15px;border-radius:12px;box-shadow:0 4px 0 var(--orange-d)}
+  .btn.hide{display:none}
+  .pill{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:999px;
+    background:#fff;border:2px solid var(--line);font-size:14px;font-weight:600}
+  .topbar{height:80px;display:flex;align-items:center;gap:14px;padding:0 40px;background:#fff;border-bottom:2px solid var(--line)}
+  .muted{color:var(--muted);font-size:15px}
+  .row{display:flex;align-items:center;gap:12px}
+  .pad{padding:28px 40px;flex:1;display:flex;flex-direction:column}
+  /* 环节进度：6 段 = 听说认游戏句型复习 */
+  .steps{display:flex;gap:6px;align-items:center}
+  .steps i{width:26px;height:8px;border-radius:99px;background:#EADFD2}
+  .steps i.on{background:var(--orange)}
+  .steps i.cur{background:var(--orange);box-shadow:0 0 0 3px rgba(255,159,28,.2)}
+  .stepskey{font-size:11px;color:#B9ABA2;margin-top:3px;letter-spacing:.02em}
+  /* 课程列表 */
+  .unit{display:flex;align-items:center;gap:16px;background:#fff;border:2px solid var(--line);border-radius:17px;
+    padding:14px 18px;margin-bottom:10px;text-decoration:none;color:var(--ink)}
+  .unit .no{width:50px;height:50px;border-radius:15px;background:var(--orange-soft);color:var(--orange-d);
+    display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex:none}
+  .unit.done .no{background:var(--green-soft);color:#2E9E6B}
+  .unit.locked{opacity:.45;background:#FBF6F0}
+  .unit.locked .no{background:#EFE7DD;color:#B9ABA2}
+  .bar{height:12px;border-radius:99px;background:#F0E6DA;overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#8FE3C0,var(--green))}
+  /* 学习舞台 */
+  .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:14px 40px 36px}
+  .pic{width:280px;height:200px;border-radius:22px;background:linear-gradient(150deg,#DFF4FB,#BCE9F7);
+    display:flex;align-items:center;justify-content:center}
+  .word{font-size:60px;font-weight:800}
+  .zh{font-size:21px;color:var(--muted)}
+  .mic{width:132px;height:132px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 0 var(--orange-d);cursor:pointer;transition:.1s}
+  .mic.rec{transform:scale(.94);box-shadow:0 5px 0 var(--orange-d),0 0 0 22px rgba(255,159,28,.18)}
+  .wave{display:flex;gap:5px;align-items:flex-end;height:38px}
+  .wave i{width:7px;border-radius:99px;background:var(--blue);height:8px}
+  .wave.rec i{animation:w .5s infinite alternate}
+  .wave.rec i:nth-child(2n){animation-delay:.15s}.wave.rec i:nth-child(3n){animation-delay:.3s}
+  @keyframes w{from{height:8px}to{height:36px}}
+  /* 配对 */
+  .match{display:flex;gap:56px;align-items:center}
+  .col{display:flex;flex-direction:column;gap:12px}
+  .card{width:210px;height:82px;border-radius:16px;background:#fff;border:3px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;cursor:pointer;transition:.12s}
+  .card.sel{border-color:var(--orange);background:var(--orange-soft)}
+  .card.ok{border-color:var(--green);background:var(--green-soft);color:#2E9E6B}
+  .card.bad{border-color:var(--red);background:var(--red-soft);color:#C0392B}
+  .imgcard{background:linear-gradient(150deg,#DFF4FB,#BCE9F7);font-size:38px}
+  /* 选图 */
+  .choices{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:820px}
+  .choice{height:150px;border-radius:18px;background:linear-gradient(150deg,#DFF4FB,#BCE9F7);border:3px solid transparent;
+    display:flex;align-items:center;justify-content:center;font-size:42px;cursor:pointer}
+  .choice.ok{border-color:var(--green);box-shadow:0 0 0 4px rgba(87,204,153,.22)}
+  .choice.bad{border-color:var(--red)}
+  /* 词块 */
+  .slot{min-height:84px;background:#fff;border:3px dashed #E3D6C7;border-radius:17px;display:flex;gap:9px;
+    align-items:center;justify-content:center;padding:10px 16px;min-width:660px}
+  .chunk{background:var(--orange-soft);border:2px solid #FFD3A0;color:#A66200;border-radius:13px;
+    padding:10px 18px;font-size:24px;font-weight:800;cursor:pointer}
+  .chunk.pool{background:#fff;border-color:var(--line);color:var(--ink)}
+  .blank{width:64px;height:48px;border-radius:11px;background:#F7EFE6}
+  /* 翻卡 */
+  .flip{width:520px;height:280px;perspective:1000px;cursor:pointer}
+  .flip .in{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+  .flip.on .in{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:10px;backface-visibility:hidden;border:3px solid var(--line);background:#fff}
+  .face.back{transform:rotateY(180deg);background:var(--orange-soft);border-color:#FFD3A0}
+  .nav{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;font-family:system-ui,sans-serif;font-size:12.5px}
+  .nav a{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:99px;background:#fff;
+    border:1px solid #E2D5C7;color:#7A6A62;text-decoration:none;font-weight:600}
+  .nav a:hover{background:#FFF1DE;color:#A66200;border-color:#FFD3A0}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a href="#b1">B1 课程列表</a><a href="#b2">B2 跟我读</a><a href="#b3">B3 听</a><a href="#b4">B4 说</a>
+  <a href="#b5">B5 认</a><a href="#b6">B6 游戏</a><a href="#b7">B7 句型</a><a href="#b8">B8 复习</a><a href="#b9">B9 结算</a>
+</div>
+
+<!-- B1 课程列表 -->
+<div class="frame" id="b1">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="proto-a.html#a6" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div><div style="font-size:19px;font-weight:800">二年级上 · 沪教版</div>
+      <div class="muted" style="font-size:13px">6 个单元 · 已学 0/51 条目 · 新用户</div></div>
+    <div style="flex:1"></div>
+    <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6"><span style="color:var(--orange-d)">★</span> 0</span>
+  </div>
+  <div class="pad">
+    <a class="unit" href="#b3" style="border-color:var(--orange)"><div class="no">1</div>
+      <div style="flex:1"><b style="font-size:19px">Unit 1 What can you do with your five senses?</b>
+        <div class="muted" style="font-size:13px;margin-top:2px">5 词 · 3 句 · 进行中</div>
+        <div class="bar" style="margin-top:7px;width:250px"><i style="width:8%"></i></div></div>
+      <span class="pill" style="height:30px;font-size:12.5px;background:var(--orange-soft);border-color:#FFD9A6;color:var(--orange-d)">进入</span></a>
+    <div class="unit locked"><div class="no">2</div><div style="flex:1"><b style="font-size:19px">Unit 2 My family</b>
+      <div class="muted" style="font-size:13px;margin-top:2px">完成 Unit 1 后解锁</div></div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#B9ABA2"><path d="M7 10V7a5 5 0 0110 0v3h1a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2h1zm2 0h6V7a3 3 0 00-6 0v3z"/></svg></div>
+    <div class="unit locked"><div class="no">3</div><div style="flex:1"><b style="font-size:19px">Unit 3 In the playground</b></div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#B9ABA2"><path d="M7 10V7a5 5 0 0110 0v3h1a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2h1zm2 0h6V7a3 3 0 00-6 0v3z"/></svg></div>
+    <div class="unit locked" style="opacity:.35"><div class="no">4</div><div style="flex:1"><b style="font-size:19px">Unit 4 My toys</b></div></div>
+    <div class="unit locked" style="opacity:.35"><div class="no">5</div><div style="flex:1"><b style="font-size:19px">Unit 5 In the park</b></div></div>
+    <div class="unit locked" style="opacity:.35"><div class="no">6</div><div style="flex:1"><b style="font-size:19px">Unit 6 On the farm</b></div></div>
+    <div style="flex:1"></div>
+    <div class="row" style="justify-content:space-between">
+      <span class="muted" style="font-size:13px">学校进度超前？家长可在家长面板手动解锁单元</span>
+      <div class="row" style="gap:10px">
+        <a class="btn ghost sm" href="#b2">跟我读（课文原声）</a>
+        <a class="btn sm" href="#b3">开始 Unit 1</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- B2 跟我读 -->
+<div class="frame" id="b2">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#b1" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div><div style="font-size:19px;font-weight:800">跟我读 · Unit 1 课文原声</div>
+      <div class="muted" style="font-size:13px">额外听力练习，不计入进度、不进复习</div></div>
+    <div style="flex:1"></div>
+    <span class="pill" style="background:var(--blue-soft);border-color:#BEE9F7">连播中 3 / 19</span>
+  </div>
+  <div class="pad" style="gap:14px">
+    <div style="background:#fff;border:2px solid var(--line);border-radius:18px;padding:20px 24px">
+      <div class="row" style="justify-content:space-between">
+        <b style="font-size:19px">Period 1-3 · Listen. Then point and say.</b>
+        <span class="muted" style="font-size:13px">音频 00:12 / 00:26</span></div>
+      <div class="bar" style="margin-top:12px;height:14px"><i style="width:46%;background:linear-gradient(90deg,#9BE0F5,#4CC9F0)"></i></div>
+      <div class="row" style="margin-top:16px;gap:12px">
+        <button class="btn blue sm" style="height:48px;font-size:16px">⏸ 暂停</button>
+        <button class="btn ghost sm" style="height:48px;font-size:16px">◀ 上一条</button>
+        <button class="btn ghost sm" style="height:48px;font-size:16px">下一条 ▶</button>
+        <div style="flex:1"></div>
+        <span class="pill" style="height:34px;font-size:13px;background:var(--orange-soft);border-color:#FFD9A6">慢速 0.7x（保音高）</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:2px solid var(--line);border-radius:18px;padding:18px 24px">
+      <b style="font-size:17px">逐条跟读</b>
+      <div class="muted" style="font-size:13px;margin-top:4px">一条播放完，可以按住跟读；也可直接跳下一条</div>
+      <div class="row" style="margin-top:14px;gap:12px">
+        <div class="mic" style="width:76px;height:76px;box-shadow:0 7px 0 var(--orange-d)">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff"><path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.9V22h2v-3.1A7 7 0 0019 12h-2z"/></svg></div>
+        <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div style="flex:1"></div>
+        <span class="muted" style="font-size:13px">已跟读 2 条 · 3 次</span>
+      </div>
+    </div>
+
+    <div style="flex:1"></div>
+    <div class="row" style="gap:12px">
+      <a class="btn ghost" href="#b1">退出</a>
+      <a class="btn" href="#b3">进入学习环节</a>
+    </div>
+  </div>
+</div>
+
+<!-- B3 听 -->
+<div class="frame" id="b3">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#b1" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div><div style="font-size:19px;font-weight:800">Unit 1 · 听</div>
+      <div class="stepskey">听 → 说 → 认 → 游戏 → 句型 → 复习</div></div>
+    <div class="steps" style="margin-left:14px"><i class="on"></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div style="flex:1"></div>
+    <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6"><span style="color:var(--orange-d)">★</span> 0</span>
+  </div>
+  <div class="stage">
+    <div class="pic"><svg width="110" height="110" viewBox="0 0 120 120" fill="none">
+      <circle cx="34" cy="58" r="19" fill="#fff" stroke="#3AA6C9" stroke-width="6"/>
+      <circle cx="86" cy="58" r="19" fill="#fff" stroke="#3AA6C9" stroke-width="6"/>
+      <circle cx="34" cy="58" r="7" fill="#3AA6C9"/><circle cx="86" cy="58" r="7" fill="#3AA6C9"/></svg></div>
+    <div style="text-align:center"><div class="word">feel</div><div class="zh" style="margin-top:4px">感觉到</div></div>
+    <div class="row" style="gap:12px">
+      <button class="btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>再听一遍（慢速）</button>
+      <button class="btn ghost">常速</button>
+      <a class="btn ghost" href="#b4">去跟读 →</a>
+    </div>
+    <div class="row" style="gap:16px">
+      <span class="pill" style="height:32px;font-size:13px;background:var(--orange-soft);border-color:#FFD9A6">新学默认慢速</span>
+      <span class="muted" style="font-size:14px">第 1 / 5 个词 · 左右滑动换词</span>
+    </div>
+  </div>
+</div>
+
+<!-- B4 说 -->
+<div class="frame" id="b4">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#b3" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div><div style="font-size:19px;font-weight:800">Unit 1 · 说</div>
+      <div class="stepskey">听 → 说 → 认 → 游戏 → 句型 → 复习</div></div>
+    <div class="steps" style="margin-left:14px"><i class="on"></i><i class="cur"></i><i></i><i></i><i></i><i></i></div>
+    <div style="flex:1"></div>
+    <span class="pill" id="tryPill" style="background:var(--red-soft);border-color:#F7C9C7;color:#C0392B">第 2 次 · 再来一次</span>
+  </div>
+  <div class="stage">
+    <div class="word" style="font-size:44px">feel</div>
+    <div class="mic" id="mic">
+      <svg width="50" height="50" viewBox="0 0 24 24" fill="#fff"><path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.9V22h2v-3.1A7 7 0 0019 12h-2z"/></svg></div>
+    <div class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="muted" id="hint" style="font-size:17px">按住麦克风读一读 —— 声音再大一点点</div>
+    <div class="row" style="gap:12px">
+      <button class="btn ghost">听原音</button>
+      <a class="btn hide" id="skipBtn" href="#b5" style="background:#EFE7DD;color:#B9ACA6;box-shadow:0 6px 0 #DED3C6">先跳过</a>
+      <a class="btn" href="#b5">达标 → 认</a>
+    </div>
+    <div class="muted" style="font-size:12.5px">按住可试；连续 3 次未达标才出现「先跳过」——不计星、不记为已学，但会让家长看到这个词要多练</div>
+    <button class="btn ghost sm" id="simFail" style="font-size:12px;height:34px">（演示）模拟第 3 次失败</button>
+  </div>
+</div>
+
+<!-- B5 认 -->
+<div class="frame" id="b5">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#b4" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div><div style="font-size:19px;font-weight:800">Unit 1 · 认</div>
+      <div class="stepskey">听 → 说 → 认 → 游戏 → 句型 → 复习</div></div>
+    <div class="steps" style="margin-left:14px"><i class="on"></i><i class="on"></i><i class="cur"></i><i></i><i></i><i></i></div>
+    <div style="flex:1"></div>
+    <span class="pill" id="matchPill">第 1 / 2 轮 · 已配对 0 / 3</span>
+  </div>
+  <div class="stage">
+    <div class="muted" style="font-size:16px">点一张图，再点对应的英文单词</div>
+    <div class="match" id="match">
+      <div class="col">
+        <div class="card imgcard" data-k="feel">👁️</div>
+        <div class="card imgcard" data-k="hear">👂</div>
+        <div class="card imgcard" data-k="smell">👃</div>
+      </div>
+      <div class="col">
+        <div class="card" data-k="smell">smell</div>
+        <div class="card" data-k="feel">feel</div>
+        <div class="card" data-k="hear">hear</div>
+      </div>
+    </div>
+    <div class="row" style="gap:12px;margin-top:4px">
+      <a class="btn ghost" href="#b4">返回</a>
+      <a class="btn" href="#b6">配对完成 → 游戏</a>
+    </div>
+  </div>
+</div>
+
+<!-- B6 游戏 -->
+<div class="frame" id="b6">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#b5" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div><div style="font-size:19px;font-weight:800">Unit 1 · 游戏</div>
+      <div class="stepskey">听 → 说 → 认 → 游戏 → 句型 → 复习</div></div>
+    <div class="steps" style="margin-left:14px"><i class="on"></i><i class="on"></i><i class="on"></i><i class="cur"></i><i></i><i></i></div>
+    <div style="flex:1"></div>
+    <span class="pill" id="gamePill">听音选图 · 第 1 / 4 题</span>
+  </div>
+  <div class="stage">
+    <div class="row" style="gap:14px">
+      <button class="btn blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>听一听，选出正确的图</button>
+      <span class="muted" style="font-size:14px">答对 +1 ★</span>
+    </div>
+    <div class="choices" id="choices">
+      <div class="choice" data-ok="0">👁️</div>
+      <div class="choice" data-ok="1">👂</div>
+      <div class="choice" data-ok="0">👃</div>
+      <div class="choice" data-ok="0">👅</div>
+    </div>
+    <div class="muted" id="gameMsg" style="font-size:16px;height:22px"></div>
+    <a class="btn" href="#b7">下一题 → 句型</a>
+  </div>
+</div>
+
+<!-- B7 句型 -->
+<div class="frame" id="b7">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#b6" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div><div style="font-size:19px;font-weight:800">Unit 1 · 句型</div>
+      <div class="stepskey">听 → 说 → 认 → 游戏 → 句型 → 复习</div></div>
+    <div class="steps" style="margin-left:14px"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="cur"></i><i></i></div>
+    <div style="flex:1"></div>
+    <span class="pill" style="background:var(--blue-soft);border-color:#BEE9F7">新句型 1 / 3</span>
+  </div>
+  <div class="stage" style="gap:20px">
+    <div class="row" style="gap:14px">
+      <button class="btn blue sm" style="height:50px;font-size:17px"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>听整句</button>
+      <span class="muted" style="font-size:15px">中文：我用眼睛看。</span>
+      <span class="pill" style="height:30px;font-size:12.5px;background:var(--orange-soft);border-color:#FFD9A6">慢速</span>
+    </div>
+    <div class="slot" id="slot"></div>
+    <div class="muted" style="font-size:15px">点击下面的词块，按顺序排成一句话（点空位里的词可取出）</div>
+    <div class="row" style="gap:12px" id="pool"></div>
+    <div class="row" style="gap:12px;margin-top:2px">
+      <a class="btn" href="#b8">检查</a><button class="btn ghost">再听一遍</button>
+    </div>
+  </div>
+</div>
+
+<!-- B8 复习 -->
+<div class="frame" id="b8">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#b7" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div><div style="font-size:19px;font-weight:800">Unit 1 · 复习</div>
+      <div class="stepskey">听 → 说 → 认 → 游戏 → 句型 → 复习</div></div>
+    <div class="steps" style="margin-left:14px"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="cur"></i></div>
+    <div style="flex:1"></div>
+    <span class="pill" style="background:var(--blue-soft);border-color:#BEE9F7">翻卡 · 默认常速</span>
+  </div>
+  <div class="stage">
+    <div class="flip" id="flip"><div class="in">
+      <div class="face"><div class="zh">点一下卡片翻面</div><div class="word" style="font-size:48px">feel</div>
+        <button class="btn blue sm" style="height:44px">▶ 常速听</button></div>
+      <div class="face back"><div class="zh">感觉到</div><div style="font-size:34px;font-weight:800">feel</div>
+        <div class="muted" style="font-size:13px">v. 感觉到 · 例：I feel happy.</div></div>
+    </div></div>
+    <div class="row" style="gap:12px">
+      <a class="btn ghost" href="#b9">记不清</a>
+      <a class="btn" href="#b9">记住了</a>
+    </div>
+    <div class="muted" style="font-size:12.5px">复习默认常速播放；下次间隔按 1→3→7→14→30 天推进，答错回退一级</div>
+  </div>
+</div>
+
+<!-- B9 结算 -->
+<div class="frame" id="b9">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="stage" style="gap:20px">
+    <div style="font-size:32px;font-weight:800">Unit 1 已完成</div>
+    <div class="row" style="gap:8px"><span style="font-size:44px;color:var(--orange)">★</span><span style="font-size:44px;color:var(--orange)">★</span><span style="font-size:44px;color:var(--orange)">★</span></div>
+    <div class="muted" style="font-size:18px">本次 +5 星 · 用时 9 分钟 · 跟读达标 4 / 5 · 游戏 3 / 4</div>
+    <div style="background:#fff;border:2px solid var(--line);border-radius:20px;padding:18px 28px;display:flex;align-items:center;gap:16px">
+      <div style="width:56px;height:56px;border-radius:17px;background:linear-gradient(150deg,#FFE0AE,#FFB74D);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff">★</div>
+      <div><b style="font-size:20px">解锁新徽章：初次学习</b><div class="muted" style="font-size:13.5px">第一次完成一个学习单元 · 已发 +3 星（首次达标）</div></div>
+    </div>
+    <div class="muted" style="font-size:13.5px">Unit 2 已解锁 · 今日还剩 11 分钟</div>
+    <div class="row" style="gap:12px">
+      <a class="btn" href="#b1">继续下一个单元</a>
+      <a class="btn ghost" href="proto-a.html#a6">回首页</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  if(!location.hash) location.hash='#b1';
+
+  /* 按住录音 */
+  var mic=document.getElementById('mic'), wave=document.getElementById('wave'), hint=document.getElementById('hint');
+  if(mic){
+    function down(e){ e.preventDefault(); mic.classList.add('rec'); wave.classList.add('rec'); hint.textContent='正在听…… 读完松手'; }
+    function up(){ mic.classList.remove('rec'); wave.classList.remove('rec'); hint.textContent='这次声音偏小，再来一次吧'; }
+    mic.addEventListener('mousedown',down); mic.addEventListener('touchstart',down,{passive:false});
+    document.addEventListener('mouseup',up); mic.addEventListener('touchend',up);
+    document.getElementById('simFail').addEventListener('click',function(){
+      document.getElementById('skipBtn').classList.remove('hide');
+      document.getElementById('tryPill').textContent='第 3 次 · 未达标';
+      hint.textContent='连续 3 次未达标，可以先跳过这个词';
+      this.remove();
+    });
+  }
+
+  /* 配对 */
+  (function(){
+    var wrap=document.getElementById('match'); if(!wrap) return;
+    var sel=null, done=0;
+    wrap.querySelectorAll('.card').forEach(function(c){
+      c.addEventListener('click',function(){
+        if(c.classList.contains('ok')) return;
+        if(!sel){ sel=c; c.classList.add('sel'); return; }
+        if(sel===c){ sel.classList.remove('sel'); sel=null; return; }
+        var sameOwner = (sel.classList.contains('imgcard')===c.classList.contains('imgcard'));
+        if(sameOwner){ sel.classList.remove('sel'); sel=c; c.classList.add('sel'); return; }
+        if(sel.dataset.k===c.dataset.k){
+          sel.classList.remove('sel'); sel.classList.add('ok'); c.classList.add('ok');
+          sel=null; done++; var p=document.getElementById('matchPill');
+          p.textContent='已配对 '+done+' / 3';
+          if(done===3){ p.textContent='全部配对完成'; p.style.background='var(--green-soft)'; p.style.borderColor='#BFEBD9'; }
+        }else{
+          var a=sel; a.classList.remove('sel');
+          a.classList.add('bad'); c.classList.add('bad');
+          setTimeout(function(){a.classList.remove('bad');c.classList.remove('bad')},520);
+          sel=null;
+        }
+      });
+    });
+  })();
+
+  /* 听音选图 */
+  (function(){
+    var box=document.getElementById('choices'); if(!box) return;
+    box.querySelectorAll('.choice').forEach(function(c){
+      c.addEventListener('click',function(){
+        box.querySelectorAll('.choice').forEach(function(x){x.classList.remove('ok','bad')});
+        if(c.dataset.ok==='1'){ c.classList.add('ok'); document.getElementById('gameMsg').textContent='答对啦！+1 ★'; }
+        else { c.classList.add('bad'); document.getElementById('gameMsg').textContent='再听一遍试试～'; }
+      });
+    });
+  })();
+
+  /* 词块排序 */
+  (function(){
+    var slot=document.getElementById('slot'), pool=document.getElementById('pool');
+    if(!slot) return;
+    var words=['with','I','eyes','can','my','see'];
+    var order=['I','can','','with','my',''];
+    order.forEach(function(w){
+      if(w){ slot.appendChild(mk(w,true)); } else { var b=document.createElement('div'); b.className='blank'; slot.appendChild(b); }
+    });
+    words.forEach(function(w){ pool.appendChild(mk(w,false)); });
+
+    function mk(txt,inslot){
+      var el=document.createElement('span');
+      el.className='chunk'+(inslot?'':' pool'); el.textContent=txt;
+      el.addEventListener('click',function(){
+        if(el.parentElement===pool){ slot.appendChild(el); el.classList.remove('pool'); }
+        else { pool.appendChild(el); el.classList.add('pool'); }
+      });
+      return el;
+    }
+  })();
+
+  /* 翻卡 */
+  (function(){
+    var f=document.getElementById('flip'); if(!f) return;
+    f.addEventListener('click',function(){ f.classList.toggle('on'); });
+  })();
+</script>
+</body>
+</html>

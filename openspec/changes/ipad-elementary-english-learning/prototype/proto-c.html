@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>原型 C · 奖励 / 家长 / 设置（可点击）</title>
+<style>
+  :root{--orange:#FF9F1C;--orange-d:#F08A00;--orange-soft:#FFF1DE;--blue:#4CC9F0;--blue-soft:#E6F7FD;
+    --green:#57CC99;--green-soft:#E6F8F0;--red:#EF6F6C;--red-soft:#FDE8E7;
+    --ink:#3A2E2A;--muted:#9A8C86;--bg:#FFF9F2;--line:#F1E5D8;--r:22px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EDE4D9;color:var(--ink);padding:16px;
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;user-select:none}
+  .frame{display:none;width:960px;height:720px;zoom:.855;background:var(--bg);border-radius:26px;overflow:hidden;
+    position:relative;flex-direction:column;box-shadow:0 18px 40px rgba(96,64,32,.18)}
+  .frame:target{display:flex}
+  .sbar{height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;
+    font-size:13px;font-weight:700;color:#5C4E47}
+  .sbar svg{height:12px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;height:54px;padding:0 28px;border-radius:16px;
+    border:0;background:var(--orange);color:#fff;font-size:19px;font-weight:700;box-shadow:0 6px 0 var(--orange-d);
+    text-decoration:none;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 5px 0 #EAE0D4}
+  .btn.blue{background:var(--blue);box-shadow:0 6px 0 #35A9CE}
+  .btn.sm{height:42px;padding:0 16px;font-size:14px;border-radius:11px;box-shadow:0 4px 0 var(--orange-d)}
+  .btn.ghost.sm{box-shadow:0 3px 0 #EAE0D4}
+  .pill{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:999px;
+    background:#fff;border:2px solid var(--line);font-size:13.5px;font-weight:600}
+  .topbar{height:78px;display:flex;align-items:center;gap:13px;padding:0 40px;background:#fff;border-bottom:2px solid var(--line)}
+  .muted{color:var(--muted);font-size:15px}
+  .row{display:flex;align-items:center;gap:12px}
+  .pad{padding:22px 40px;flex:1;display:flex;flex-direction:column;gap:13px}
+  .card{background:#fff;border:2px solid var(--line);border-radius:17px;padding:15px 19px}
+  .tabbar{position:absolute;left:0;right:0;bottom:0;height:78px;background:#fff;border-top:2px solid var(--line);
+    display:flex;justify-content:space-around;align-items:center}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:700;color:#B9ABA2;
+    text-decoration:none}
+  .tab.on{color:var(--orange)}
+  .tab svg{width:24px;height:24px}
+  .badge{width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:17px;font-weight:800}
+  .badge.off{background:#F1E9DE;color:#C6B6A8}
+  .bar{height:11px;border-radius:99px;background:#F0E6DA;overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#FFC46B,var(--orange))}
+  .bar.g>i{background:linear-gradient(90deg,#8FE3C0,#57CC99)}
+  .chart{display:flex;align-items:stretch;gap:12px;height:112px}
+  .chart .c{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}
+  .chart .b{width:100%;border-radius:9px 9px 3px 3px;background:linear-gradient(180deg,#9BE0F5,#4CC9F0)}
+  .chart .b.hi{background:linear-gradient(180deg,#FFD08A,#FF9F1C)}
+  .key{width:88px;height:60px;border-radius:15px;background:#fff;border:2px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;box-shadow:0 4px 0 #EAE0D4;cursor:pointer}
+  .dotpin{width:22px;height:22px;border-radius:50%;border:3px solid var(--orange)}
+  .dotpin.fill{background:var(--orange)}
+  .unitrow{display:flex;align-items:center;gap:14px;background:#fff;border:2px solid var(--line);border-radius:15px;padding:12px 16px}
+  .unitrow.locked{background:#FBF6F0}
+  .seg{display:flex;gap:6px}
+  .seg button{height:38px;min-width:50px;padding:0 12px;border-radius:10px;border:2px solid var(--line);
+    background:#fff;font-size:14px;font-weight:700;color:#8A7C74;cursor:pointer}
+  .seg button.on{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 3px 0 var(--orange-d)}
+  .nav{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;font-family:system-ui,sans-serif;font-size:12.5px}
+  .nav a{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:99px;background:#fff;
+    border:1px solid #E2D5C7;color:#7A6A62;text-decoration:none;font-weight:600}
+  .nav a:hover{background:#FFF1DE;color:#A66200;border-color:#FFD3A0}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <a href="#c1">C1 奖励</a><a href="#c2">C2 PIN</a><a href="#c3">C3 报告</a><a href="#c4">C4 内容管理</a><a href="#c5">C5 手动解锁</a>
+  <a href="#c6">C6 兑换申请</a><a href="#c7">C7 审核</a><a href="#c8">C8 设置</a><a href="#c9">C9 孩子切换</a><a href="#c10">C10 练习强度</a>
+  <a href="#c11">C11 奖励库</a><a href="#c12">C12 兑换限制</a>
+</div>
+
+<!-- C1 奖励 -->
+<div class="frame" id="c1">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar"><b style="font-size:21px">奖励</b><div style="flex:1"></div>
+    <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6;height:38px;font-size:17px"><span style="color:var(--orange-d)">★</span> 128</span></div>
+  <div class="pad">
+    <div class="card" style="display:flex;align-items:center;gap:16px;background:linear-gradient(150deg,#FFF6E8,#FFF1DE);border-color:#FFE0B8">
+      <div class="badge" style="background:linear-gradient(150deg,#FFE0AE,#FFB74D);width:60px;height:60px;font-size:22px">★</div>
+      <div style="flex:1"><b style="font-size:20px">128 颗星星</b>
+        <div class="muted" style="font-size:13.5px;margin-top:3px">今日已获得 5 颗 · 再攒 22 颗可以兑换</div></div>
+      <a class="btn" href="#c6">去兑换</a>
+    </div>
+    <div>
+      <div class="row" style="justify-content:space-between;margin-bottom:8px"><b style="font-size:17px">徽章墙（2 / 6）</b>
+        <span class="muted" style="font-size:13px">继续加油</span></div>
+      <div class="row" style="gap:10px">
+        <div style="text-align:center"><div class="badge" style="background:linear-gradient(150deg,#FFE0AE,#FFB74D)">★</div><div style="font-size:11.5px;margin-top:4px">初次学习</div></div>
+        <div style="text-align:center"><div class="badge" style="background:linear-gradient(150deg,#A8E6C9,#57CC99)">3</div><div style="font-size:11.5px;margin-top:4px">连学 3 天</div></div>
+        <div style="text-align:center"><div class="badge off">7</div><div style="font-size:11.5px;margin-top:4px;color:#C6B6A8">连学 7 天</div></div>
+        <div style="text-align:center"><div class="badge off">单</div><div style="font-size:11.5px;margin-top:4px;color:#C6B6A8">首个单元</div></div>
+        <div style="text-align:center"><div class="badge off">册</div><div style="font-size:11.5px;margin-top:4px;color:#C6B6A8">完成整册</div></div>
+        <div style="text-align:center"><div class="badge off">20</div><div style="font-size:11.5px;margin-top:4px;color:#C6B6A8">跟读达人</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="row" style="justify-content:space-between;margin-bottom:7px">
+        <b style="font-size:17px">兑换商店</b>
+        <span class="muted" style="font-size:12.5px">学习型 2 · 亲子 1 · 现实 1 · 储蓄 1</span></div>
+
+      <div style="font-size:12.5px;color:#2A7F9B;font-weight:700;margin:2px 0 6px">学习型（用星星换"再多学一点"）</div>
+      <div class="row" style="gap:10px">
+        <div class="card" style="flex:1;border-color:#BEE9F7;background:#F7FCFE">
+          <b style="font-size:16px">当 10 分钟小老师</b>
+          <div class="muted" style="font-size:12px;margin-top:2px">教爸爸妈妈今天学的词 · 每日 1 次</div>
+          <div class="row" style="margin-top:8px;justify-content:space-between">
+            <span class="pill" style="background:var(--blue-soft);border-color:#BEE9F7;color:#2A7F9B">100 ★</span>
+            <a class="btn sm" href="#c6">申请</a></div>
+        </div>
+        <div class="card" style="flex:1;border-color:#BEE9F7;background:#F7FCFE">
+          <b style="font-size:16px">解锁一个「故事时间」</b>
+          <div class="muted" style="font-size:12px;margin-top:2px">多听一篇英文小故事 · 每周 2 次</div>
+          <div class="row" style="margin-top:8px;justify-content:space-between">
+            <span class="pill" style="background:var(--blue-soft);border-color:#BEE9F7;color:#2A7F9B">120 ★</span>
+            <a class="btn sm" href="#c6">申请</a></div>
+        </div>
+      </div>
+
+      <div style="font-size:12.5px;color:#A66200;font-weight:700;margin:10px 0 6px">亲子 · 现实</div>
+      <div class="row" style="gap:10px">
+        <div class="card" style="flex:1">
+          <b style="font-size:16px">和爸爸玩 20 分钟桌游</b>
+          <div class="muted" style="font-size:12px;margin-top:2px">每周 2 次</div>
+          <div class="row" style="margin-top:8px;justify-content:space-between">
+            <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6;color:var(--orange-d)">120 ★</span>
+            <a class="btn sm" href="#c6">申请</a></div>
+        </div>
+        <div class="card" style="flex:1">
+          <b style="font-size:16px">看 30 分钟动画片</b>
+          <div class="muted" style="font-size:12px;margin-top:2px">每日 1 次 · 冷却 3 天</div>
+          <div class="row" style="margin-top:8px;justify-content:space-between">
+            <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6;color:var(--orange-d)">100 ★</span>
+            <a class="btn sm" href="#c6">申请</a></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:10px;border-color:#FFE0B8;background:linear-gradient(150deg,#FFF9EF,#FFF1DE)">
+        <div class="row" style="justify-content:space-between">
+          <b style="font-size:15.5px">储蓄目标：一个想要的小玩具（500 ★）</b>
+          <span class="muted" style="font-size:12.5px">还差 372 ★</span></div>
+        <div class="bar" style="margin-top:8px"><i style="width:26%"></i></div>
+        <div class="muted" style="font-size:12.5px;margin-top:6px">已存 128 / 500 · 每天攒 5 颗约 2 个月达成（不做随机抽奖）</div>
+      </div>
+    </div>
+    <div class="card" style="border-color:#FFE0B8;background:var(--orange-soft)">
+      <span style="font-size:14px">今天已经学了 12 分钟，还可以学 8 分钟。超时后仍可复习，但不再获得新星星。</span>
+    </div>
+  </div>
+  <div class="tabbar">
+    <a class="tab" href="proto-a.html#a6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 5a2 2 0 012-2h9l5 5v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"/></svg>学习</a>
+    <a class="tab on" href="#c1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2z"/></svg>奖励</a>
+    <a class="tab" href="#c2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z"/></svg>家长</a>
+  </div>
+</div>
+
+<!-- C2 PIN -->
+<div class="frame" id="c2">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+    <div style="width:66px;height:66px;border-radius:22px;background:var(--orange-soft);display:flex;align-items:center;justify-content:center">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--orange-d)"><path d="M7 10V7a5 5 0 0110 0v3h1a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2h1zm2 0h6V7a3 3 0 00-6 0v3z"/></svg></div>
+    <div style="font-size:24px;font-weight:800">家长验证</div>
+    <div class="muted" style="font-size:14px">请输入 4 位 PIN</div>
+    <div class="row" style="gap:16px"><div class="dotpin fill"></div><div class="dotpin fill"></div><div class="dotpin"></div><div class="dotpin"></div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,88px);gap:10px;margin-top:6px">
+      <div class="key">1</div><div class="key">2</div><div class="key">3</div>
+      <div class="key">4</div><div class="key">5</div><div class="key">6</div>
+      <div class="key">7</div><div class="key">8</div><div class="key">9</div>
+      <a class="key" href="#c8" style="font-size:14px;color:var(--muted);text-decoration:none">忘记</a><div class="key">0</div><div class="key" style="font-size:18px">⌫</div>
+    </div>
+    <div class="muted" style="font-size:12.5px">连续输错 5 次锁定 1 分钟 · 忘记 PIN 用 6 位恢复码重置</div>
+    <a class="btn ghost sm" href="#c3">（演示）验证通过 → 报告</a>
+  </div>
+</div>
+
+<!-- C3 报告 -->
+<div class="frame" id="c3">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c2" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">学习报告 · 朵朵</b><div style="flex:1"></div><span class="pill">本周</span></div>
+  <div class="pad">
+    <div class="row" style="gap:11px">
+      <div class="card" style="flex:1;text-align:center"><div class="muted" style="font-size:13px">学习天数</div><b style="font-size:26px">5</b><div class="muted" style="font-size:12px">天</div></div>
+      <div class="card" style="flex:1;text-align:center"><div class="muted" style="font-size:13px">总时长</div><b style="font-size:26px">92</b><div class="muted" style="font-size:12px">分钟</div></div>
+      <div class="card" style="flex:1;text-align:center"><div class="muted" style="font-size:13px">正确率 ⓘ</div><b style="font-size:26px">78</b><div class="muted" style="font-size:12px">% · 只说环节</div></div>
+      <div class="card" style="flex:1;text-align:center"><div class="muted" style="font-size:13px">新学</div><b style="font-size:26px">12</b><div class="muted" style="font-size:12px">词 · 3 句</div></div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px"><b style="font-size:15px">每日学习时长</b><span class="muted" style="font-size:12.5px">目标 20 分钟</span></div>
+      <div class="chart">
+        <div class="c"><div class="b hi" style="height:88%"></div><span class="muted" style="font-size:11px">一</span></div>
+        <div class="c"><div class="b" style="height:60%"></div><span class="muted" style="font-size:11px">二</span></div>
+        <div class="c"><div class="b" style="height:74%"></div><span class="muted" style="font-size:11px">三</span></div>
+        <div class="c"><div class="b" style="height:40%"></div><span class="muted" style="font-size:11px">四</span></div>
+        <div class="c"><div class="b hi" style="height:100%"></div><span class="muted" style="font-size:11px">五</span></div>
+        <div class="c"><div class="b" style="height:18%"></div><span class="muted" style="font-size:11px">六</span></div>
+        <div class="c"><div class="b" style="height:6%"></div><span class="muted" style="font-size:11px">日</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:6px"><b style="font-size:15px">需要多练（正确率低）</b><span class="muted" style="font-size:12.5px">共 3 条</span></div>
+      <div class="row" style="justify-content:space-between;padding:5px 0"><b style="font-size:16px">feel</b>
+        <div style="width:190px"><div class="bar"><i style="width:40%"></i></div></div><span class="muted" style="font-size:13px">40%</span>
+        <span class="pill" style="height:26px;font-size:11.5px">词</span></div>
+      <div class="row" style="justify-content:space-between;padding:5px 0"><b style="font-size:16px">I can see with my eyes.</b>
+        <div style="width:190px"><div class="bar"><i style="width:50%"></i></div></div><span class="muted" style="font-size:13px">50%</span>
+        <span class="pill" style="height:26px;font-size:11.5px;background:var(--blue-soft);border-color:#BEE9F7">句</span></div>
+      <div class="row" style="justify-content:space-between;padding:5px 0"><b style="font-size:16px">hear</b>
+        <div style="width:190px"><div class="bar"><i style="width:55%"></i></div></div><span class="muted" style="font-size:13px">55%</span>
+        <span class="pill" style="height:26px;font-size:11.5px">词</span></div>
+    </div>
+    <div class="row" style="gap:10px">
+      <a class="btn ghost sm" href="#c5">手动解锁单元</a>
+      <a class="btn ghost sm" href="#c7">兑换审核（1）</a>
+      <a class="btn ghost sm" href="#c4">内容管理</a>
+      <a class="btn ghost sm" href="#c9">孩子切换</a>
+      <a class="btn ghost sm" href="#c8">设置</a>
+    </div>
+  </div>
+</div>
+
+<!-- C4 内容管理 -->
+<div class="frame" id="c4">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c3" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">内容管理</b><div style="flex:1"></div>
+    <span class="pill" style="background:var(--green-soft);border-color:#BFEBD9;color:#2E9E6B">已连接 home-pc.local</span></div>
+  <div class="pad">
+    <div class="card" style="display:flex;align-items:center;gap:14px">
+      <div class="badge" style="background:var(--green-soft);color:#2E9E6B;font-size:20px">✓</div>
+      <div style="flex:1"><b style="font-size:18px">二年级上</b>
+        <div class="muted" style="font-size:13px">已下载 · 53MB · 内容版本 3 · 结构版本 2</div></div>
+      <button class="btn ghost sm">回退上一版</button>
+      <button class="btn ghost sm" style="color:#C0392B;border-color:#F7C9C7">删除</button>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;opacity:.55">
+      <div class="badge off">下</div>
+      <div style="flex:1"><b style="font-size:18px">二年级下</b>
+        <div class="muted" style="font-size:13px">服务端暂未提供（寒假补录）</div></div>
+      <span class="pill" style="opacity:.7">暂无</span>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;opacity:.55">
+      <div class="badge off">三上</div>
+      <div style="flex:1"><b style="font-size:18px">三年级上</b>
+        <div class="muted" style="font-size:13px">结构版本 3 &gt; App 支持 2</div></div>
+      <span class="pill" style="background:var(--red-soft);border-color:#F7C9C7;color:#C0392B">需要更新 App</span>
+    </div>
+    <div style="flex:1"></div>
+    <div class="card" style="background:var(--blue-soft);border-color:#BEE9F7">
+      <b style="font-size:15px">提示</b>
+      <div style="font-size:13.5px;line-height:1.7;margin-top:5px">
+        · 下载需 iPad 与家里电脑在同一 Wi-Fi，电脑上的内容服务保持运行<br>
+        · 已下载的学期可离线学习；删除后学习记录保留，重新下载即恢复<br>
+        · 磁盘占用：已用 53MB / 可用 12.4GB
+      </div>
+    </div>
+    <a class="btn ghost sm" href="#c3" style="align-self:flex-start">返回报告</a>
+  </div>
+</div>
+
+<!-- C5 手动解锁单元 -->
+<div class="frame" id="c5">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c3" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">手动解锁单元</b><div style="flex:1"></div><span class="pill">朵朵 · 二年级上</span></div>
+  <div class="pad">
+    <div class="muted" style="font-size:13.5px;line-height:1.6">学校教学进度超前时，可以在这里直接把某个单元放开给孩子学。<br>
+      <b style="color:var(--ink)">只放行访问</b>，不改变星星余额与进度统计。</div>
+    <div class="unitrow" id="u1"><div class="badge" style="background:var(--green-soft);color:#2E9E6B">✓</div>
+      <div style="flex:1"><b style="font-size:17px">Unit 1 · Five senses</b>
+        <div class="muted" style="font-size:12.5px">自动解锁</div></div>
+      <span class="pill" style="background:var(--green-soft);border-color:#BFEBD9;color:#2E9E6B">可学习</span></div>
+    <div class="unitrow locked" id="u2"><div class="badge off">2</div>
+      <div style="flex:1"><b style="font-size:17px">Unit 2 · My family</b>
+        <div class="muted" style="font-size:12.5px">完成 Unit 1 后自动解锁</div></div>
+      <button class="btn sm" data-unlock="u2">手动解锁</button></div>
+    <div class="unitrow locked" id="u3"><div class="badge off">3</div>
+      <div style="flex:1"><b style="font-size:17px">Unit 3 · In the playground</b>
+        <div class="muted" style="font-size:12.5px">学校本周正在教这一单元</div></div>
+      <button class="btn sm" data-unlock="u3">手动解锁</button></div>
+    <div class="unitrow locked" id="u4"><div class="badge off">4</div>
+      <div style="flex:1"><b style="font-size:17px">Unit 4 · My toys</b></div>
+      <button class="btn sm" data-unlock="u4">手动解锁</button></div>
+    <div style="flex:1"></div>
+    <div class="muted" style="font-size:12.5px">解锁后可在孩子的课程列表里直接进入该单元；如需恢复线性顺序，可点「撤销解锁」。</div>
+    <div class="row" style="gap:10px"><a class="btn ghost" href="#c3">返回报告</a>
+      <a class="btn" href="proto-b.html#b1">去看孩子的课程列表</a></div>
+  </div>
+</div>
+
+<!-- C6 兑换申请（孩子端） -->
+<div class="frame" id="c6">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c1" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">申请兑换</b><div style="flex:1"></div>
+    <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6"><span style="color:var(--orange-d)">★</span> 128</span></div>
+  <div class="pad" style="align-items:center;justify-content:center">
+    <div id="applyBox" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div class="badge" style="width:96px;height:96px;border-radius:28px;background:linear-gradient(150deg,#FFE0AE,#FFB74D);font-size:40px">📺</div>
+      <div style="font-size:26px;font-weight:800">看 30 分钟动画片</div>
+      <div class="muted" style="font-size:15px">需要 100 ★ · 你现在有 128 ★</div>
+      <div class="card" style="text-align:left;width:520px">
+        <div class="row" style="justify-content:space-between"><span class="muted" style="font-size:13.5px">兑换后余额</span><b>28 ★</b></div>
+        <div class="row" style="justify-content:space-between;margin-top:6px"><span class="muted" style="font-size:13.5px">规则限制</span><span style="font-size:13.5px">每日 1 次 · 冷却 3 天</span></div>
+      </div>
+      <button class="btn" id="applyBtn">提交申请，等家长确认</button>
+      <div class="muted" style="font-size:12.5px">提交后不会立刻扣星星，家长同意后才扣</div>
+    </div>
+    <div id="applyDone" style="display:none;text-align:center;flex-direction:column;align-items:center;gap:16px">
+      <div class="badge" style="width:96px;height:96px;border-radius:28px;background:var(--blue-soft);color:#2A7F9B;font-size:34px">⏳</div>
+      <div style="font-size:24px;font-weight:800">已提交，等家长确认</div>
+      <div class="muted" style="font-size:14.5px">家长在「家长 → 兑换审核」里会看到这条申请</div>
+      <div class="row" style="gap:10px"><a class="btn ghost" href="#c1">回奖励页</a><a class="btn ghost" href="#c7">（演示）切到家长审核</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- C7 兑换审核（家长端） -->
+<div class="frame" id="c7">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c3" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">兑换审核</b><div style="flex:1"></div><span class="pill">待审核 1</span></div>
+  <div class="pad">
+    <div class="card" id="reviewCard">
+      <div class="row" style="justify-content:space-between">
+        <div class="row" style="gap:12px">
+          <div class="badge" style="background:linear-gradient(150deg,#FFE0AE,#FFB74D);font-size:24px">📺</div>
+          <div><b style="font-size:17px">看 30 分钟动画片</b>
+            <div class="muted" style="font-size:12.5px">朵朵申请 · 今天 16:08 · 需 100 ★</div></div>
+        </div>
+        <span class="pill" id="reviewState" style="background:var(--orange-soft);border-color:#FFD9A6;color:var(--orange-d)">待审核</span>
+      </div>
+      <div class="row" style="margin-top:12px;gap:10px">
+        <button class="btn sm" id="approveBtn">同意并扣 100 ★</button>
+        <button class="btn ghost sm" id="rejectBtn">拒绝</button>
+        <div style="flex:1"></div>
+        <span class="muted" style="font-size:12.5px">同意后余额 28 ★，3 天内不可再兑同一奖励</span>
+      </div>
+    </div>
+    <div class="card" style="opacity:.6">
+      <div class="row" style="justify-content:space-between">
+        <b style="font-size:16px">选一本绘本</b><span class="pill" style="height:28px;font-size:12px">已拒绝 · 昨天</span></div>
+      <div class="muted" style="font-size:12.5px;margin-top:4px">拒绝理由：这周已经买过一本书了</div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="card" style="background:var(--orange-soft);border-color:#FFE0B8">
+      <span style="font-size:13.5px">审核记录会留在兑换历史里；被拒绝的申请不扣星星，也不占用冷却期。</span>
+    </div>
+    <a class="btn ghost sm" href="#c3" style="align-self:flex-start">返回报告</a>
+  </div>
+</div>
+
+<!-- C8 设置 -->
+<div class="frame" id="c8">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c3" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">设置</b></div>
+  <div class="pad">
+    <div class="card">
+      <b style="font-size:16px">数据</b>
+      <div class="row" style="justify-content:space-between;margin-top:10px">
+        <span style="font-size:14px">导出学习记录（JSON）</span><button class="btn ghost sm">导出并分享</button></div>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <span style="font-size:14px">从文件恢复学习记录</span><button class="btn ghost sm">选择文件</button></div>
+      <div class="muted" style="font-size:12.5px;margin-top:8px">首版不做 iCloud 同步：<b>删除 App 会清空全部学习记录</b>，建议定期导出留档。</div>
+    </div>
+    <div class="card">
+      <b style="font-size:16px">诊断</b>
+      <div class="row" style="justify-content:space-between;margin-top:10px">
+        <span style="font-size:14px">本地诊断日志（缺失资产 / 解码错误）</span><button class="btn ghost sm">查看</button></div>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <span style="font-size:14px">内容服务地址</span><span class="muted" style="font-size:13.5px">home-pc.local:8080</span></div>
+    </div>
+    <div class="card">
+      <b style="font-size:16px">奖励库 / 奖励设置</b>
+      <div class="row" style="justify-content:space-between;margin-top:10px">
+        <span style="font-size:14px">启用哪些奖励、改星星数、兑换限制</span>
+        <a class="btn ghost sm" href="#c11">奖励库</a></div>
+      <div class="muted" style="font-size:12.5px;margin-top:8px">奖励太多会稀释价值，建议只留 2-3 个；学习型奖励优先于"离开学习"的奖励。</div>
+    </div>
+    <div class="card">
+      <b style="font-size:16px">练习强度</b>
+      <div class="row" style="justify-content:space-between;margin-top:10px">
+        <span style="font-size:14px">每屏配对数 · 练习轮数 · 跳过阈值 · 每日新词/句型 · 复习上限</span>
+        <a class="btn ghost sm" href="#c10">调整</a></div>
+      <div class="muted" style="font-size:12.5px;margin-top:8px">按孩子单独保存，改完立即生效；首页「预计 X 分钟」会跟着重算。</div>
+    </div>
+    <div class="card">
+      <b style="font-size:16px">家长 PIN</b>
+      <div class="row" style="justify-content:space-between;margin-top:10px">
+        <span style="font-size:14px">修改 PIN</span><button class="btn ghost sm">修改</button></div>
+      <div class="row" style="justify-content:space-between;margin-top:8px">
+        <span style="font-size:14px">重置 PIN（需要 6 位恢复码）</span><button class="btn ghost sm">去重置</button></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="row" style="gap:10px"><a class="btn ghost sm" href="#c3">返回报告</a>
+      <a class="btn ghost sm" href="#c9">孩子与档案</a></div>
+  </div>
+</div>
+
+<!-- C9 孩子切换 -->
+<div class="frame" id="c9">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c3" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">孩子与档案</b><div style="flex:1"></div><span class="pill">2 / 4</span></div>
+  <div class="pad">
+    <div class="card" style="display:flex;align-items:center;gap:14px;border-color:var(--orange)">
+      <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(150deg,#9BE0F5,#4CC9F0);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:800">朵</div>
+      <div style="flex:1"><b style="font-size:17px">朵朵 · 二年级</b>
+        <div class="muted" style="font-size:12.5px">126 ★ · 连学 3 天 · 进行中 Unit 1</div></div>
+      <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6;color:var(--orange-d)">当前</span>
+      <button class="btn ghost sm">改年级</button>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px">
+      <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(150deg,#FFD08A,#FF9F1C);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;font-weight:800">乐</div>
+      <div style="flex:1"><b style="font-size:17px">乐乐 · 二年级</b>
+        <div class="muted" style="font-size:12.5px">18 ★ · 连学 0 天 · 还没开始 Unit 1</div></div>
+      <button class="btn ghost sm">切换</button>
+      <button class="btn ghost sm" style="color:#C0392B;border-color:#F7C9C7">删除</button>
+    </div>
+    <button class="btn ghost" style="align-self:flex-start">+ 添加孩子（最多 4 个）</button>
+    <div style="flex:1"></div>
+    <div class="card" style="background:var(--blue-soft);border-color:#BEE9F7">
+      <span style="font-size:13px;line-height:1.7">删除孩子会同时清空他的学习记录、星星流水、徽章与兑换历史（<b>不可撤销</b>）；至少保留 1 个孩子。</span>
+    </div>
+    <a class="btn ghost sm" href="#c3" style="align-self:flex-start">返回报告</a>
+  </div>
+</div>
+
+<!-- C10 练习强度（家长可调） -->
+<div class="frame" id="c10">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c8" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">练习强度</b><div style="flex:1"></div><span class="pill">朵朵</span></div>
+  <div class="pad" style="gap:9px">
+    <div class="muted" style="font-size:13px">按孩子单独保存，改完立即生效。只影响练习量与容错，不改变评分口径与复习算法。</div>
+
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">认环节每屏配对数</b>
+        <div class="muted" style="font-size:12px">单元词多于一屏时自动分轮</div></div>
+      <div class="seg" data-k="pairs"><button>2</button><button class="on">3</button><button>4</button><button>6</button></div>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">每单元最少练习轮数</b>
+        <div class="muted" style="font-size:12px">达到轮数才算完成，解锁下一单元</div></div>
+      <div class="seg" data-k="rounds"><button class="on">1</button><button>2</button><button>3</button></div>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">连续失败几次可跳过</b>
+        <div class="muted" style="font-size:12px">关闭后必须做对才能过</div></div>
+      <div class="seg" data-k="skip"><button>2</button><button class="on">3</button><button>4</button><button>5</button><button>关</button></div>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">每日新词数</b>
+        <div class="muted" style="font-size:12px">受 20 分钟预算约束</div></div>
+      <div class="seg" data-k="words"><button>3</button><button class="on">5</button><button>8</button></div>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">每日新句型数</b></div>
+      <div class="seg" data-k="sent"><button>0</button><button class="on">1</button><button>2</button></div>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">单次复习上限</b></div>
+      <div class="seg" data-k="review"><button>10</button><button class="on">20</button><button>30</button></div>
+    </div>
+
+    <div style="flex:1"></div>
+    <div class="card" style="background:var(--blue-soft);border-color:#BEE9F7">
+      <span style="font-size:12.5px;line-height:1.7">当前设置下，今天约 <b>5 个词 + 1 条句型</b>，预计 <b>18 分钟</b>；认环节 3 对一屏、约 2 轮覆盖 Unit 1 全部单词。</span>
+    </div>
+    <div class="row" style="gap:10px">
+      <button class="btn ghost sm" id="resetBtn">恢复默认</button>
+      <a class="btn sm" href="#c8">完成</a>
+      <div style="flex:1"></div>
+      <a class="btn ghost sm" href="proto-b.html#b5">看认环节效果</a>
+    </div>
+  </div>
+</div>
+
+<!-- C11 奖励库 -->
+<div class="frame" id="c11">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c8" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">奖励库</b><div style="flex:1"></div>
+    <span class="pill" id="libPill">已启用 4 / 16</span></div>
+  <div class="pad" style="gap:8px">
+    <div class="muted" style="font-size:12.5px">勾选启用的奖励才会出现在孩子的兑换商店；星星数可改。</div>
+
+    <div style="font-size:12px;color:#2A7F9B;font-weight:700">学习型（推荐至少留 1 个）</div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px">
+      <input type="checkbox" class="rchk" checked>
+      <div style="flex:1"><b style="font-size:15px">当 10 分钟小老师</b><div class="muted" style="font-size:11.5px">学习型 · 每日 1 次</div></div>
+      <div class="seg" data-k="l1"><button>80</button><button class="on">100</button><button>150</button></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px">
+      <input type="checkbox" class="rchk" checked>
+      <div style="flex:1"><b style="font-size:15px">解锁一个「故事时间」</b><div class="muted" style="font-size:11.5px">学习型 · 每周 2 次</div></div>
+      <div class="seg" data-k="l2"><button>100</button><button class="on">120</button><button>160</button></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px">
+      <input type="checkbox" class="rchk">
+      <div style="flex:1"><b style="font-size:15px">录一段朗读进「我的作品集」</b><div class="muted" style="font-size:11.5px">学习型 · 大额 300★</div></div>
+      <div class="seg" data-k="l3"><button>200</button><button class="on">300</button><button>400</button></div>
+    </div>
+
+    <div style="font-size:12px;color:#A66200;font-weight:700;margin-top:4px">亲子 / 特权</div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px">
+      <input type="checkbox" class="rchk" checked>
+      <div style="flex:1"><b style="font-size:15px">和爸爸玩 20 分钟桌游</b><div class="muted" style="font-size:11.5px">亲子 · 每周 2 次</div></div>
+      <div class="seg" data-k="f1"><button>100</button><button class="on">120</button><button>150</button></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px">
+      <input type="checkbox" class="rchk">
+      <div style="flex:1"><b style="font-size:15px">今晚我点一道菜</b><div class="muted" style="font-size:11.5px">特权 · 每周 2 次</div></div>
+      <div class="seg" data-k="f2"><button>30</button><button class="on">40</button><button>60</button></div>
+    </div>
+
+    <div style="font-size:12px;color:#8A7C74;font-weight:700;margin-top:4px">现实</div>
+    <div class="card" style="display:flex;align-items:center;gap:12px;padding:10px 14px">
+      <input type="checkbox" class="rchk">
+      <div style="flex:1"><b style="font-size:15px">看 30 分钟动画片</b><div class="muted" style="font-size:11.5px">现实 · 每日 1 次 · 冷却 3 天</div></div>
+      <div class="seg" data-k="r1"><button>80</button><button class="on">100</button><button>120</button></div>
+    </div>
+
+    <div style="flex:1"></div>
+    <div class="row" style="gap:10px">
+      <a class="btn ghost sm" href="#c12">兑换限制设置</a>
+      <div style="flex:1"></div>
+      <a class="btn sm" href="#c1">保存并回到奖励页</a>
+    </div>
+  </div>
+</div>
+
+<!-- C12 奖励设置（兑换限制） -->
+<div class="frame" id="c12">
+  <div class="sbar"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#c11" style="text-decoration:none;color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A2E2A" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <b style="font-size:20px">兑换限制</b></div>
+  <div class="pad" style="gap:10px">
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">必须完成今日任务才能申请</b>
+        <div class="muted" style="font-size:12px">防止孩子为了兑换而跳过学习</div></div>
+      <div class="seg" data-k="t1"><button class="on">开</button><button>关</button></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">单日最多兑换次数</b></div>
+      <div class="seg" data-k="t2"><button class="on">1 次</button><button>2 次</button><button>不限</button></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">大额奖励需二次确认</b>
+        <div class="muted" style="font-size:12px">≥ 300★ 的奖励额外弹窗确认</div></div>
+      <div class="seg" data-k="t3"><button class="on">开</button><button>关</button></div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><b style="font-size:15px">同一奖励冷却天数</b></div>
+      <div class="seg" data-k="t4"><button>1</button><button class="on">3</button><button>7</button></div>
+    </div>
+    <div class="card" style="background:var(--orange-soft);border-color:#FFE0B8">
+      <span style="font-size:12.5px;line-height:1.7">发星规则不开放调整：每日上限与 20 分钟预算联动、星星余额上限 500——这些是防沉迷底线。</span>
+    </div>
+    <div style="flex:1"></div>
+    <a class="btn sm" href="#c11" style="align-self:flex-start">保存</a>
+  </div>
+</div>
+
+<script>
+  if(!location.hash) location.hash='#c1';
+  /* 练习强度：档位切换 + 恢复默认 */
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click',function(){
+        seg.querySelectorAll('button').forEach(function(x){x.classList.remove('on')});
+        b.classList.add('on');
+      });
+    });
+  });
+  var rb=document.getElementById('resetBtn');
+  if(rb){ rb.addEventListener('click',function(){
+    var def={'pairs':1,'rounds':0,'skip':1,'words':1,'sent':1,'review':1};
+    document.querySelectorAll('.seg').forEach(function(seg){
+      var i=def[seg.dataset.k]; if(i===undefined) return;
+      seg.querySelectorAll('button').forEach(function(x,j){ x.classList.toggle('on', j===i); });
+    });
+  }); }
+
+  /* 奖励库：勾选计数 */
+  var chks=document.querySelectorAll('.rchk');
+  if(chks.length){
+    (function(){
+      function cnt(){ var n=0; chks.forEach(function(c){ if(c.checked) n++; }); document.getElementById('libPill').textContent='已启用 '+n+' / 16'; }
+      chks.forEach(function(c){ c.addEventListener('change',cnt); }); cnt();
+    })();
+  }
+
+  /* 手动解锁：点击后变为可学习 */
+  document.querySelectorAll('[data-unlock]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var row=document.getElementById(b.dataset.unlock);
+      row.classList.remove('locked');
+      var badge=row.querySelector('.badge');
+      badge.className='badge'; badge.style.background='var(--green-soft)'; badge.style.color='#2E9E6B';
+      badge.textContent='✓';
+      var note=row.querySelector('.muted'); if(note) note.textContent='已手动解锁';
+      b.outerHTML='<span class="pill" style="background:var(--green-soft);border-color:#BFEBD9;color:#2E9E6B">可学习</span>';
+    });
+  });
+
+  /* 兑换申请 */
+  var applyBtn=document.getElementById('applyBtn');
+  if(applyBtn){
+    applyBtn.addEventListener('click',function(){
+      document.getElementById('applyBox').style.display='none';
+      var d=document.getElementById('applyDone'); d.style.display='flex';
+    });
+  }
+
+  /* 兑换审核 */
+  var ap=document.getElementById('approveBtn');
+  if(ap){
+    ap.addEventListener('click',function(){
+      var s=document.getElementById('reviewState');
+      s.textContent='已同意 · 已扣 100 ★'; s.style.background='var(--green-soft)'; s.style.borderColor='#BFEBD9'; s.style.color='#2E9E6B';
+      document.getElementById('approveBtn').disabled=true;
+      document.getElementById('rejectBtn').disabled=true;
+    });
+    document.getElementById('rejectBtn').addEventListener('click',function(){
+      var s=document.getElementById('reviewState');
+      s.textContent='已拒绝 · 不扣星星'; s.style.background='var(--red-soft)'; s.style.borderColor='#F7C9C7'; s.style.color='#C0392B';
+      document.getElementById('approveBtn').disabled=true;
+      document.getElementById('rejectBtn').disabled=true;
+    });
+  }
+</script>
+</body>
+</html>
