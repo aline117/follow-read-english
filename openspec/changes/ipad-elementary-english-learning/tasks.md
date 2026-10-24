@@ -6,6 +6,8 @@
 - [ ] 1.4 补合规配置：`NSMicrophoneUsageDescription`（跟读、仅本地处理）、`CFBundleDevelopmentRegion = zh_CN`（中文界面不跟随系统）、`PrivacyInfo.xcprivacy`（required-reason API + 不追踪声明）
 - [ ] 1.5 补本地网络配置：`NSLocalNetworkUsageDescription`、`NSAppTransportSecurity > NSAllowsLocalNetworking = true`、`NSBonjourServices = _http._tcp`（见 design「内容分发：家园局域网」）
 - [ ] 1.6 补适配约定：`UIRequiresFullScreen = true`（关闭 iPad 多任务）、动画响应 `accessibilityReduceMotion`、锁定字号、可点元素 ≥44x44pt（见 design「适配约定」）
+- [ ] 1.7 引入 **ZIPFoundation**（SPM）作为学期包解压依赖（iOS 无原生 zip API）
+- [ ] 1.8 确定并固定 `bundle id`（**首次装到 iPad 前必须定**，一旦确定不可再改；占用例 `com.aline117.englishlearning`）
 
 ## 2. 数据模型
 
@@ -14,20 +16,21 @@
 - [x] 2.3 定义学习记录模型：LearningSession、WordProgress、ReviewSchedule
 - [x] 2.4 创建 JSON 内容加载器和解析器
 - [ ] 2.5 统一内容身份：内容实体用业务码 String（`UnitWord.id="758201"`、`Sentence.id="s1"`、`Unit.id="u1"`、`Volume.id="shangce"`）；条目统一编码 `itemCode`（`w:758201` / `s:u1-s1`），单词与句型共用同一套进度/复习/评分表；`ReviewSchedule.wordID: UUID` → `itemCode: String`，`LearningSession.courseID: UUID` → `unitCode` + `volumeCode`；`ItemProgress` 用 `#Unique([\.profileID, \.itemCode])`（决策见 design Decision 6）
-- [ ] 2.6 调整模型形态：删除 4 个内容型 `@Model`（`CurriculumCourse` / `Lesson` / `Word` / `Sentence`），内容只保留 `Decodable` struct（新增 `Sentence` 的 `Decodable` 版：`en` / `zh` / `pattern` / `chunks` / `audio`）；`WordProgress` 改名 `ItemProgress` 并加 `itemKind`（word/sentence）；新增 `Attempt` 明细模型（`profileID` / `sessionID` / `itemCode` / `itemKind` / `unitCode` / `kind` / `passed` / `at`）；`LearningSession` 只留会话边界与时长（删 `correctCount` / `totalCount` / `accuracy`）；`Reward` 聚合模型改为 `StarLedger` 流水（`grantKey` 唯一，`#Unique`）；`Schema([...])` 最终为 9 个类型（决策见 design「指标口径与数据字典」+「健壮性与合规约定」）
+- [ ] 2.6 调整模型形态：删除 4 个内容型 `@Model`（`CurriculumCourse` / `Lesson` / `Word` / `Sentence`），内容只保留 `Decodable` struct（新增 `Sentence` 的 `Decodable` 版：`en` / `zh` / `pattern` / `chunks` / `audio`）；`WordProgress` 改名 `ItemProgress` 并加 `itemKind`（word/sentence）；新增 `Attempt` 明细模型（`profileID` / `sessionID` / `itemCode` / `itemKind` / `unitCode` / `kind` / `passed` / `at`，加 `#Index([\.profileID, \.at])`）；`LearningSession` 只留会话边界与时长（删 `correctCount` / `totalCount` / `accuracy`）；`Reward` 聚合模型改为 `StarLedger` 流水（`grantKey` 唯一，`#Unique`）；`Schema([...])` 最终为 9 个类型（决策见 design「指标口径与数据字典」+「健壮性与合规约定」）
+- [ ] 2.7 实现 `ProfileDataPurger`：按 `profileID` 逐表删除 7 张表（幂等），不依赖 `@Relationship` cascade（见 design Decision 5）
 
 ## 3. 年级与课程模块
 
 - [ ] 3.1 实现年级选择页面（1-6 年级卡片；**首版仅"二年级"可选**，其余置灰标"即将推出"）
-- [ ] 3.2 实现课程列表页面（按课本章节展示）
+- [ ] 3.2 实现课程列表页面（按课本章节展示；严格线性解锁，未解锁单元**置灰不可点**）
 - [ ] 3.3 实现课程内容数据加载和缓存
-- [ ] 3.4 实现首页今日任务卡（按 design「今日任务与学习调度」：复习优先 → 课本顺序推新词；上限 20 复习 / 5 新词 / 1 句型；单元完成 +5 星；进度条按条目计）
+- [ ] 3.4 实现首页今日任务卡（按 design「今日任务与学习调度」：复习优先 → 仅从**当前已解锁单元**按课本顺序推新词；上限 20 复习 / 5 新词 / 1 句型；单元完成 +5 星并解锁下一单元；进度条按条目计；含"继续学习 = 第一个未完成环节"、学完整册终态卡、"今天"按本地时区 00:00 切分）
 - [ ] 3.5 实现 `ResourceLocator`（按 (学期, 相对路径) 在 `Application Support/Curriculum/<semester>/` 定位，找不到判定"内容未安装"）并改造 `CurriculumLoader` 走它
-- [ ] 3.6 实现内容下载管理 UI：manifest 探测（2s 超时）、可下载学期列表、下载进度/后台、sha256 校验、失败重试、回退上一版本（`previous`）、删除释放空间、空间预检查、空状态页（无已安装学期时）
+- [ ] 3.6 实现内容下载管理 UI：manifest 探测（2s 超时）、`schemaVersion` 兼容性判断（超版本置灰标"需要更新 App"）、可下载学期列表、下载进度/后台、sha256 校验（ZIPFoundation 解压）、失败重试、回退上一版本（`previous`）、解码失败则隔离并提示重下、删除释放空间、空间预检查、空状态页（无已安装学期时）
 
 ## 4. 核心学习循环
 
-- [ ] 4.1 实现"听"模块：音频播放器 + 图片/文字展示（慢速用 `AVAudioEngine` + `AVAudioUnitTimePitch`，变速不变调）
+- [ ] 4.1 实现"听"模块：音频播放器 + 图片/文字展示（**新学默认慢速、复习默认常速**；慢速用 `AVAudioEngine` + `AVAudioUnitTimePitch`，变速不变调）
 - [ ] 4.2 实现"说"模块：录音功能 + 简单语音评测（音量+时长）
 - [ ] 4.3 实现"认"模块：图片-单词拖拽配对
 - [ ] 4.4 实现"游戏"模块：听音选图小游戏
@@ -37,6 +40,7 @@
 - [ ] 4.8 实现麦克风权限流程：说明页 → `AVAudioApplication.requestRecordPermission` → 拒绝后降级（跳过说环节、正确率显示 `—`、去设置深链）
 - [ ] 4.9 实现缺失资产降级：占位图 / 静音 3 秒推进 / debug 断言 / 本地诊断日志
 - [ ] 4.10 实现句子学习环节（首版范围 A）：听整句（含慢速）、跟读整句（沿用音量+时长口径）、词块排序（`chunks` 拖拽）、听音补全（3 选 1）、整句复习（共用 `ReviewSchedule`）
+- [ ] 4.11 实现「先跳过」机制：同一环节连续失败 3 次后出现跳过入口；不写 `ItemProgress`、不计星、记一条 `Attempt(passed=false)`、不进复习调度
 
 ## 5. 激励系统
 
@@ -53,6 +57,7 @@
 - [ ] 6.4 实现兑换审核流程
 - [ ] 6.5 实现多 Profile 切换与生命周期管理（创建上限 4 个、切换时 `profileID` 持久化、删除级联清理 6 张表且至少保留 1 个、家长 Tab 可改年级——见 design Decision 5）
 - [ ] 6.6 实现设置页合规项：卸载即清空的明示、学习记录导出 JSON、本地诊断日志查看
+- [ ] 6.7 实现家长手动解锁单元（应对学校进度超前；只放行访问，不改星星与进度统计）
 
 ## 7. 内容资源
 
@@ -60,9 +65,9 @@
 - [x] 7.2 从网络资源获取单词发音音频
 - [x] 7.3 从网络资源获取单词配图
 - [ ] 7.4 把二上资源迁出 App：`app/Resources/Curriculum/` → 学期包 `packs/g2s1.zip`（内含 `curriculum.json` + `audio/ words/ img/`）
-- [ ] 7.5 实现 `_download/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：size + sha256）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
+- [ ] 7.5 实现 `_download/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
 - [ ] 7.6 内置 `catalog.json`（学期目录：id / 标题 / 大小 / 版本，不含任何媒体与词表）
-- [ ] 7.7 管线入版本库 + 学期包异地备份：`_download/build_resources.js`、`serve.js`、`jx_audio_manifest.json`、`words_raw.json` 纳入 git（调整 `.gitignore`，只忽略原始音视频），`packs/*.zip` 备份到云盘或移动硬盘
+- [ ] 7.7 管线入版本库 + 学期包异地备份：`_download/build_resources.js`、`serve.js`、`jx_audio_manifest.json`、`words_raw.json` 纳入 git（调整 `.gitignore`，媒体不进 git，只留 `curriculum.json` 与脚本），`packs/*.zip` 备份到云盘或移动硬盘
 - [ ] 7.8 补录二上核心句型并生成音频：6 单元 × 2-3 条（约 18 条），写入 `sentences`（`en` / `zh` / `pattern` / `chunks` / `audio`），音频用 TTS 生成到 `sentences/{unit}/{id}.mp3`
 
 > 后续内容任务（不阻塞首版）：档位 B「课文对话全文」约 300-400 句，需转录 129 条课文原声并按句切时间点（3-6 小时，用于逐句高亮跟读）；档位 C「Read a story」6 篇故事。两者都只涉及内容补录与 JSON 扩展，不改架构。
