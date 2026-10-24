@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# ACECode 会话临时目录
+.acecode/tmp/
+
+# Swift Package Manager / Xcode 构建产物
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
+
+# 采集/下载暂存目录（体积约 70MB，内容与 app/Resources 重复，如需纳入版本库请删除下一行）
+_download/
