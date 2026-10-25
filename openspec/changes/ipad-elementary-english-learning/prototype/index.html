@@ -32,8 +32,8 @@
 <body>
   <h1>原型索引 · 跟着课本学英语（二年级上）</h1>
   <div class="sub">
-    iPad 横屏 1024×768 · 橙黄 + 天蓝 · 共 27 屏，顶部导航条可逐屏切换；关键交互可直接点：
-    内容勾选、下载进度、按住录音、配对、选图、词块排序、翻卡、解锁单元、审核通过/拒绝
+    iPad 横屏 1024×768 · 橙黄 + 天蓝 · A/B/C 共 32 屏 + D 组 10 屏（媒体库），顶部导航条可逐屏切换；关键交互可直接点：
+    内容勾选、下载进度、按住录音、配对、选图、词块排序、翻卡、解锁单元、审核通过/拒绝、按住跟读判分
   </div>
 
   <h2>A. 首次启动与首页（9 屏）</h2>
@@ -65,7 +65,7 @@
     <a class="card" href="proto-b.html#b9"><span class="tag t-b">B9</span><h3>结算</h3><p>+5 星、首次达标 +3、解锁 Unit 2</p></a>
   </div>
 
-  <h2>C. 奖励 / 家长 / 设置（9 屏）</h2>
+  <h2>C. 奖励 / 家长 / 设置（14 屏）</h2>
   <div class="grid" style="margin-top:10px">
     <a class="card" href="proto-c.html#c1"><span class="tag t-c">C1</span><h3>奖励 Tab</h3><p>星星、徽章墙 2/6、兑换商店、防沉迷提示</p></a>
     <a class="card" href="proto-c.html#c2"><span class="tag t-c">C2</span><h3>家长 PIN</h3><p>键盘 + 忘记入口</p></a>
@@ -83,11 +83,27 @@
     <a class="card" href="proto-c.html#c14"><span class="tag t-c">C14</span><h3>家长模式首页</h3><p>8 个入口 + 退出家长模式；孩子界面只有学习/奖励，靠顶栏小锁进入</p></a>
   </div>
 
+  <h2>D. 听和看 · 媒体库（10 屏 · 就在 <code>proto-d.html</code>，设计见 <code>../design.md</code> 的「媒体库」一节）</h2>
+  <div class="flow">
+    入口在 <b>B1 课程列表</b>底部「听和看 · 儿歌与绘本」→ <b>① 听和看</b> → ② 儿歌列表 → <b>③ 串流播放（边看边下）</b> → ④ 家里电脑没开（降级）
+    <br>绘本线：① → <b>⑤ 逐句跟读</b> → ⑥ 一段结算（+★）；儿歌线：<b>③ → ⑩ 抽 2–3 句跟读</b>（读通过才发星）；家长线：⑦ 媒体设置 · ⑧ 今天看了什么；边界：⑨ 看片时间用完（软拦截）
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <a class="card" href="proto-d.html#d2"><span class="tag t-d">D2</span><h3>儿歌列表</h3><p>82 首；已下载 / 缓存中 / 未下载三种状态</p></a>
+    <a class="card" href="proto-d.html#d1"><span class="tag t-d">D1</span><h3>听和看</h3><p>儿歌 / 绘本两个入口 + 接着看</p></a>
+    <a class="card" href="proto-d.html#d3"><span class="tag t-d">D3</span><h3>串流播放</h3><p>局域网串流 + 后台下载 42%</p></a>
+    <a class="card" href="proto-d.html#d5"><span class="tag t-d">D5</span><h3>绘本逐句跟读</h3><p>按住读、松开判分</p></a>
+    <a class="card" href="proto-d.html#d10"><span class="tag t-d">D10</span><h3>儿歌跟读</h3><p>每首标 2–3 句，读通过才发星</p></a>
+    <a class="card" href="proto-d.html#d7"><span class="tag t-p">D7</span><h3>家长 · 媒体设置</h3><p>每日上限 / 缓存 / Wi-Fi / 清缓存</p></a>
+    <a class="card" href="proto-d.html#d8"><span class="tag t-p">D8</span><h3>家长 · 今天看了什么</h3><p>时长 + 跟读明细，只记事实</p></a>
+  </div>
+
   <div class="note">
     <b>说明</b><br>
     · 静态视觉稿 + 轻量 JS 交互，不含真实数据；A/B/C 三组之间与组内都已连好跳转。<br>
     · A 组是「新用户时间线」，B 组接着 A6 从 Unit 1 开始，两边数字一致（0 星 / 0 条目）。<br>
-    · 与设计文档对应：<code>../design.md</code>（内容分发 / 今日任务 / 指标口径 / 奖励参数 / 健壮性 / 适配）。
+    · D 组（听和看 / 媒体库）10 屏就在 <code>proto-d.html</code>，和 A/B/C 同一个文件夹；D 组的返回会回到本组的 B1 学习页。<br>
+    · 与设计文档对应：<code>../design.md</code>（内容分发 / 今日任务 / 指标口径 / 奖励参数 / 健壮性 / 适配）；D 组对应 <code>../design.md</code> 的「媒体库（听和看）」一节与 <code>../specs/media-library/spec.md</code>。
   </div>
 </body>
 </html>

@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>原型 D · 听和看（媒体库，可点击）</title>
+<style>
+  :root{--orange:#FF9F1C;--orange-d:#F08A00;--orange-soft:#FFF1DE;--blue:#4CC9F0;--blue-soft:#E6F7FD;
+    --green:#57CC99;--green-soft:#E6F8F0;--red:#EF6F6C;--red-soft:#FDE8E7;
+    --ink:#3A2E2A;--muted:#9A8C86;--bg:#FFF9F2;--line:#F1E5D8;--r:22px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#EDE4D9;color:var(--ink);padding:16px;
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;user-select:none}
+  .frame{display:none;width:960px;height:720px;zoom:.855;background:var(--bg);border-radius:26px;overflow:hidden;
+    position:relative;flex-direction:column;box-shadow:0 18px 40px rgba(96,64,32,.18)}
+  .frame:target{display:flex}
+  .sbar{height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;
+    font-size:13px;font-weight:700;color:#5C4E47}
+  .sbar svg{height:12px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;height:54px;padding:0 28px;border-radius:16px;
+    border:0;background:var(--orange);color:#fff;font-size:19px;font-weight:700;box-shadow:0 6px 0 var(--orange-d);
+    text-decoration:none;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 5px 0 #EAE0D4}
+  .btn.blue{background:var(--blue);box-shadow:0 6px 0 #35A9CE}
+  .btn.sm{height:42px;padding:0 16px;font-size:14px;border-radius:11px;box-shadow:0 4px 0 var(--orange-d)}
+  .btn.ghost.sm{box-shadow:0 3px 0 #EAE0D4}
+  .pill{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:999px;
+    background:#fff;border:2px solid var(--line);font-size:13.5px;font-weight:600}
+  .topbar{height:78px;display:flex;align-items:center;gap:13px;padding:0 40px;background:#fff;border-bottom:2px solid var(--line)}
+  .muted{color:var(--muted);font-size:15px}
+  .row{display:flex;align-items:center;gap:12px}
+  .pad{padding:22px 40px;flex:1;display:flex;flex-direction:column;gap:13px}
+  .card{background:#fff;border:2px solid var(--line);border-radius:17px;padding:15px 19px}
+  .tabbar{position:absolute;left:0;right:0;bottom:0;height:78px;background:#fff;border-top:2px solid var(--line);
+    display:flex;justify-content:space-around;align-items:center}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:700;color:#B9ABA2;
+    text-decoration:none}
+  .tab.on{color:var(--orange)}
+  .tab svg{width:24px;height:24px}
+  .badge{width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:17px;font-weight:800}
+  .bar{height:11px;border-radius:99px;background:#F0E6DA;overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#FFC46B,var(--orange))}
+  .bar.g>i{background:linear-gradient(90deg,#8FE3C0,#57CC99)}
+  .bar.b>i{background:linear-gradient(90deg,#9BE0F5,#4CC9F0)}
+  .seg{display:flex;gap:6px}
+  .seg button{height:38px;min-width:50px;padding:0 12px;border-radius:10px;border:2px solid var(--line);
+    background:#fff;font-size:14px;font-weight:700;color:#8A7C74;cursor:pointer}
+  .seg button.on{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 3px 0 var(--orange-d)}
+  .nav{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;font-family:system-ui,sans-serif;font-size:12.5px}
+  .nav a{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:99px;background:#fff;
+    border:1px solid #E2D5C7;color:#7A6A62;text-decoration:none;font-weight:600}
+  .nav a:hover{background:#FFF1DE;color:#A66200;border-color:#FFD3A0}
+  /* D 组新增 */
+  .poster{position:relative;border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;background:linear-gradient(150deg,#7FD0EF,#4CC9F0)}
+  .poster.t2{background:linear-gradient(150deg,#FFD08A,#FF9F1C)}
+  .poster.t3{background:linear-gradient(150deg,#A8E6C9,#57CC99)}
+  .poster.t4{background:linear-gradient(150deg,#C7B9F5,#9C8BE8)}
+  .poster .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.10);font-size:40px}
+  .state{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:99px;
+    font-size:12px;font-weight:700;background:#F5EEE6;color:#8A7C74}
+  .state.ok{background:var(--green-soft);color:#2E9E6B}
+  .state.dl{background:var(--blue-soft);color:#2A7F9B}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .item{background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px;text-decoration:none;color:var(--ink);display:block}
+  .item:hover{border-color:#FFD3A0;background:#FFFDF8}
+  .item .t{font-size:13.5px;font-weight:800;margin-top:8px;line-height:1.35;height:36px;overflow:hidden}
+  .item .s{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .player{height:392px;border-radius:20px;overflow:hidden;position:relative;background:#241C18;
+    display:flex;align-items:center;justify-content:center;color:#fff}
+  .ctrl{display:flex;align-items:center;gap:18px;margin-top:14px}
+  .bigplay{width:74px;height:74px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:26px;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 6px 0 #E6D9CB;cursor:pointer;flex:none}
+  .track{flex:1;height:14px;border-radius:99px;background:#E9DED1;position:relative;overflow:hidden}
+  .track>i{display:block;height:100%;background:linear-gradient(90deg,#FFC46B,var(--orange));width:38%;border-radius:99px}
+  .track>u{position:absolute;top:0;bottom:0;left:38%;right:0;background:repeating-linear-gradient(45deg,#F6EADD,#F6EADD 6px,#EFE1D2 6px,#EFE1D2 12px)}
+  .wave{display:flex;align-items:flex-end;gap:4px;height:56px}
+  .wave i{display:block;width:6px;border-radius:3px;background:#FFD3A0;height:12px}
+  .wave.on i{background:var(--orange);animation:w .9s ease-in-out infinite alternate}
+  .wave i:nth-child(2n){height:26px}.wave i:nth-child(3n){height:40px}.wave i:nth-child(4n){height:18px}
+  @keyframes w{from{transform:scaleY(.5)}to{transform:scaleY(1.15)}}
+  .switch{width:58px;height:34px;border-radius:99px;background:#EFE3D6;position:relative;cursor:pointer;flex:none}
+  .switch>i{position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;
+    box-shadow:0 2px 5px rgba(0,0,0,.15);transition:.18s}
+  .switch.on{background:var(--green)}
+  .switch.on>i{left:27px}
+  .setting{display:flex;align-items:center;gap:14px;background:#fff;border:2px solid var(--line);border-radius:15px;padding:13px 17px}
+  .mini{display:flex;align-items:stretch;gap:9px;height:76px}
+  .mini .c{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}
+  .mini .b{width:100%;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#9BE0F5,#4CC9F0)}
+  .mini .b.hi{background:linear-gradient(180deg,#FFD08A,#FF9F1C)}
+  .note-in{border-radius:14px;padding:11px 15px;font-size:13px;line-height:1.6}
+</style>
+</head>
+<body>
+
+<noscript><style>#d1{display:flex}</style></noscript>
+
+<div class="nav">
+  <a href="#d1">D1 听和看</a><a href="#d2">D2 儿歌列表</a><a href="#d3">D3 串流播放</a><a href="#d4">D4 家里电脑没开</a>
+  <a href="#d5">D5 绘本跟读</a><a href="#d6">D6 跟读结算</a><a href="#d7">D7 家长·媒体设置</a><a href="#d8">D8 家长·今天看了什么</a>
+  <a href="#d9">D9 时间用完啦</a><a href="#d10">D10 儿歌跟读</a>
+</div>
+
+<!-- D1 听和看 -->
+<div class="frame" id="d1">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="proto-b.html#b1" style="text-decoration:none;color:var(--ink);font-size:22px">‹</a>
+    <b style="font-size:21px">听和看</b>
+    <div style="flex:1"></div>
+    <span class="pill" style="background:var(--blue-soft);border-color:#BEE9F7;color:#2A7F9B">今天还能看 4:20</span>
+    <span class="pill" style="width:40px;height:40px;padding:0;justify-content:center;font-size:17px">🔒</span>
+  </div>
+  <div class="pad" style="padding-bottom:96px">
+    <div class="row" style="gap:14px">
+      <a class="card" href="#d2" style="flex:1;text-decoration:none;color:var(--ink);display:flex;gap:16px;align-items:center;background:linear-gradient(150deg,#F7FCFE,#EAF9FF);border-color:#BEE9F7">
+        <div class="poster" style="width:104px;height:78px;flex:none;font-size:30px">🎵</div>
+        <div style="flex:1">
+          <b style="font-size:19px">儿歌</b>
+          <div class="muted" style="font-size:13px;margin-top:3px">82 首 · 已下载 12 首</div>
+          <div class="bar b" style="margin-top:9px;height:9px"><i style="width:15%"></i></div>
+        </div>
+      </a>
+      <a class="card" href="#d5" style="flex:1;text-decoration:none;color:var(--ink);display:flex;gap:16px;align-items:center;background:linear-gradient(150deg,#FFF9F0,#FFF1DE);border-color:#FFE0B8">
+        <div class="poster t2" style="width:104px;height:78px;flex:none;font-size:30px">📖</div>
+        <div style="flex:1">
+          <b style="font-size:19px">绘本跟读</b>
+          <div class="muted" style="font-size:13px;margin-top:3px">6 部 164 段 · 已下载 20 段</div>
+          <div class="bar" style="margin-top:9px;height:9px"><i style="width:12%"></i></div>
+        </div>
+      </a>
+    </div>
+
+    <div>
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <b style="font-size:17px">接着看</b><span class="muted" style="font-size:12.5px">从上次停下的地方开始</span></div>
+      <a class="card" href="#d5" style="text-decoration:none;color:var(--ink);display:flex;gap:16px;align-items:center">
+        <div class="poster t2" style="width:132px;height:84px;flex:none;font-size:13px">At the Market</div>
+        <div style="flex:1">
+          <b style="font-size:17px">绘本 1-01 · At the Market</b>
+          <div class="muted" style="font-size:13px;margin-top:3px">上次看到 0:38 · 跟读通过 2 / 8 句</div>
+          <div class="bar" style="margin-top:9px"><i style="width:32%"></i></div>
+        </div>
+        <span class="state ok">已下载</span>
+      </a>
+    </div>
+
+    <div>
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <b style="font-size:17px">最近听过</b><span class="muted" style="font-size:12.5px">点一下接着听</span></div>
+      <div class="grid4">
+        <a class="item" href="#d3"><div class="poster" style="height:74px;font-size:26px">🎵</div>
+          <div class="t">Twinkle Twinkle Little Star</div><div class="s">2:14 · <span style="color:#2E9E6B">已下载</span></div></a>
+        <a class="item" href="#d3"><div class="poster t3" style="height:74px;font-size:26px">🎵</div>
+          <div class="t">Five Little Ducks</div><div class="s">1:52 · <span style="color:#2E9E6B">已下载</span></div></a>
+        <a class="item" href="#d3"><div class="poster t4" style="height:74px;font-size:26px">🎵</div>
+          <div class="t">Head Shoulders Knees &amp; Toes</div><div class="s">2:05 · <span style="color:#2A7F9B">缓存 42%</span></div></a>
+        <a class="item" href="#d4"><div class="poster t2" style="height:74px;font-size:26px">🎵</div>
+          <div class="t">Bingo Cocomelon</div><div class="s">2:31 · <span style="color:#9A8C86">未下载</span></div></a>
+      </div>
+    </div>
+
+    <div class="note-in" style="background:#FFF6E8;border:2px solid #FFE0B8;color:#8A6A2F">
+      看和听不会得星星；跟着读、读通过了才有星星 ★
+    </div>
+  </div>
+  <div class="tabbar">
+    <a class="tab" href="proto-b.html#b1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg>学习</a>
+    <a class="tab" href="proto-c.html#c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg>奖励</a>
+  </div>
+</div>
+
+<!-- D2 儿歌列表 -->
+<div class="frame" id="d2">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#d1" style="text-decoration:none;color:var(--ink);font-size:22px">‹</a>
+    <b style="font-size:21px">儿歌 · 82 首</b>
+    <div style="flex:1"></div>
+    <span class="pill">已下载 12 / 82</span>
+    <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6;color:#A66200">一次下完这页</span>
+  </div>
+  <div class="pad" style="padding-bottom:96px">
+    <div class="row" style="gap:8px">
+      <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6;color:#A66200">经典童谣</span>
+      <span class="pill">动物</span><span class="pill">数字与形状</span><span class="pill">日常作息</span><span class="pill">节日</span>
+      <div style="flex:1"></div>
+      <span class="muted" style="font-size:12.5px">共 3.47 GB · 单首 17–133 MB</span>
+    </div>
+    <div class="grid4">
+      <a class="item" href="#d3"><div class="poster" style="height:74px;font-size:26px">🎵</div>
+        <div class="t">Twinkle Twinkle Little Star</div><div class="s">2:14 · <span style="color:#2E9E6B">已下载</span></div></a>
+      <a class="item" href="#d3"><div class="poster t2" style="height:74px;font-size:26px">🎵</div>
+        <div class="t">Baa Baa Black Sheep</div><div class="s">2:08 · <span style="color:#2E9E6B">已下载</span></div></a>
+      <a class="item" href="#d3"><div class="poster t3" style="height:74px;font-size:26px">🎵</div>
+        <div class="t">Five Little Ducks</div><div class="s">1:52 · <span style="color:#2E9E6B">已下载</span></div></a>
+      <a class="item" href="#d3"><div class="poster t4" style="height:74px;font-size:26px">🎵</div>
+        <div class="t">Head Shoulders Knees &amp; Toes</div><div class="s">2:05 · <span style="color:#2A7F9B">缓存 42%</span></div></a>
+      <a class="item" href="#d4"><div class="poster t2" style="height:74px;font-size:26px">🎵</div>
+        <div class="t">Bingo Cocomelon</div><div class="s">2:31 · <span style="color:#9A8C86">未下载</span></div></a>
+      <a class="item" href="#d4"><div class="poster" style="height:74px;font-size:26px">🎵</div>
+        <div class="t">Itsy Bitsy Spider</div><div class="s">1:44 · <span style="color:#9A8C86">未下载</span></div></a>
+      <a class="item" href="#d4"><div class="poster t4" style="height:74px;font-size:26px">🎵</div>
+        <div class="t">Wheels on the Bus</div><div class="s">2:46 · <span style="color:#9A8C86">未下载</span></div></a>
+      <a class="item" href="#d4"><div class="poster t3" style="height:74px;font-size:26px">🎵</div>
+        <div class="t">Rain Rain Go Away</div><div class="s">1:58 · <span style="color:#9A8C86">未下载</span></div></a>
+    </div>
+    <div class="note-in" style="background:#F7FCFE;border:2px solid #BEE9F7;color:#2A7F9B">
+      没下载的也能直接看：iPad 会先播、同时在后台下载这一首，下次不用家里电脑也能看。
+      <b style="color:#C2453F">Ten in the Bed（107 MB · 5:20）偏长，首版先不放进来。</b>
+    </div>
+  </div>
+  <div class="tabbar">
+    <a class="tab" href="proto-b.html#b1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg>学习</a>
+    <a class="tab" href="proto-c.html#c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg>奖励</a>
+  </div>
+</div>
+
+<!-- D3 串流播放 -->
+<div class="frame" id="d3">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#d2" style="text-decoration:none;color:var(--ink);font-size:22px">‹</a>
+    <div style="flex:1"><b style="font-size:19px">Twinkle Twinkle Little Star</b>
+      <div class="muted" style="font-size:12.5px;margin-top:2px">儿歌 · 经典童谣 · 2:14</div></div>
+    <span class="pill" id="d3state" style="background:var(--blue-soft);border-color:#BEE9F7;color:#2A7F9B">边看边下 42%</span>
+  </div>
+  <div class="pad">
+    <div class="player" style="height:318px">
+      <div style="text-align:center">
+        <div style="font-size:52px">🎵</div>
+        <div style="font-size:17px;font-weight:700;margin-top:8px;opacity:.9">Twinkle twinkle little star</div>
+      </div>
+      <div style="position:absolute;top:14px;left:16px;font-size:12px;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.18)">来自家里电脑 · 局域网</div>
+    </div>
+    <div class="ctrl">
+      <span class="muted" style="font-size:14px;width:44px">0:51</span>
+      <div class="track"><i></i><u></u></div>
+      <span class="muted" style="font-size:14px;width:44px">2:14</span>
+    </div>
+    <div class="row" style="justify-content:center;gap:26px;margin-top:4px">
+      <button class="bigplay" id="d3play" onclick="d3toggle()">❚❚</button>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span class="state" id="d3cache">后台下载 42% · 约 8 MB / 18 MB</span>
+        <span class="muted" style="font-size:12.5px">下完这一首，关了家里电脑也能看</span>
+      </div>
+    </div>
+    <div class="row" style="justify-content:center;gap:14px;margin-top:2px">
+      <a class="btn" href="#d10">跟读这 2 句</a>
+      <span class="muted" style="font-size:12.5px">这首歌标了 2 句可跟读，读通过各 +1 ★</span>
+    </div>
+    <div class="note-in" style="background:#FFF6E8;border:2px solid #FFE0B8;color:#8A6A2F;margin-top:auto">
+      看和听不发星星；跟读通过才会发 ★。今天还能看 4:20。
+    </div>
+  </div>
+</div>
+
+<!-- D4 家里电脑没开 -->
+<div class="frame" id="d4">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#d2" style="text-decoration:none;color:var(--ink);font-size:22px">‹</a>
+    <b style="font-size:21px">Bingo Cocomelon</b><div style="flex:1"></div>
+    <span class="pill" style="background:#F5EEE6;color:#8A7C74">未下载</span>
+  </div>
+  <div class="pad" style="justify-content:center;align-items:center;gap:16px">
+    <div style="width:120px;height:120px;border-radius:32px;background:#FFF1DE;display:flex;align-items:center;justify-content:center;font-size:52px">💻</div>
+    <b style="font-size:22px">这首还没下载到 iPad</b>
+    <div class="muted" style="font-size:15px;text-align:center;line-height:1.8;max-width:520px">
+      需要家里电脑开着才能在线看，<br>也可以先下载到 iPad，以后随时看。
+    </div>
+    <div class="row" style="gap:14px;margin-top:8px">
+      <a class="btn ghost" href="#d2">返回</a>
+      <button class="btn" onclick="this.textContent='正在下载… 0%';setTimeout(()=>this.textContent='已开始下载，完成后自动播放',1200)">先下载到 iPad</button>
+    </div>
+    <div class="muted" style="font-size:12.5px;margin-top:6px">已试连 192.168.1.20：8080 · 2 次失败</div>
+  </div>
+</div>
+
+<!-- D5 绘本跟读 -->
+<div class="frame" id="d5">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#d1" style="text-decoration:none;color:var(--ink);font-size:22px">‹</a>
+    <div style="flex:1"><b style="font-size:19px">绘本 1-01 · At the Market</b>
+      <div class="muted" style="font-size:12.5px;margin-top:2px">第 3 / 8 句 · 已通过 2 句</div></div>
+    <span class="pill" style="background:var(--green-soft);border-color:#C6EEDA;color:#2E9E6B">已下载</span>
+  </div>
+  <div class="pad">
+    <div class="row" style="gap:18px;align-items:flex-start">
+      <div style="flex:1.15">
+        <div class="poster t2" style="height:300px;font-size:15px;flex-direction:column;gap:8px">
+          <span style="font-size:40px">🛒</span><span>I can see a red apple.</span>
+        </div>
+        <div class="row" style="margin-top:12px;gap:10px">
+          <button class="btn ghost sm" onclick="document.getElementById('d5f').textContent='正在播放原声…'">🔊 再听一次</button>
+          <span class="muted" style="font-size:12.5px">慢速 0.8x</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="background:#FFFDF8">
+          <div style="font-size:23px;font-weight:800;line-height:1.5">I can see a red apple.</div>
+          <div class="muted" style="font-size:14px;margin-top:6px">我能看见一个红苹果。</div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;gap:10px;align-items:center;padding:18px">
+          <div class="wave" id="d5wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <button class="btn" style="width:100%" onmousedown="rec(1)" onmouseup="rec(0)" onmouseleave="rec(0)">按住跟读</button>
+          <div class="muted" style="font-size:12.5px">松开就自动判分</div>
+        </div>
+        <div class="note-in" id="d5f" style="background:#F7FCFE;border:2px solid #BEE9F7;color:#2A7F9B">先听原声，再跟着读一遍</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:12px 16px">
+      <b style="font-size:13px;color:#9A8C86;margin-right:4px">本段 8 句</b>
+      <span class="state ok" style="width:34px;justify-content:center">1 ✓</span>
+      <span class="state ok" style="width:34px;justify-content:center">2 ✓</span>
+      <span class="state" style="width:34px;justify-content:center;background:var(--orange-soft);color:#A66200;border:2px solid #FFD9A6">3</span>
+      <span class="state" style="width:34px;justify-content:center">4</span>
+      <span class="state" style="width:34px;justify-content:center">5</span>
+      <span class="state" style="width:34px;justify-content:center">6</span>
+      <span class="state" style="width:34px;justify-content:center">7</span>
+      <span class="state" style="width:34px;justify-content:center">8</span>
+      <div style="flex:1"></div>
+      <span class="muted" style="font-size:12.5px">通过 6 句以上算这一段过关，通过一句 +1 ★</span>
+    </div>
+    <div class="row" style="gap:8px">
+      <div class="bar g" style="flex:1"><i style="width:25%"></i></div>
+      <span class="muted" style="font-size:12.5px">2 / 8 句</span>
+    </div>
+  </div>
+</div>
+
+<!-- D6 跟读结算 -->
+<div class="frame" id="d6">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar"><b style="font-size:21px">绘本 1-01 · At the Market</b><div style="flex:1"></div>
+    <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6;height:38px;font-size:17px"><span style="color:var(--orange-d)">★</span> 131</span></div>
+  <div class="pad" style="justify-content:center;align-items:center;gap:14px">
+    <div style="font-size:56px">🎉</div>
+    <b style="font-size:26px">这一段读完了</b>
+    <div class="row" style="gap:12px;margin-top:4px">
+      <span class="pill" style="background:var(--green-soft);border-color:#C6EEDA;color:#2E9E6B;height:40px;font-size:15px">跟读通过 6 / 8 句</span>
+      <span class="pill" style="background:var(--orange-soft);border-color:#FFD9A6;color:#A66200;height:40px;font-size:15px">+3 ★</span>
+      <span class="pill" style="height:40px;font-size:15px">看了 1 分 40 秒</span>
+    </div>
+    <div class="card" style="width:620px;margin-top:6px">
+      <div class="muted" style="font-size:13px;margin-bottom:8px">这两句再听一次会更好</div>
+      <div class="row" style="justify-content:space-between;padding:8px 0;border-bottom:1px dashed #EFE3D6">
+        <span style="font-size:15px">I can see a red apple.</span><a class="btn ghost sm" href="#d5">重读</a></div>
+      <div class="row" style="justify-content:space-between;padding:8px 0">
+        <span style="font-size:15px">Look at the big fish.</span><a class="btn ghost sm" href="#d5">重读</a></div>
+    </div>
+    <div class="row" style="gap:14px;margin-top:8px">
+      <a class="btn ghost" href="#d1">回听和看</a>
+      <a class="btn" href="#d5">下一段绘本</a>
+    </div>
+    <div class="muted" style="font-size:12.5px">只看了没跟读的话不会发星 —— 星星来自"说出来"。</div>
+  </div>
+</div>
+
+<!-- D10 儿歌跟读 -->
+<div class="frame" id="d10">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="#d3" style="text-decoration:none;color:var(--ink);font-size:22px">‹</a>
+    <div style="flex:1"><b style="font-size:19px">Twinkle Twinkle Little Star</b>
+      <div class="muted" style="font-size:12.5px;margin-top:2px">儿歌跟读 · 第 1 / 2 句</div></div>
+    <span class="pill" style="background:var(--green-soft);border-color:#C6EEDA;color:#2E9E6B">已下载</span>
+  </div>
+  <div class="pad">
+    <div class="row" style="gap:18px;align-items:flex-start">
+      <div style="flex:1.05">
+        <div class="poster" style="height:352px;font-size:15px;flex-direction:column;gap:10px">
+          <span style="font-size:40px">🎵</span>
+          <span style="font-size:16px;line-height:1.7;text-align:center">Twinkle twinkle<br>little star</span>
+        </div>
+        <div class="row" style="margin-top:12px;gap:10px">
+          <button class="btn ghost sm" onclick="document.getElementById('d10f').textContent='正在播放这句原声…'">🔊 再听这句</button>
+          <span class="muted" style="font-size:12.5px">慢速 0.8x</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="background:#FFFDF8">
+          <div style="font-size:23px;font-weight:800;line-height:1.5">Twinkle twinkle little star</div>
+          <div class="muted" style="font-size:14px;margin-top:6px">一闪一闪亮晶晶</div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;gap:10px;align-items:center;padding:18px">
+          <div class="wave" id="d10wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <button class="btn" style="width:100%" onmousedown="rec10(1)" onmouseup="rec10(0)" onmouseleave="rec10(0)">按住跟读</button>
+          <div class="muted" style="font-size:12.5px">松开就自动判分</div>
+        </div>
+        <div class="note-in" id="d10f" style="background:#F7FCFE;border:2px solid #BEE9F7;color:#2A7F9B">先听这句，再跟着唱一遍</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:12px 16px">
+      <b style="font-size:13px;color:#9A8C86;margin-right:4px">这首歌 2 句</b>
+      <span class="state" style="width:34px;justify-content:center;background:var(--orange-soft);color:#A66200;border:2px solid #FFD9A6">1</span>
+      <span class="state" style="width:34px;justify-content:center">2</span>
+      <div style="flex:1"></div>
+      <span class="muted" style="font-size:12.5px">整首歌只标 2–3 句完整句，读完各 +1 ★；`la la la` 不参与</span>
+    </div>
+    <div class="note-in" style="background:#FFF6E8;border:2px solid #FFE0B8;color:#8A6A2F">
+      跟读通过才 +★，看和听本身不发星；家长端只记录「通过几句 / 一次通过几句」，不打分、不排名。
+    </div>
+  </div>
+</div>
+
+<!-- D7 家长·媒体设置 -->
+<div class="frame" id="d7">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="proto-c.html#c14" style="text-decoration:none;color:var(--ink);font-size:22px">‹</a>
+    <b style="font-size:21px">家长模式 · 媒体设置</b><div style="flex:1"></div>
+    <span class="pill" style="background:#F5EEE6;color:#8A7C74">妈妈</span>
+    <span class="pill" style="background:var(--red-soft);border-color:#F8CBC9;color:#C2453F">退出家长模式</span>
+  </div>
+  <div class="pad">
+    <div class="setting">
+      <div style="flex:1"><b style="font-size:16px">每天看片上限</b>
+        <div class="muted" style="font-size:12.5px;margin-top:2px">只算正在播放的时间；到点后当前这条可以看完</div></div>
+      <div class="seg" id="d7limit">
+        <button onclick="seg('d7limit',this)">0 分</button>
+        <button class="on" onclick="seg('d7limit',this)">5 分</button>
+        <button onclick="seg('d7limit',this)">10 分</button>
+        <button onclick="seg('d7limit',this)">15 分</button>
+        <button onclick="seg('d7limit',this)">关闭</button>
+      </div>
+    </div>
+    <div class="setting">
+      <div style="flex:1"><b style="font-size:16px">iPad 上最多存多少</b>
+        <div class="muted" style="font-size:12.5px;margin-top:2px">超了就自动删最久没看的；当前占用 1.2 GB</div></div>
+      <div class="seg" id="d7cap">
+        <button onclick="seg('d7cap',this)">1 GB</button>
+        <button class="on" onclick="seg('d7cap',this)">2 GB</button>
+        <button onclick="seg('d7cap',this)">5 GB</button>
+      </div>
+    </div>
+    <div class="setting">
+      <div style="flex:1"><b style="font-size:16px">只在 Wi-Fi 下后台下载</b>
+        <div class="muted" style="font-size:12.5px;margin-top:2px">关闭后，用蜂窝网看也会顺手缓存</div></div>
+      <div class="switch on" onclick="this.classList.toggle('on')"><i></i></div>
+    </div>
+    <div class="setting">
+      <div style="flex:1"><b style="font-size:16px">清除媒体缓存</b>
+        <div class="muted" style="font-size:12.5px;margin-top:2px">释放 1.2 GB；清除后需要重新下载才能离线看。学习进度与星星不受影响</div></div>
+      <button class="btn ghost sm" onclick="if(confirm('确定清除 1.2 GB 媒体缓存？清除后需要重新下载，学习进度和星星不受影响。')){this.textContent='已清除';this.disabled=true}">清除</button>
+    </div>
+    <div class="row" style="gap:12px;margin-top:2px">
+      <div class="card" style="flex:1;background:#FBF6F0">
+        <div class="muted" style="font-size:12.5px">媒体包</div>
+        <b style="font-size:16px">儿歌 82 首 + 绘本 164 段 · 约 6.30 GB</b>
+        <div class="muted" style="font-size:12px;margin-top:4px">清单已就绪 · 版本 2026.10.1 · 家里电脑可连</div>
+      </div>
+      <div class="card" style="flex:1;background:#FBF6F0">
+        <div class="muted" style="font-size:12.5px">和课本学习的关系</div>
+        <b style="font-size:16px">不计入每天 20 分钟</b>
+        <div class="muted" style="font-size:12px;margin-top:4px">看片时间单独算；看片不会写学习进度、不进复习</div>
+      </div>
+    </div>
+    <a class="setting" href="#d8" style="text-decoration:none;color:var(--ink);margin-top:2px">
+      <div style="flex:1"><b style="font-size:16px">今天看了什么</b>
+        <div class="muted" style="font-size:12.5px;margin-top:2px">今天 4 分 50 秒 · 跟读通过 6 句 · 点看明细</div></div>
+      <span class="state">›</span>
+    </a>
+  </div>
+</div>
+
+<!-- D8 家长·今天看了什么 -->
+<div class="frame" id="d8">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar">
+    <a href="proto-c.html#c14" style="text-decoration:none;color:var(--ink);font-size:22px">‹</a>
+    <b style="font-size:21px">今天看了什么</b><div style="flex:1"></div>
+    <span class="pill">星星 小宇</span>
+  </div>
+  <div class="pad">
+    <div class="row" style="gap:14px">
+      <div class="card" style="flex:1;background:linear-gradient(150deg,#F7FCFE,#EAF9FF);border-color:#BEE9F7">
+        <div class="muted" style="font-size:12.5px">今天看片累计</div>
+        <div class="row" style="align-items:baseline;gap:8px;margin-top:2px">
+          <b style="font-size:28px">4 分 50 秒</b><span class="muted" style="font-size:13px">上限 5 分</span></div>
+        <div class="bar b" style="margin-top:10px"><i style="width:97%"></i></div>
+      </div>
+      <div class="card" style="flex:1;background:#FFF9F0;border-color:#FFE0B8">
+        <div class="muted" style="font-size:12.5px">跟读通过</div>
+        <div class="row" style="align-items:baseline;gap:8px;margin-top:2px">
+          <b style="font-size:28px">6 句</b><span class="muted" style="font-size:13px">发星 +3</span></div>
+        <div class="muted" style="font-size:12px;margin-top:10px">课本学习：今天 18 分钟 · 已达标</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <b style="font-size:17px">今天看过的</b><span class="muted" style="font-size:12.5px">只记录事实，不做评价</span></div>
+      <div class="card" style="padding:0">
+        <div class="row" style="padding:12px 16px;border-bottom:1px solid #F5EDE4">
+          <span style="width:34px;font-size:18px">📖</span>
+          <div style="flex:1"><b style="font-size:15px">绘本 1-01 · At the Market</b>
+            <div class="muted" style="font-size:12px">1 分 40 秒 · 跟读通过 6 / 8 句</div></div>
+          <span class="state ok">跟读 +3★</span>
+        </div>
+        <div class="row" style="padding:12px 16px;border-bottom:1px solid #F5EDE4">
+          <span style="width:34px;font-size:18px">🎵</span>
+          <div style="flex:1"><b style="font-size:15px">Twinkle Twinkle Little Star</b>
+            <div class="muted" style="font-size:12px">2 分 14 秒 · 听完</div></div>
+          <span class="state">未跟读</span>
+        </div>
+        <div class="row" style="padding:12px 16px">
+          <span style="width:34px;font-size:18px">🎵</span>
+          <div style="flex:1"><b style="font-size:15px">Five Little Ducks</b>
+            <div class="muted" style="font-size:12px">0 分 56 秒 · 中途退出</div></div>
+          <span class="state">未跟读</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="gap:14px">
+      <div class="card" style="flex:1">
+        <div class="muted" style="font-size:12.5px;margin-bottom:8px">近 7 天看片时长（分钟）</div>
+        <div class="mini">
+          <div class="c"><div class="b" style="height:34%"></div><span style="font-size:10.5px;color:#9A8C86">四</span></div>
+          <div class="c"><div class="b" style="height:60%"></div><span style="font-size:10.5px;color:#9A8C86">五</span></div>
+          <div class="c"><div class="b" style="height:0%"></div><span style="font-size:10.5px;color:#9A8C86">六</span></div>
+          <div class="c"><div class="b" style="height:45%"></div><span style="font-size:10.5px;color:#9A8C86">日</span></div>
+          <div class="c"><div class="b" style="height:80%"></div><span style="font-size:10.5px;color:#9A8C86">一</span></div>
+          <div class="c"><div class="b" style="height:20%"></div><span style="font-size:10.5px;color:#9A8C86">二</span></div>
+          <div class="c"><div class="b hi" style="height:97%"></div><span style="font-size:10.5px;font-weight:700">今天</span></div>
+        </div>
+      </div>
+      <div class="card" style="width:300px;background:#FBF6F0">
+        <div class="muted" style="font-size:12.5px">提示</div>
+        <div style="font-size:13.5px;line-height:1.7;margin-top:4px">
+          · 看片时长与课本 20 分钟分开算<br>
+          · 只有跟读通过才发星，看满不发星<br>
+          · 媒体内容不进复习计划
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D9 时间用完啦 -->
+<div class="frame" id="d9">
+  <div class="sbar" style="background:#fff"><span>9:41</span><div class="r"><svg viewBox="0 0 20 14" fill="#5C4E47"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></svg></div></div>
+  <div class="topbar"><b style="font-size:21px">听和看</b><div style="flex:1"></div>
+    <span class="pill" style="background:#F5EEE6;color:#8A7C74">今天已看完 5:00</span></div>
+  <div class="pad" style="justify-content:center;align-items:center;gap:16px">
+    <div style="width:120px;height:120px;border-radius:34px;background:linear-gradient(150deg,#FFE0AE,#FFB74D);
+      display:flex;align-items:center;justify-content:center;font-size:52px">🌙</div>
+    <b style="font-size:24px">今天的看片时间用完啦</b>
+    <div class="muted" style="font-size:15px;text-align:center;line-height:1.9">
+      已经看了 5 分钟，明天再来～<br>
+      现在还可以去「学习」把今天的单词读完，星星还在等你。
+    </div>
+    <div class="row" style="gap:14px;margin-top:6px">
+      <a class="btn ghost" href="#d1">回听和看</a>
+      <a class="btn" href="proto-b.html#b1">去学习</a>
+    </div>
+    <div class="muted" style="font-size:12px;margin-top:4px">上限由家长在「家长模式 · 媒体设置」里调整</div>
+  </div>
+  <div class="tabbar">
+    <a class="tab on" href="proto-b.html#b1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg>学习</a>
+    <a class="tab" href="proto-c.html#c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg>奖励</a>
+  </div>
+</div>
+
+<script>
+  if(!location.hash) location.hash='#d1';
+  function seg(id, el){ document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
+  function d3toggle(){
+    var b=document.getElementById('d3play');
+    b.textContent = b.textContent.trim()==='❚❚' ? '▶' : '❚❚';
+  }
+  var recFlag=false;
+  function rec(on){
+    var w=document.getElementById('d5wave'), f=document.getElementById('d5f');
+    if(on){
+      if(recFlag) return;
+      recFlag=true; w.classList.add('on');
+      f.textContent='正在录… 松开就判分';
+      f.style.background='#FDE8E7'; f.style.borderColor='#F8CBC9'; f.style.color='#C2453F';
+      return;
+    }
+    if(!recFlag) return;
+    recFlag=false; w.classList.remove('on');
+    f.textContent='正在判分…';
+    setTimeout(function(){
+      f.textContent='通过！发音很清楚 · 第 3 句 +1 ★';
+      f.style.background='#E6F8F0'; f.style.borderColor='#C6EEDA'; f.style.color='#2E9E6B';
+    }, 700);
+  }
+  var recFlag10=false;
+  function rec10(on){
+    var w=document.getElementById('d10wave'), f=document.getElementById('d10f');
+    if(on){
+      if(recFlag10) return;
+      recFlag10=true; w.classList.add('on');
+      f.textContent='正在录… 松开就判分';
+      f.style.background='#FDE8E7'; f.style.borderColor='#F8CBC9'; f.style.color='#C2453F';
+      return;
+    }
+    if(!recFlag10) return;
+    recFlag10=false; w.classList.remove('on');
+    f.textContent='正在判分…';
+    setTimeout(function(){
+      f.textContent='通过！第 1 句 +1 ★ · 这句不会重复发星';
+      f.style.background='#E6F8F0'; f.style.borderColor='#C6EEDA'; f.style.color='#2E9E6B';
+    }, 700);
+  }
+</script>
+</body>
+</html>
