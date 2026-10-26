@@ -1,42 +1,5 @@
 import Foundation
 
-struct Curriculum: Decodable {
-    let grade: Int
-    let textbook: String
-    let volumes: [Volume]
-}
-
-struct Volume: Decodable {
-    let id: String
-    let units: [Unit]
-}
-
-struct Unit: Decodable {
-    let id: String
-    let title: String
-    let words: [UnitWord]
-    let listenings: [Listening]
-
-    var number: Int {
-        Int(id.dropFirst()) ?? 0
-    }
-}
-
-struct UnitWord: Decodable, Identifiable {
-    let id: String
-    let en: String
-    let zh: String
-    let image: String
-    let audio: String
-}
-
-struct Listening: Decodable, Identifiable {
-    let id: String
-    let period: Int
-    let label: String
-    let audio: String
-}
-
 enum CurriculumError: Error, CustomStringConvertible {
     case resourceNotFound(String)
     case assetMissing([String])
@@ -51,6 +14,8 @@ enum CurriculumError: Error, CustomStringConvertible {
     }
 }
 
+/// 只负责「找到并解码学期包 + 核对资源齐全」，不持有状态。
+/// 内容模型见 `Models/ContentModels.swift`（纯 `Decodable`，不进 SwiftData）。
 enum CurriculumLoader {
     private static let searchDirectories: [String?] = ["Curriculum", "Resources/Curriculum", nil]
 
@@ -83,6 +48,11 @@ enum CurriculumLoader {
                 for word in unit.words {
                     for path in [word.image, word.audio] where !assetExists(path, bundle: bundle) {
                         missing.append(path)
+                    }
+                }
+                for sentence in unit.sentences where !sentence.audio.isEmpty {
+                    if !assetExists(sentence.audio, bundle: bundle) {
+                        missing.append(sentence.audio)
                     }
                 }
                 for listening in unit.listenings where !assetExists(listening.audio, bundle: bundle) {

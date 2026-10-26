@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>zh_CN</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>跟着课本学英语</string>
+	<key>CFBundleDisplayName</key>
+	<string>跟着课本学英语</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+
+	<key>UILaunchScreen</key>
+	<dict/>
+
+	<!-- iPad 横竖屏都支持；关掉多任务，避免分屏把学习界面挤变形 -->
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIRequiresFullScreen</key>
+	<true/>
+
+	<!-- 跟读录音：只在本机处理、不上传 -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>跟读需要用麦克风录下你的声音，录音只存在 iPad 上，不会上传。</string>
+
+	<!-- 家长忘记 PIN 时用设备密码 / Face ID 找回 -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>家长忘记 PIN 时，可以用 Face ID 确认是家长本人。</string>
+
+	<!-- 学期包与媒体内容由家里电脑的局域网服务提供 -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>需要访问家里电脑上的内容服务，用来下载课本和视频。</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_http._tcp</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+</dict>
+</plist>
