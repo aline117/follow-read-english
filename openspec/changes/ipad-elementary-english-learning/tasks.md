@@ -1,14 +1,14 @@
 ## 1. 项目脚手架
 
 - [x] 1.1 创建 SwiftUI iPad 项目结构（Xcode 项目或 Swift Package）
-- [ ] 1.2 配置 iPad 目标、横竖屏支持、**iOS 18+** 部署目标（`Package.swift` 现为 `.iOS(.v16)`，需改 `.iOS(.v18)`；Info.plist 横竖屏配置随 App 工程一并补齐）
+- [x] 1.2 配置 iPad 目标、横竖屏支持、**iOS 18+** 部署目标（`Package.swift` 现为 `.iOS(.v16)`，需改 `.iOS(.v18)`；Info.plist 横竖屏配置随 App 工程一并补齐）
 - [x] 1.3 设置 SwiftData 模型容器和基础目录结构
-- [ ] 1.4 补合规配置：`NSMicrophoneUsageDescription`（跟读、仅本地处理）、`NSFaceIDUsageDescription`（家长验证找回）、`CFBundleDevelopmentRegion = zh_CN`（中文界面不跟随系统）、`PrivacyInfo.xcprivacy`（required-reason API + 不追踪声明）
-- [ ] 1.5 补本地网络配置：`NSLocalNetworkUsageDescription`、`NSAppTransportSecurity > NSAllowsLocalNetworking = true`、`NSBonjourServices = _http._tcp`（见 design「内容分发：家园局域网」）
+- [x] 1.4 补合规配置：`NSMicrophoneUsageDescription`（跟读、仅本地处理）、`NSFaceIDUsageDescription`（家长验证找回）、`CFBundleDevelopmentRegion = zh_CN`（中文界面不跟随系统）、`PrivacyInfo.xcprivacy`（required-reason API + 不追踪声明）
+- [x] 1.5 补本地网络配置：`NSLocalNetworkUsageDescription`、`NSAppTransportSecurity > NSAllowsLocalNetworking = true`、`NSBonjourServices = _http._tcp`（见 design「内容分发：家园局域网」）
 - [ ] 1.6 补适配约定：`UIRequiresFullScreen = true`（关闭 iPad 多任务）、动画响应 `accessibilityReduceMotion`、锁定字号、可点元素 ≥44x44pt（见 design「适配约定」）
-- [ ] 1.7 引入 **ZIPFoundation**（SPM）作为学期包解压依赖（iOS 无原生 zip API）
+- [x] 1.7 引入 **ZIPFoundation**（SPM）作为学期包解压依赖（iOS 无原生 zip API）
 - [ ] 1.8 确定并固定 `bundle id`（**首次装到 iPad 前必须定**，一旦确定不可再改；占用例 `com.aline117.englishlearning`）
-- [ ] 1.9 搭导航骨架：孩子模式只有「学习 / 奖励」两个 Tab + 顶栏右上角 🔒 家长入口；家长模式用 `fullScreenCover` + 独立 `NavigationStack`（6 个入口 + 退出家长模式）——见 design「导航结构」
+- [x] 1.9 搭导航骨架：孩子模式只有「学习 / 奖励」两个 Tab + 顶栏右上角 🔒 家长入口；家长模式用 `fullScreenCover` + 独立 `NavigationStack`（6 个入口 + 退出家长模式）——见 design「导航结构」
 
 ## 2. 数据模型
 
@@ -16,9 +16,9 @@
 - [x] 2.2 定义激励数据模型：Reward、Badge、RedemptionRule、Redemption
 - [x] 2.3 定义学习记录模型：LearningSession、WordProgress、ReviewSchedule
 - [x] 2.4 创建 JSON 内容加载器和解析器
-- [ ] 2.5 统一内容身份：内容实体用业务码 String（`UnitWord.id="758201"`、`Sentence.id="s1"`、`Unit.id="u1"`、`Volume.id="shangce"`）；条目统一编码 `itemCode`（`w:758201` / `s:u1-s1`），单词与句型共用同一套进度/复习/评分表；`ReviewSchedule.wordID: UUID` → `itemCode: String`，`LearningSession.courseID: UUID` → `unitCode` + `volumeCode`；`ItemProgress` 用 `#Unique([\.profileID, \.itemCode])`（决策见 design Decision 6）
-- [ ] 2.6 调整模型形态：删除 4 个内容型 `@Model`（`CurriculumCourse` / `Lesson` / `Word` / `Sentence`），内容只保留 `Decodable` struct（新增 `Sentence` 的 `Decodable` 版：`en` / `zh` / `pattern` / `chunks` / `audio`）；`WordProgress` 改名 `ItemProgress` 并加 `itemKind`（word/sentence）；新增 `Attempt` 明细模型（`profileID` / `sessionID` / `itemCode` / `itemKind` / `unitCode` / `kind` / `passed` / `at`，加 `#Index([\.profileID, \.at])`）；新增 `LearningSettings`（每个孩子一份练习强度设置，字段见 design「可调设置」）；新增 `ParentProfile`（最多 2 位家长：name / avatar / isActive，仅用于审核记录）；`Redemption` 加 `reviewedBy`；`LearningSession` 只留会话边界与时长（删 `correctCount` / `totalCount` / `accuracy`）；`Reward` 聚合模型改为 `StarLedger` 流水（`grantKey` 唯一，`#Unique`）；`Schema([...])` 最终为 11 个类型（决策见 design「指标口径与数据字典」+「健壮性与合规约定」）
-- [ ] 2.7 实现 `ProfileDataPurger`：按 `profileID` 逐表删除 8 张表（`ItemProgress` / `Attempt` / `LearningSession` / `ReviewSchedule` / `StarLedger` / `Badge` / `Redemption` / `LearningSettings`，幂等），不依赖 `@Relationship` cascade（见 design Decision 5）
+- [x] 2.5 统一内容身份：内容实体用业务码 String（`UnitWord.id="758201"`、`Sentence.id="s1"`、`Unit.id="u1"`、`Volume.id="shangce"`）；条目统一编码 `itemCode`（`w:758201` / `s:u1-s1`），单词与句型共用同一套进度/复习/评分表；`ReviewSchedule.wordID: UUID` → `itemCode: String`，`LearningSession.courseID: UUID` → `unitCode` + `volumeCode`；`ItemProgress` 用 `#Unique([\.profileID, \.itemCode])`（决策见 design Decision 6）
+- [x] 2.6 调整模型形态：删除 4 个内容型 `@Model`（`CurriculumCourse` / `Lesson` / `Word` / `Sentence`），内容只保留 `Decodable` struct（新增 `Sentence` 的 `Decodable` 版：`en` / `zh` / `pattern` / `chunks` / `audio`）；`WordProgress` 改名 `ItemProgress` 并加 `itemKind`（word/sentence）；新增 `Attempt` 明细模型（`profileID` / `sessionID` / `itemCode` / `itemKind` / `unitCode` / `kind` / `passed` / `at`，加 `#Index([\.profileID, \.at])`）；新增 `LearningSettings`（每个孩子一份练习强度设置，字段见 design「可调设置」）；新增 `ParentProfile`（最多 2 位家长：name / avatar / isActive，仅用于审核记录）；`Redemption` 加 `reviewedBy`；`LearningSession` 只留会话边界与时长（删 `correctCount` / `totalCount` / `accuracy`）；`Reward` 聚合模型改为 `StarLedger` 流水（`grantKey` 唯一，`#Unique`）；`Schema([...])` 最终为 11 个类型（决策见 design「指标口径与数据字典」+「健壮性与合规约定」）
+- [x] 2.7 实现 `ProfileDataPurger`：按 `profileID` 逐表删除 8 张表（`ItemProgress` / `Attempt` / `LearningSession` / `ReviewSchedule` / `StarLedger` / `Badge` / `Redemption` / `LearningSettings`，幂等），不依赖 `@Relationship` cascade（见 design Decision 5）
 
 ## 3. 年级与课程模块
 
