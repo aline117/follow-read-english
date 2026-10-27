@@ -7,6 +7,7 @@ tmp/
 
 # Swift Package Manager / Xcode 构建产物
 .build/
+.build-xcode/
 .swiftpm/
 DerivedData/
 *.xcuserstate
@@ -17,5 +18,11 @@ xcuserdata/
 .vscode/
 *.swp
 
-# 采集/下载暂存目录（体积约 70MB，内容与 app/Resources 重复，如需纳入版本库请删除下一行）
-_download/
+# 采集/下载暂存目录（体积约 70MB，内容与 app/Resources 重复）
+# 只放行内容管线与内容服务脚本（tasks 7.5/7.7）；学期包与媒体不进 git
+_download/*
+!_download/README.md
+!_download/build_resources.py
+!_download/serve.py
+!_download/serve.js
+!_download/serve.bat

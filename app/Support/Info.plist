@@ -25,10 +25,9 @@
 	<dict/>
 
 	<!-- iPad 横竖屏都支持；关掉多任务，避免分屏把学习界面挤变形 -->
+	<!-- 原型按 iPad 横屏 1024×768 设计（design「适配约定」：固定横屏排版），首版只支持横屏 -->
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
@@ -38,6 +37,10 @@
 	<!-- 跟读录音：只在本机处理、不上传 -->
 	<key>NSMicrophoneUsageDescription</key>
 	<string>跟读需要用麦克风录下你的声音，录音只存在 iPad 上，不会上传。</string>
+
+	<!-- 跟读评测：语音识别强制走设备端（requiresOnDeviceRecognition），音频不上传 -->
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>跟读时要把你说的话转成文字，和原音比一比读得对不对。识别只在 iPad 上完成，录音不会上传。</string>
 
 	<!-- 家长忘记 PIN 时用设备密码 / Face ID 找回 -->
 	<key>NSFaceIDUsageDescription</key>

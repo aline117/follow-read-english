@@ -31,8 +31,10 @@ struct RootView: View {
     private func childMode(for profile: Profile) -> some View {
         TabView {
             NavigationStack {
-                GradeSelectionView(profile: profile)
-                    .toolbar { parentEntryToolbar }
+                // 学习 Tab = 原型 A6 首页（问候 + 今天的任务 + 本册进度）
+                HomeView(profile: profile) {
+                    isParentModePresented = true
+                }
             }
             .tabItem { Label("学习", systemImage: "book.fill") }
 
@@ -42,6 +44,7 @@ struct RootView: View {
             }
             .tabItem { Label("奖励", systemImage: "star.fill") }
         }
+        .tint(Theme.orange)
         .fullScreenCover(isPresented: $isParentModePresented) {
             ParentHomeView(profile: profile, isPresented: $isParentModePresented)
         }

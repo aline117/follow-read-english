@@ -8,14 +8,20 @@ struct ParentHomeView: View {
     @Binding var isPresented: Bool
 
     private struct Entry: Identifiable {
+        enum Destination {
+            case placeholder
+            case contentManagement
+        }
+
         let id = UUID()
         let title: String
         let systemImage: String
+        var destination: Destination = .placeholder
     }
 
     private let entries: [Entry] = [
         Entry(title: "学习报告", systemImage: "chart.bar.fill"),
-        Entry(title: "内容管理", systemImage: "square.and.arrow.down"),
+        Entry(title: "内容管理", systemImage: "square.and.arrow.down", destination: .contentManagement),
         Entry(title: "练习强度", systemImage: "slider.horizontal.3"),
         Entry(title: "奖励库", systemImage: "gift.fill"),
         Entry(title: "兑换审核", systemImage: "checkmark.seal.fill"),
@@ -27,8 +33,15 @@ struct ParentHomeView: View {
             List {
                 Section {
                     ForEach(entries) { entry in
-                        NavigationLink(entry.title) {
-                            PlaceholderScreen(title: entry.title)
+                        NavigationLink {
+                            switch entry.destination {
+                            case .contentManagement:
+                                ContentManagementView()
+                            case .placeholder:
+                                PlaceholderScreen(title: entry.title)
+                            }
+                        } label: {
+                            Label(entry.title, systemImage: entry.systemImage)
                         }
                     }
                 }

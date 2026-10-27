@@ -1,0 +1,522 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AAAAAAAAAAAAAAAAAAAAAA36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA37 /* Assets.xcassets */; };
+		AAAAAAAAAAAAAAAAAAAAAA35 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA31 /* PrivacyInfo.xcprivacy */; };
+		AAAAAAAAAAAAAAAAAAAAAA40 /* EnglishLearningApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA20 /* EnglishLearningApp.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA41 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA21 /* RootView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA42 /* ContentModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA22 /* ContentModels.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA43 /* LearningModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA23 /* LearningModels.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA44 /* LearningSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA24 /* LearningSettings.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA45 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA25 /* Profile.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA46 /* RewardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA26 /* RewardModels.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA47 /* CurriculumLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA27 /* CurriculumLoader.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA48 /* ProfileDataPurger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA28 /* ProfileDataPurger.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA4A /* ProfileSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA2A /* ProfileSetupView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA4B /* RewardCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA2B /* RewardCenterView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA4C /* ParentHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA2D /* ParentHomeView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA60 /* ContentPackModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA50 /* ContentPackModels.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA61 /* ContentStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA51 /* ContentStorage.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA62 /* ResourceLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA52 /* ResourceLocator.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA63 /* ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA53 /* ContentLibrary.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA64 /* ContentInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA54 /* ContentInstaller.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA65 /* AudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA55 /* AudioPlayer.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA66 /* ContentStateViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA56 /* ContentStateViews.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA67 /* CourseListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA57 /* CourseListView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA68 /* UnitDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA58 /* UnitDetailView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA69 /* ContentManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA59 /* ContentManagementView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA6A /* catalog.json in Resources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA5A /* catalog.json */; };
+		AAAAAAAAAAAAAAAAAAAAAA74 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = AAAAAAAAAAAAAAAAAAAAAA73 /* ZIPFoundation */; };
+		AAAAAAAAAAAAAAAAAAAAAA6B /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA5B /* HomeView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA6C /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA5C /* Theme.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA6D /* WordLearningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA5D /* WordLearningView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA6E /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA5E /* AudioRecorder.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA6F /* PronunciationEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA5F /* PronunciationEvaluator.swift */; };
+		AAAAAAAAAAAAAAAAAAAAAA76 /* FollowReadPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA75 /* FollowReadPanel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AAAAAAAAAAAAAAAAAAAAAA05 /* EnglishLearning.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EnglishLearning.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAAAAAAAAAAAAAAAAAAAAA20 /* EnglishLearningApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnglishLearningApp.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA21 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA22 /* ContentModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentModels.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA23 /* LearningModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningModels.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA24 /* LearningSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearningSettings.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA25 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA26 /* RewardModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardModels.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA27 /* CurriculumLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumLoader.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA28 /* ProfileDataPurger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDataPurger.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA2A /* ProfileSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA2B /* RewardCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardCenterView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA2D /* ParentHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentHomeView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA31 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA32 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA37 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA50 /* ContentPackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentPackModels.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA51 /* ContentStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentStorage.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA52 /* ResourceLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceLocator.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA53 /* ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibrary.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA54 /* ContentInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentInstaller.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA55 /* AudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayer.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA56 /* ContentStateViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentStateViews.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA57 /* CourseListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseListView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA58 /* UnitDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitDetailView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA59 /* ContentManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentManagementView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA5A /* catalog.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = catalog.json; path = Resources/catalog.json; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA5B /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA5C /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA5D /* WordLearningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordLearningView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA5E /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA5F /* PronunciationEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationEvaluator.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAA75 /* FollowReadPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowReadPanel.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAAAA07 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAAAAAAAAAAAAAAAAAAAA74 /* ZIPFoundation in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AAAAAAAAAAAAAAAAAAAAAA02 = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA10 /* Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA37 /* Assets.xcassets */,
+				AAAAAAAAAAAAAAAAAAAAAA5A /* catalog.json */,
+				AAAAAAAAAAAAAAAAAAAAAA30 /* Support */,
+				AAAAAAAAAAAAAAAAAAAAAA03 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA03 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA05 /* EnglishLearning.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA10 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA11 /* EnglishLearning */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA11 /* EnglishLearning */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA12 /* App */,
+				AAAAAAAAAAAAAAAAAAAAAA13 /* Models */,
+				AAAAAAAAAAAAAAAAAAAAAA14 /* Services */,
+				AAAAAAAAAAAAAAAAAAAAAA15 /* Views */,
+			);
+			path = EnglishLearning;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA12 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA20 /* EnglishLearningApp.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA21 /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA13 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA22 /* ContentModels.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA23 /* LearningModels.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA24 /* LearningSettings.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA25 /* Profile.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA26 /* RewardModels.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA50 /* ContentPackModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA14 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA27 /* CurriculumLoader.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA28 /* ProfileDataPurger.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA51 /* ContentStorage.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA52 /* ResourceLocator.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA53 /* ContentLibrary.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA54 /* ContentInstaller.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA55 /* AudioPlayer.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA5E /* AudioRecorder.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA5F /* PronunciationEvaluator.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA15 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA70 /* Learning */,
+				AAAAAAAAAAAAAAAAAAAAAA71 /* Content */,
+				AAAAAAAAAAAAAAAAAAAAAA2C /* Parent */,
+				AAAAAAAAAAAAAAAAAAAAAA2A /* ProfileSetupView.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA5C /* Theme.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA2B /* RewardCenterView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA2C /* Parent */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA2D /* ParentHomeView.swift */,
+			);
+			path = Parent;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA30 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA32 /* Info.plist */,
+				AAAAAAAAAAAAAAAAAAAAAA31 /* PrivacyInfo.xcprivacy */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA70 /* Learning */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA56 /* ContentStateViews.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA5D /* WordLearningView.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA75 /* FollowReadPanel.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA5B /* HomeView.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA57 /* CourseListView.swift */,
+				AAAAAAAAAAAAAAAAAAAAAA58 /* UnitDetailView.swift */,
+			);
+			path = Learning;
+			sourceTree = "<group>";
+		};
+		AAAAAAAAAAAAAAAAAAAAAA71 /* Content */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAAA59 /* ContentManagementView.swift */,
+			);
+			path = Content;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AAAAAAAAAAAAAAAAAAAAAA04 /* EnglishLearning */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAAAAAAAAAAAAAAAAAAAAA0C /* Build configuration list for PBXNativeTarget "EnglishLearning" */;
+			buildPhases = (
+				AAAAAAAAAAAAAAAAAAAAAA06 /* Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA07 /* Frameworks */,
+				AAAAAAAAAAAAAAAAAAAAAA08 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EnglishLearning;
+			packageProductDependencies = (
+				AAAAAAAAAAAAAAAAAAAAAA73 /* ZIPFoundation */,
+			);
+			productName = EnglishLearning;
+			productReference = AAAAAAAAAAAAAAAAAAAAAA05 /* EnglishLearning.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AAAAAAAAAAAAAAAAAAAAAA01 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					AAAAAAAAAAAAAAAAAAAAAA04 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = AAAAAAAAAAAAAAAAAAAAAA09 /* Build configuration list for PBXProject "EnglishLearning" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				"zh-Hans",
+				en,
+				Base,
+			);
+			mainGroup = AAAAAAAAAAAAAAAAAAAAAA02;
+			packageReferences = (
+				AAAAAAAAAAAAAAAAAAAAAA72 /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+			);
+			productRefGroup = AAAAAAAAAAAAAAAAAAAAAA03 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AAAAAAAAAAAAAAAAAAAAAA04 /* EnglishLearning */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAAAA08 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAAAAAAAAAAAAAAAAAAAA36 /* Assets.xcassets in Resources */,
+				AAAAAAAAAAAAAAAAAAAAAA6A /* catalog.json in Resources */,
+				AAAAAAAAAAAAAAAAAAAAAA35 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AAAAAAAAAAAAAAAAAAAAAA06 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAAAAAAAAAAAAAAAAAAAA40 /* EnglishLearningApp.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA41 /* RootView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA42 /* ContentModels.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA43 /* LearningModels.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA44 /* LearningSettings.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA45 /* Profile.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA46 /* RewardModels.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA47 /* CurriculumLoader.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA48 /* ProfileDataPurger.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA4A /* ProfileSetupView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA4B /* RewardCenterView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA4C /* ParentHomeView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA6D /* WordLearningView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA6B /* HomeView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA6C /* Theme.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA60 /* ContentPackModels.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA61 /* ContentStorage.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA62 /* ResourceLocator.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA63 /* ContentLibrary.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA64 /* ContentInstaller.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA65 /* AudioPlayer.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA6E /* AudioRecorder.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA6F /* PronunciationEvaluator.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA76 /* FollowReadPanel.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA66 /* ContentStateViews.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA67 /* CourseListView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA68 /* UnitDetailView.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAA69 /* ContentManagementView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AAAAAAAAAAAAAAAAAAAAAA0A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AAAAAAAAAAAAAAAAAAAAAA0B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAAAA0D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Support/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aline117.englishlearning;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Debug;
+		};
+		AAAAAAAAAAAAAAAAAAAAAA0E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Support/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aline117.englishlearning;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AAAAAAAAAAAAAAAAAAAAAA09 /* Build configuration list for PBXProject "EnglishLearning" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAAAAAAAAAAAAAAAAAAAAA0A /* Debug */,
+				AAAAAAAAAAAAAAAAAAAAAA0B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAAAA0C /* Build configuration list for PBXNativeTarget "EnglishLearning" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAAAAAAAAAAAAAAAAAAAAA0D /* Debug */,
+				AAAAAAAAAAAAAAAAAAAAAA0E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+/* Begin XCRemoteSwiftPackageReference section */
+		AAAAAAAAAAAAAAAAAAAAAA72 /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.19;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AAAAAAAAAAAAAAAAAAAAAA73 /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAAAAAAAAAAAAAAAAAAAA72 /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = AAAAAAAAAAAAAAAAAAAAAA01 /* Project object */;
+}

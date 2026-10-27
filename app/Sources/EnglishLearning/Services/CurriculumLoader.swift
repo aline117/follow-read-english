@@ -1,82 +1,80 @@
 import Foundation
 
-enum CurriculumError: Error, CustomStringConvertible {
-    case resourceNotFound(String)
+enum CurriculumError: Error, CustomStringConvertible, Equatable {
+    case notInstalled(semester: String)
+    case incompatibleSchema(found: Int?, supported: Int)
+    case decodingFailed(String)
     case assetMissing([String])
 
     var description: String {
         switch self {
-        case .resourceNotFound(let name):
-            return "找不到课程资源: \(name)"
+        case .notInstalled(let semester):
+            return "内容未安装：\(semester)"
+        case .incompatibleSchema(let found, let supported):
+            return "内容结构不兼容（包 \(found.map(String.init) ?? "未知")，App 支持 \(supported)）：请重新下载该学期"
+        case .decodingFailed(let reason):
+            return "curriculum.json 解码失败：\(reason)"
         case .assetMissing(let paths):
-            return "课程资源缺失: \(paths.joined(separator: ", "))"
+            let head = paths.prefix(5).joined(separator: ", ")
+            return "内容资源缺失（\(paths.count) 个）：\(head)\(paths.count > 5 ? " …" : "")"
         }
     }
 }
 
-/// 只负责「找到并解码学期包 + 核对资源齐全」，不持有状态。
-/// 内容模型见 `Models/ContentModels.swift`（纯 `Decodable`，不进 SwiftData）。
+/// 读取**已安装**的学期内容：`Application Support/Curriculum/<semester>/curriculum.json`。
+///
+/// App 内不带任何课文内容（design Decision 3），所以这里不再碰 bundle；
+/// 资源定位一律走 `ResourceLocator`（tasks 3.5）。
 enum CurriculumLoader {
-    private static let searchDirectories: [String?] = ["Curriculum", "Resources/Curriculum", nil]
+    static let curriculumFileName = "curriculum.json"
 
-    static func load(bundle: Bundle = .module) throws -> Curriculum {
-        guard let url = resourceURL("grade2", extension: "json", bundle: bundle) else {
-            throw CurriculumError.resourceNotFound("grade2.json")
+    static func load(semester: String, root: URL = ContentStorage.root) throws -> Curriculum {
+        let folder = ResourceLocator.folder(semester, root: root)
+        let fileURL = folder.appendingPathComponent(curriculumFileName)
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            throw CurriculumError.notInstalled(semester: semester)
         }
-        let data = try Data(contentsOf: url)
-        let curriculum = try JSONDecoder().decode(Curriculum.self, from: data)
-        let missing = missingAssets(in: curriculum, bundle: bundle)
-        if !missing.isEmpty {
+
+        let data: Data
+        do {
+            data = try Data(contentsOf: fileURL)
+        } catch {
+            throw CurriculumError.decodingFailed(error.localizedDescription)
+        }
+
+        let curriculum: Curriculum
+        do {
+            curriculum = try JSONDecoder().decode(Curriculum.self, from: data)
+        } catch {
+            throw CurriculumError.decodingFailed(String(describing: error))
+        }
+
+        if let found = curriculum.schemaVersion, found > ContentSchema.supported {
+            throw CurriculumError.incompatibleSchema(found: found, supported: ContentSchema.supported)
+        }
+
+        let missing = ResourceLocator.missingAssets(in: curriculum, folder: folder)
+        guard missing.isEmpty else {
             throw CurriculumError.assetMissing(missing)
         }
         return curriculum
     }
 
-    static func resourceURL(_ name: String, extension ext: String, bundle: Bundle) -> URL? {
-        for directory in searchDirectories {
-            if let url = bundle.url(forResource: name, withExtension: ext, subdirectory: directory) {
-                return url
-            }
+    /// 安装前的校验：解码 + 版本闸门 + 资产齐全（只看传入目录，不写入）。
+    static func validate(folder: URL) throws -> (curriculum: Curriculum, assetCount: Int) {
+        let fileURL = folder.appendingPathComponent(curriculumFileName)
+        let data = try Data(contentsOf: fileURL)
+        let curriculum = try JSONDecoder().decode(Curriculum.self, from: data)
+        if let found = curriculum.schemaVersion, found > ContentSchema.supported {
+            throw CurriculumError.incompatibleSchema(found: found, supported: ContentSchema.supported)
         }
-        return nil
-    }
-
-    static func missingAssets(in curriculum: Curriculum, bundle: Bundle = .module) -> [String] {
-        var missing: [String] = []
-        for volume in curriculum.volumes {
-            for unit in volume.units {
-                for word in unit.words {
-                    for path in [word.image, word.audio] where !assetExists(path, bundle: bundle) {
-                        missing.append(path)
-                    }
-                }
-                for sentence in unit.sentences where !sentence.audio.isEmpty {
-                    if !assetExists(sentence.audio, bundle: bundle) {
-                        missing.append(sentence.audio)
-                    }
-                }
-                for listening in unit.listenings where !assetExists(listening.audio, bundle: bundle) {
-                    missing.append(listening.audio)
-                }
-            }
+        let missing = ResourceLocator.missingAssets(in: curriculum, folder: folder)
+        guard missing.isEmpty else {
+            throw CurriculumError.assetMissing(missing)
         }
-        return missing
-    }
-
-    static func assetExists(_ relativePath: String, bundle: Bundle) -> Bool {
-        let name = (relativePath as NSString).lastPathComponent
-        let ext = (name as NSString).pathExtension
-        let base = (name as NSString).deletingPathExtension
-        let directory = (relativePath as NSString).deletingLastPathComponent
-        for prefix in searchDirectories where prefix != nil {
-            let candidate = prefix! + "/" + directory
-            if bundle.url(forResource: base, withExtension: ext, subdirectory: candidate) != nil {
-                return true
-            }
+        let assetCount = curriculum.volumes.reduce(0) { partial, volume in
+            partial + volume.units.reduce(0) { $0 + $1.words.count * 2 + $1.listenings.count + $1.sentences.count }
         }
-        if bundle.url(forResource: base, withExtension: ext, subdirectory: directory) != nil {
-            return true
-        }
-        return false
+        return (curriculum, assetCount)
     }
 }

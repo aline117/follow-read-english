@@ -10,11 +10,13 @@ enum ItemKind: String, Codable, CaseIterable, Sendable {
 
 // MARK: - 只读内容（纯 Decodable，不进 SwiftData）
 
-/// 学期包顶层结构（`grade2.json`）。
+/// 学期包顶层结构（包内 `curriculum.json`，即原 `grade2.json`）。
+/// `schemaVersion` 是内容结构版本，用于「新内容包 + 旧 App」的版本闸门。
 struct Curriculum: Decodable {
     let grade: Int
     let textbook: String
     let volumes: [Volume]
+    let schemaVersion: Int?
 }
 
 /// 一个学期，如 `shangce`。
