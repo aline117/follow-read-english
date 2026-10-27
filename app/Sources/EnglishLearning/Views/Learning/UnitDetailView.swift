@@ -33,6 +33,14 @@ struct UnitDetailView: View {
                         sectionTitle("句型 \(unit.sentences.count)")
                             .padding(.top, 4)
                         sentenceCard
+
+                        NavigationLink {
+                            SentenceLearningView(profile: profile, pack: pack, unit: unit)
+                        } label: {
+                            KidButtonLabel(title: "学这 \(unit.sentences.count) 条句型", compact: true)
+                        }
+                        .buttonStyle(KidButtonStyle())
+                        .padding(.top, 8)
                     }
 
                     if unit.words.count >= 2 {

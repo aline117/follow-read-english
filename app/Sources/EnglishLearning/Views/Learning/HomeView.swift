@@ -148,8 +148,18 @@ struct HomeView: View {
                 .disabled(dueReviewCount == 0)
                 StatTile(icon: "＋", iconColor: Theme.green,
                          value: "\(newWordsPerDay)", label: "新单词", background: Theme.greenSoft)
-                StatTile(icon: "“", iconColor: Theme.blueInk,
-                         value: "\(newSentencesPerDay)", label: "新句型", background: Theme.blueSoft)
+                if let unit = currentUnit, !unit.sentences.isEmpty, newSentencesPerDay > 0 {
+                    NavigationLink {
+                        SentenceLearningView(profile: profile, pack: pack, unit: unit)
+                    } label: {
+                        StatTile(icon: "“", iconColor: Theme.blueInk,
+                                 value: "\(newSentencesPerDay)", label: "新句型", background: Theme.blueSoft)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    StatTile(icon: "“", iconColor: Theme.blueInk,
+                             value: "\(newSentencesPerDay)", label: "新句型", background: Theme.blueSoft)
+                }
             }
             .padding(.top, 16)
 
