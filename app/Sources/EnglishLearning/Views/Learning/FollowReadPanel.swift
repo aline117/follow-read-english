@@ -16,6 +16,13 @@ struct FollowReadPanel: View {
     var onAssessment: (PronunciationAssessment) -> Void = { _ in }
     /// 连续失败 / 没有麦克风时允许先练下一个
     var onSkip: () -> Void = {}
+    /// 连续失败几次才出现「先跳过」，读 `LearningSettings.skipAfterFailures`（0 = 关闭，必须读对才能过）
+    var skipAfterFailures: Int = 3
+
+    /// 是否已到「先跳过」的门槛
+    private var canSkipNow: Bool {
+        skipAfterFailures > 0 && failures >= skipAfterFailures
+    }
 
     @State private var recorder = AudioRecorder()
     @State private var phase: Phase = .idle
@@ -217,6 +224,18 @@ struct FollowReadPanel: View {
                     }
                     .buttonStyle(KidButtonStyle())
                     .padding(.top, 2)
+
+                    // 连续失败到阈值才出现「先跳过」（tasks 4.11，0 = 关闭）
+                    if canSkipNow {
+                        Button {
+                            onSkip()
+                        } label: {
+                            Text("先跳过，练下一个")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(Theme.muted)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
             .frame(maxWidth: .infinity)

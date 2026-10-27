@@ -17,6 +17,7 @@ struct WordLearningView: View {
     @Query private var allProgress: [ItemProgress]
     @Query private var ledger: [StarLedger]
     @Query private var allReviews: [ReviewSchedule]
+    @Query private var settingsList: [LearningSettings]
 
     @State private var index: Int = 0
     @State private var prepared = false
@@ -27,6 +28,8 @@ struct WordLearningView: View {
     @State private var starsThisSession = 0
     /// 本次是否拿到了「单元完成 +5」奖励（只影响结算文案）
     @State private var unitRewardGranted = false
+    /// 今天的新词配额用完（tasks 4.6：一次会话 5-8 分钟，不把整单元一次灌完）
+    @State private var quotaReached = false
     @State private var newItemsThisSession = 0
     @State private var showSummary = false
     @State private var sessionID = UUID()
@@ -70,7 +73,8 @@ struct WordLearningView: View {
                     FollowReadPanel(word: word.en, referenceURL: audioURL,
                                     isPaused: showSummary,
                                     onAssessment: { handle($0) },
-                                    onSkip: { skipCurrentWord() })
+                                    onSkip: { skipCurrentWord() },
+                                    skipAfterFailures: settings?.skipAfterFailures ?? 3)
                         .frame(width: 430)
                         .id(word.id)
                 }
@@ -258,12 +262,20 @@ struct WordLearningView: View {
 
     private var summarySheet: some View {
         VStack(spacing: 14) {
-            Text(unitCompleted ? "🎉" : "👋")
+            Text(unitCompleted ? "🎉" : (quotaReached ? "🌙" : "👋"))
                 .font(.system(size: 46))
 
-            Text(unitCompleted ? "Unit \(unit.number) 学完啦！" : "本次先学到这里")
+            Text(unitCompleted ? "Unit \(unit.number) 学完啦！"
+                 : (quotaReached ? "今天的 \(newItemsThisSession) 个新词学完了" : "本次先学到这里"))
                 .font(.system(size: 24, weight: .heavy))
                 .foregroundStyle(Theme.ink)
+
+            if quotaReached && !unitCompleted {
+                Text("明天再学后面的词，今天先把这几个记牢")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.muted)
+                    .padding(.top, 2)
+            }
 
             Text("达标 \(passedThisSession.count) 个词 · 得到 \(starsThisSession) 颗星")
                 .font(.system(size: 16, weight: .semibold))
@@ -351,12 +363,22 @@ struct WordLearningView: View {
 
     private func skipCurrentWord() {
         guard let word else { return }
+        // 跳过：不写 ItemProgress、不发星、不进复习调度；只留一条失败 Attempt 供报告统计薄弱项
+        modelContext.insert(Attempt(profileID: profile.id, sessionID: sessionID,
+                                    itemCode: word.itemCode, itemKind: .word,
+                                    unitCode: unit.id, kind: "speak", passed: false, at: Date()))
+        save()
         skippedThisSession.insert(word.itemCode)
         advanceTask?.cancel()
         advance()
     }
 
     private func advance() {
+        // 今天的新词配额用完就先收工（剩下的留给明天，别一次灌太多）
+        if quotaReached, !unitCompleted {
+            showSummary = true
+            return
+        }
         if let next = pendingIndices.first(where: { $0 > index }) ?? pendingIndices.first {
             index = next
             player.stop()
@@ -376,6 +398,18 @@ struct WordLearningView: View {
 
     private var doneCodes: Set<String> {
         practiceAll ? passedThisSession : passedThisSession.union(preLearned)
+    }
+
+    private var settings: LearningSettings? {
+        settingsList.first { $0.profileID == profile.id }
+    }
+
+    /// 还有"从没学过"的词 → 今天是真学不完，按配额收工
+    private var hasRemainingNewWords: Bool {
+        unit.words.contains { word in
+            let code = word.itemCode
+            return !preLearned.contains(code) && !passedThisSession.contains(code)
+        }
     }
 
     private var unitCompleted: Bool {
@@ -425,6 +459,12 @@ struct WordLearningView: View {
 
         if isFirstPass {
             newItemsThisSession += 1
+            // 配额只统计"今天新学的词"，练习模式（整单元已学过）不受限
+            if !practiceAll,
+               newItemsThisSession >= max(1, settings?.newWordsPerDay ?? 5),
+               hasRemainingNewWords {
+                quotaReached = true
+            }
             // 首次达标 → 排复习：明天第一次复习（1 → 3 → 7 → 14 → 30 天，见 ReviewScheduler）
             ReviewScheduler.scheduleFirstReview(
                 profileID: profile.id,
