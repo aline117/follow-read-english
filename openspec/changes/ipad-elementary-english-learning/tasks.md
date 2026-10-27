@@ -61,14 +61,14 @@
 
 ## 6. 家长面板
 
-- [ ] 6.1 实现家长验证与恢复：4 位 PIN（Keychain salt/哈希）+ 6 位恢复码（可复制/分享/存图、可重新生成）+ 四层恢复路径（设备密码·Face ID 经 `LocalAuthentication` → 恢复码 → 重新生成 → Debug 重置且保留数据）+ 家长面板进入日志 —— 见 design「家长凭据与恢复策略」
-- [ ] 6.2 实现学习报告页面（时长、正确率、进度；正确率按 `AccuracyRule.countedKinds` 聚合 `Attempt`，不读 `LearningSession` 聚合字段——见 design「指标口径与数据字典」）
-- [ ] 6.3 实现兑换规则管理：`RedemptionRule` 补全 11 个字段（id / title / icon / category / starCost / dailyLimit / weeklyLimit / cooldownDays / requiresApproval / isActive / sortOrder）+ 奖励库页（预置模板启停与改价）+ 兑换限制开关（必须完成今日任务 / 单日 1 次 / 大额二次确认）——见 design「奖励体系」
-- [ ] 6.4 实现兑换审核流程（记录 `reviewedBy`：审核记录显示"妈妈同意了"）
-- [ ] 6.5 实现多 Profile 切换与生命周期管理（创建上限 4 个、切换时 `profileID` 持久化、删除时逐表清理 8 张表且至少保留 1 个、家长 Tab 可改年级——见 design Decision 5）
-- [ ] 6.6 实现设置页合规项：卸载即清空的明示、学习记录导出 JSON、本地诊断日志查看
-- [ ] 6.7 实现家长手动解锁单元（应对学校进度超前；只放行访问，不改星星与进度统计）
-- [ ] 6.8 实现「练习强度」设置页（按 Profile 保存，档位选择，即时生效并重算首页预计时长）：连续失败几次可跳过 / 每日新词数 / 每日新句型数 / 单次复习上限（见 design「可调设置」）
+- [x] 6.1 实现家长验证与恢复：4 位 PIN（Keychain salt/哈希）+ 6 位恢复码（可复制/分享/存图、可重新生成）+ 四层恢复路径（设备密码·Face ID 经 `LocalAuthentication` → 恢复码 → 重新生成 → Debug 重置且保留数据）+ 家长面板进入日志 —— 见 design「家长凭据与恢复策略」
+- [x] 6.2 实现学习报告页面（时长、正确率、进度；正确率按 `AccuracyRule.countedKinds` 聚合 `Attempt`，不读 `LearningSession` 聚合字段——见 design「指标口径与数据字典」）
+- [x] 6.3 实现兑换规则管理：`RedemptionRule` 补全 11 个字段（id / title / icon / category / starCost / dailyLimit / weeklyLimit / cooldownDays / requiresApproval / isActive / sortOrder）+ 奖励库页（预置模板启停与改价）+ 兑换限制开关（必须完成今日任务 / 单日 1 次 / 大额二次确认）——见 design「奖励体系」
+- [x] 6.4 实现兑换审核流程（记录 `reviewedBy`：审核记录显示"妈妈同意了"）
+- [x] 6.5 实现多 Profile 切换与生命周期管理（创建上限 4 个、切换时 `profileID` 持久化、删除时逐表清理 8 张表且至少保留 1 个、家长 Tab 可改年级——见 design Decision 5）
+- [x] 6.6 实现设置页合规项：卸载即清空的明示、学习记录导出 JSON、本地诊断日志查看
+- [x] 6.7 实现家长手动解锁单元（应对学校进度超前；只放行访问，不改星星与进度统计）
+- [x] 6.8 实现「练习强度」设置页（按 Profile 保存，档位选择，即时生效并重算首页预计时长）：连续失败几次可跳过 / 每日新词数 / 每日新句型数 / 单次复习上限（见 design「可调设置」）
   - 2026-10-27：「认环节每屏配对数」「每单元最少练习轮数」随「认」并入「说」取消，剩 4 项
 - [ ] 6.9 实现本地通知：兑换提交 → 提醒家长审核；学期包下载完成 → 通知（`UNUserNotificationCenter`，点通知直达对应页）
 
