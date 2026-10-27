@@ -23,7 +23,7 @@
 
 ## 3. 年级与课程模块
 
-- [ ] 3.1 实现年级选择页面（1-6 年级卡片；**首版仅"二年级"可选**，其余置灰标"即将推出"）
+- [x] 3.1 实现年级选择页面（1-6 年级卡片；**首版仅"二年级"可选**，其余置灰标"即将推出"）
   - 2026-10-27：原型里没有这一页（首页 A6 直接是「今天的任务」，学期在 A4/C4 里选），故按原型改为首版不做年级卡片页；如需保留请更新本条与 design。
 - [x] 3.2 实现课程列表页面（按课本章节展示；严格线性解锁，未解锁单元**置灰不可点**）
 - [x] 3.3 实现课程内容数据加载和缓存
@@ -41,7 +41,7 @@
 - [x] 4.3 实现"认"模块（已并入 4.2）
   - 2026-10-27：单词的「认」=「看大图认词」，与跟读同屏；原计划的图片-单词拖拽配对与「每屏配对数 / 最少练习轮数」设置一并取消（句型的词块排序仍属 4.10）
 - [ ] 4.4 实现"游戏"模块：听音选图小游戏
-- [ ] 4.5 实现"复习"模块：间隔重复调度器（队列按 design「今日任务与学习调度」生成：到期优先、上限读 `LearningSettings`；间隔规则见「奖励与防沉迷参数」，每次作答写 `Attempt(kind="review")`）
+- [x] 4.5 实现"复习"模块：间隔重复调度器（队列按 design「今日任务与学习调度」生成：到期优先、上限读 `LearningSettings`；间隔规则见「奖励与防沉迷参数」，每次作答写 `Attempt(kind="review")`）
 - [ ] 4.6 实现学习单元拆分逻辑（5-8分钟/单元）
 - [ ] 4.7 实现音频会话管理：category 切换（playback / playAndRecord+defaultToSpeaker）、interruption / routeChange / mediaServicesWereReset 三类通知、录音被打断时丢弃半截 Attempt（见 design「健壮性与合规约定」）
 - [ ] 4.8 实现麦克风权限流程：说明页 → `AVAudioApplication.requestRecordPermission` → 拒绝后降级（跳过说环节、正确率显示 `—`、去设置深链）
@@ -81,7 +81,7 @@
 - [x] 7.5 实现 `_download/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
 - [x] 7.6 内置 `catalog.json`（学期目录：id / 标题 / 大小 / 版本，不含任何媒体与词表）
 - [ ] 7.7 管线入版本库 + 学期包异地备份：`_download/build_resources.js`、`serve.js`、`jx_audio_manifest.json`、`words_raw.json` 纳入 git（调整 `.gitignore`，媒体不进 git，只留 `curriculum.json` 与脚本），`packs/*.zip` 备份到云盘或移动硬盘
-- [ ] 7.8 补录二上核心句型并生成音频：6 单元 × 2-3 条（约 18 条），写入 `sentences`（`en` / `zh` / `pattern` / `chunks` / `audio`），音频用 TTS 生成到 `sentences/{unit}/{id}.mp3`
+- [x] 7.8 补录二上核心句型并生成音频：6 单元 × 2-3 条（约 18 条），写入 `sentences`（`en` / `zh` / `pattern` / `chunks` / `audio`），音频用 TTS 生成到 `sentences/{unit}/{id}.mp3`
 
 > 后续内容任务（不阻塞首版）：档位 B「课文对话全文」约 300-400 句，需转录 129 条课文原声并按句切时间点（3-6 小时，用于逐句高亮跟读）；档位 C「Read a story」6 篇故事。两者都只涉及内容补录与 JSON 扩展，不改架构。
 
