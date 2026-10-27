@@ -1,6 +1,6 @@
 ---
 name: openspec-archive-change
-description: Archive a completed OpenSpec change in the experimental workflow. Use when the user wants to finalize and archive a change after implementation is complete. Also use when the user says "openspec archive" or "opsx archive".
+description: 在实验性工作流中归档已完成的 OpenSpec 变更。适用于用户在实现完成后要收尾并归档变更时；用户说 "openspec archive" 或 "opsx archive" 时也适用。
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.

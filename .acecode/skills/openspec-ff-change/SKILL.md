@@ -1,6 +1,6 @@
 ---
 name: openspec-ff-change
-description: Fast-forward through OpenSpec artifact creation. Use when the user wants to quickly create all artifacts needed for implementation without stepping through each one individually. Also use when the user says "openspec ff" or "opsx ff".
+description: 快进式创建 OpenSpec 工件。适用于用户想快速生成实现所需的全部工件、而不逐个推进时；用户说 "openspec ff" 或 "opsx ff" 时也适用。
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.

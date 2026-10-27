@@ -1,6 +1,6 @@
 ---
 name: openspec-new-change
-description: Start a new OpenSpec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach. Also use when the user says "openspec new change" or "opsx new".
+description: 使用实验性工件工作流开始一个新的 OpenSpec 变更。适用于用户想以结构化的分步方式新建功能、修复或改动时；用户说 "openspec new change" 或 "opsx new" 时也适用。
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.

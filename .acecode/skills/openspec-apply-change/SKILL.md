@@ -1,6 +1,6 @@
 ---
 name: openspec-apply-change
-description: Implement tasks from an OpenSpec change. Use when the user wants to start implementing, continue implementation, or work through tasks. Also use when the user says "openspec apply", "opsx apply", or "openspec implement".
+description: 实现 OpenSpec 变更中的任务。适用于用户想开始实现、继续实现或逐项推进任务时；用户说 "openspec apply"、"opsx apply" 或 "openspec implement" 时也适用。
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.

@@ -1,6 +1,6 @@
 ---
 name: openspec-update-change
-description: Update an OpenSpec change by revising its existing planning artifacts and keeping them coherent with one another. Use when the user wants to revise a change's plan, fold new decisions into it, or reconcile its artifacts after an edit. Also use when the user says "openspec update change" or "opsx update". If the user means the openspec update CLI command, which refreshes generated files, run that command instead. Never edits code.
+description: 通过修订 OpenSpec 变更已有的规划工件，并让各工件之间保持一致来更新变更。适用于用户想修改变更方案、把新决策并入变更，或在编辑后协调各工件时；用户说 "openspec update change" 或 "opsx update" 时也适用。如果用户指的是 openspec update 这个刷新生成文件的 CLI 命令，则直接运行该命令。本技能从不修改代码。
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.

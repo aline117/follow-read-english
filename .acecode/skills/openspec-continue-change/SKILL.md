@@ -1,6 +1,6 @@
 ---
 name: openspec-continue-change
-description: Continue working on an OpenSpec change by creating the next artifact. Use when the user wants to progress their change, create the next artifact, or continue their workflow. Also use when the user says "openspec continue" or "opsx continue".
+description: 通过创建下一个工件继续推进 OpenSpec 变更。适用于用户想推进变更、创建下一个工件或继续其工作流时；用户说 "openspec continue" 或 "opsx continue" 时也适用。
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.

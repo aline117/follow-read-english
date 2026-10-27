@@ -1,6 +1,6 @@
 ---
 name: openspec-onboard
-description: Guided onboarding for OpenSpec - walk through a complete workflow cycle with narration and real codebase work. Also use when the user says "openspec onboard" or "opsx onboard".
+description: OpenSpec 引导式入门——带讲解地完整走一遍工作流循环，并基于真实代码库动手操作。用户说 "openspec onboard" 或 "opsx onboard" 时也适用。
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.

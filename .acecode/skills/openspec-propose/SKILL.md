@@ -1,6 +1,6 @@
 ---
 name: openspec-propose
-description: Propose a new OpenSpec change with all artifacts generated in one step. Use when the user wants to quickly describe what they want to build and get a complete proposal with design, specs, and tasks ready for implementation. Also use when the user says "openspec propose" or "opsx propose".
+description: 一步生成全部工件来提出一个新的 OpenSpec 变更。适用于用户想快速描述要构建的内容，并直接得到包含设计、规格和任务、可立即实施的完整提案时；用户说 "openspec propose" 或 "opsx propose" 时也适用。
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.
