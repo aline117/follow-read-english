@@ -35,6 +35,8 @@ final class AudioRecorder {
 
     /// 停止（手动或超时）后回调，交给上层去做「和原音对比」
     var onFinish: ((Recording) -> Void)?
+    /// 被系统打断 / 拔耳机丢弃录音后回调，面板据此回到 idle 并提示重试
+    var onInterrupted: (() -> Void)?
 
     private var recorder: AVAudioRecorder?
     private var timer: Timer?
@@ -120,6 +122,21 @@ final class AudioRecorder {
     func cleanUp() {
         cancel()
         try? FileManager.default.removeItem(at: Self.directory)
+    }
+
+    /// 系统打断 / 拔耳机：丢弃半截录音，交给面板提示重试（design「音频会话与中断」）
+    func discardForInterruption() {
+        guard isRecording else { return }
+        recorder?.stop()
+        recorder = nil
+        stopTimer()
+        isRecording = false
+        level = 0
+        elapsed = 0
+        deactivateSession()
+        deleteTemporaryFiles()
+        DiagnosticsLog.log("recording_discarded", ["reason": "interruption"])
+        onInterrupted?()
     }
 
     // MARK: - 内部

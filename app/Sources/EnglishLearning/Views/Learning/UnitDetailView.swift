@@ -35,6 +35,12 @@ struct UnitDetailView: View {
                         sentenceCard
                     }
 
+                    if unit.words.count >= 2 {
+                        sectionTitle("练一练")
+                            .padding(.top, 4)
+                        gameCard
+                    }
+
                     if !unit.listenings.isEmpty {
                         sectionTitle("跟我读 · 课文原声 \(unit.listenings.count)")
                             .padding(.top, 4)
@@ -181,6 +187,38 @@ struct UnitDetailView: View {
     }
 
     // MARK: - 句型 / 课文原声
+
+    /// 「练一练」入口：听音选图（tasks 4.4）
+    private var gameCard: some View {
+        NavigationLink {
+            ListeningGameView(profile: profile, pack: pack, unit: unit)
+        } label: {
+            HStack(spacing: 12) {
+                Text("🔊").font(.system(size: 24))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("听音选图")
+                        .font(.system(size: 16, weight: .heavy))
+                        .foregroundStyle(Theme.ink)
+                    Text("听一遍读音，从 4 张图里选；答对 +1 ★")
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(Theme.muted)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Theme.faint)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .strokeBorder(Theme.line, lineWidth: 1.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
 
     private var sentenceCard: some View {
         VStack(alignment: .leading, spacing: 0) {

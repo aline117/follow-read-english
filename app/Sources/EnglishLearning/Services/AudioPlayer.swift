@@ -22,6 +22,8 @@ final class AudioPlayer {
     private let timePitch = AVAudioUnitTimePitch()
     private var file: AVAudioFile?
     private var nodesAttached = false
+    /// 被系统打断（来电/闹钟）暂停过：用于判断能否 resume
+    private var pausedByInterruption = false
 
     /// 新学默认慢速；复习默认常速（design）
     static let slowRate: Double = 0.7
@@ -79,6 +81,28 @@ final class AudioPlayer {
         file = nil
         playingURL = nil
         playingRate = 1
+        pausedByInterruption = false
+    }
+
+    /// 系统打断（来电/闹钟）时暂停：保留 `playingURL`，等 `.shouldResume` 再续
+    func pause() {
+        guard playingURL != nil, !pausedByInterruption else { return }
+        playerNode.pause()
+        if engine.isRunning { engine.pause() }
+        pausedByInterruption = true
+    }
+
+    /// 打断结束后恢复（只在"被打断暂停过、音频还在"的情况下生效）
+    func resume() {
+        guard pausedByInterruption, playingURL != nil else { return }
+        do {
+            if !engine.isRunning { try engine.start() }
+            playerNode.play()
+            pausedByInterruption = false
+        } catch {
+            stop()
+            lastError = "恢复播放失败：\(error.localizedDescription)"
+        }
     }
 
     /// 录音器在开始/结束录音时调用

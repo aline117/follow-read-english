@@ -304,7 +304,10 @@ struct ReviewView: View {
     // MARK: - 流程
 
     private func play(_ item: ReviewItem) {
-        guard let url = item.audioURL else { return }
+        guard let url = item.audioURL else {
+            DiagnosticsLog.assertAsset(nil, path: item.code, context: "ReviewView.play")
+            return
+        }
         player.play(url: url, rate: 1)   // 复习默认常速
     }
 

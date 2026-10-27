@@ -383,7 +383,11 @@ struct WordLearningView: View {
     }
 
     private func play(slow: Bool) {
-        guard let audioURL else { return }
+        guard let audioURL else {
+            // 内容缺音频：记一条诊断（Debug 下直接断言），界面继续可用
+            DiagnosticsLog.assertAsset(nil, path: word?.audio ?? "-", context: "WordLearningView.play")
+            return
+        }
         player.play(url: audioURL, rate: slow ? AudioPlayer.slowRate : 1)
     }
 

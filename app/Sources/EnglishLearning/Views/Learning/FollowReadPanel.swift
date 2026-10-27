@@ -1,3 +1,4 @@
+import AVFoundation
 import SwiftUI
 import UIKit
 
@@ -24,6 +25,9 @@ struct FollowReadPanel: View {
     @State private var errorMessage: String?
     /// 丢弃过期的评测结果（录音被取消 / 结算页弹出）
     @State private var assessmentID = UUID()
+    /// 第一次点麦克风先看说明页，再弹系统授权（tasks 4.8）
+    @AppStorage("micPrimerSeen") private var micPrimerSeen = false
+    @State private var showMicPrimer = false
 
     private let player = AudioPlayer.shared
 
@@ -44,10 +48,30 @@ struct FollowReadPanel: View {
             footer
         }
         .kidCard(padding: 20)
-        .onAppear { recorder.onFinish = handleRecording }
+        .onAppear {
+            recorder.onFinish = handleRecording
+            recorder.onInterrupted = handleAudioInterruption
+            wireAudioSession()
+        }
         .onDisappear {
+            let coordinator = AudioSessionCoordinator.shared
+            coordinator.onInterruptionBegan = nil
+            coordinator.onInterruptionEnded = nil
+            coordinator.onRouteLost = nil
+            coordinator.onMediaServicesReset = nil
             recorder.cleanUp()
             player.stop()
+        }
+        .sheet(isPresented: $showMicPrimer) {
+            MicPermissionPrimer {
+                micPrimerSeen = true
+                showMicPrimer = false
+                startRecording()
+            } onLater: {
+                showMicPrimer = false
+            }
+            .presentationDetents([.height(430)])
+            .presentationDragIndicator(.hidden)
         }
         .onChange(of: isPaused) { _, paused in
             guard paused else { return }
@@ -284,7 +308,41 @@ struct FollowReadPanel: View {
 
     // MARK: - 动作
 
+    /// 音频会话事件接线（tasks 4.7）：来电/闹钟暂停播放，拔耳机丢录音
+    private func wireAudioSession() {
+        let coordinator = AudioSessionCoordinator.shared
+        coordinator.start()
+        coordinator.onInterruptionBegan = {
+            player.pause()
+            recorder.discardForInterruption()
+        }
+        coordinator.onInterruptionEnded = { shouldResume in
+            if shouldResume { player.resume() }
+        }
+        coordinator.onRouteLost = {
+            player.stop()
+            recorder.discardForInterruption()
+        }
+        coordinator.onMediaServicesReset = {
+            player.stop()
+        }
+    }
+
+    /// 录音被系统打断：回到 idle 并提示重读（不写半截评测结果）
+    private func handleAudioInterruption() {
+        assessmentID = UUID()
+        assessment = nil
+        phase = .idle
+        micDenied = false
+        errorMessage = "刚才被打断了，再读一次"
+    }
+
     private func startRecording() {
+        // 第一次：先看说明页，同意后再弹系统授权（系统授权只能弹一次，不能浪费）
+        if !micPrimerSeen, AVAudioApplication.shared.recordPermission == .undetermined {
+            showMicPrimer = true
+            return
+        }
         player.stop()
         recorder.maxDuration = Self.recordingLimit(for: referenceURL)
         Task {
