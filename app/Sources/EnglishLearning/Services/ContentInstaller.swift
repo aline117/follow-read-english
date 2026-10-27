@@ -139,6 +139,8 @@ final class ContentInstaller {
 
             ContentLibrary.shared.refresh()
             ContentLibrary.shared.invalidate(remote.id)
+            // 下载完成通知家长（tasks 6.9）
+            await LocalNotifications.packInstalled(title: remote.title)
         } catch {
             lastError = Self.describe(error)
         }

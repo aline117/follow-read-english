@@ -49,6 +49,7 @@ struct RootView: View {
             ParentHomeView(profile: profile, isPresented: $isParentModePresented)
         }
         .onAppear { selectedProfileIDRaw = profile.id.uuidString }
+        .task { await LocalNotifications.requestAuthorizationIfNeeded() }
     }
 
     @ToolbarContentBuilder

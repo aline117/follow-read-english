@@ -233,6 +233,9 @@ struct CourseListView: View {
     }
 
     private func isUnlocked(at index: Int) -> Bool {
+        guard units.indices.contains(index) else { return false }
+        // 家长手动放行的单元随时可进（tasks 6.7，只放行访问，不改进度与星星）
+        if ParentOverrides.isUnlocked(units[index].id, profileID: profile.id) { return true }
         guard index > 0 else { return true }
         return isCompleted(units[index - 1])
     }
