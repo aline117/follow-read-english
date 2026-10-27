@@ -160,6 +160,44 @@
               "label": "Period 3-8",
               "audio": "audio/17635232_8.mp3"
             }
+          ],
+          "sentences": [
+            {
+              "id": "s1",
+              "en": "I can see with my eyes.",
+              "zh": "我能用眼睛看。",
+              "pattern": "I can ___ with my ___.",
+              "chunks": [
+                "I can",
+                "see",
+                "with my eyes."
+              ],
+              "audio": "sentences/u1/s1.wav"
+            },
+            {
+              "id": "s2",
+              "en": "I can hear with my ears.",
+              "zh": "我能用耳朵听。",
+              "pattern": "I can ___ with my ___.",
+              "chunks": [
+                "I can",
+                "hear",
+                "with my ears."
+              ],
+              "audio": "sentences/u1/s2.wav"
+            },
+            {
+              "id": "s3",
+              "en": "I can smell with my nose.",
+              "zh": "我能用鼻子闻。",
+              "pattern": "I can ___ with my ___.",
+              "chunks": [
+                "I can",
+                "smell",
+                "with my nose."
+              ],
+              "audio": "sentences/u1/s3.wav"
+            }
           ]
         },
         {
@@ -336,6 +374,41 @@
               "label": "Period 3-9",
               "audio": "audio/17404355_9.mp3"
             }
+          ],
+          "sentences": [
+            {
+              "id": "s1",
+              "en": "This is my aunt.",
+              "zh": "这是我的婶婶。",
+              "pattern": "This is my ___.",
+              "chunks": [
+                "This is",
+                "my aunt."
+              ],
+              "audio": "sentences/u2/s1.wav"
+            },
+            {
+              "id": "s2",
+              "en": "She's young.",
+              "zh": "她很年轻。",
+              "pattern": "He's / She's ___.",
+              "chunks": [
+                "She's",
+                "young."
+              ],
+              "audio": "sentences/u2/s2.wav"
+            },
+            {
+              "id": "s3",
+              "en": "They are my cousins.",
+              "zh": "他们是我的堂兄弟姐妹。",
+              "pattern": "They are my ___.",
+              "chunks": [
+                "They are",
+                "my cousins."
+              ],
+              "audio": "sentences/u2/s3.wav"
+            }
           ]
         },
         {
@@ -506,6 +579,42 @@
               "label": "Period 3-7",
               "audio": "audio/17531570_7.mp3"
             }
+          ],
+          "sentences": [
+            {
+              "id": "s1",
+              "en": "This is a robot.",
+              "zh": "这是一个机器人。",
+              "pattern": "This is a ___.",
+              "chunks": [
+                "This is",
+                "a robot."
+              ],
+              "audio": "sentences/u3/s1.wav"
+            },
+            {
+              "id": "s2",
+              "en": "These are balls.",
+              "zh": "这些是球。",
+              "pattern": "These are ___.",
+              "chunks": [
+                "These are",
+                "balls."
+              ],
+              "audio": "sentences/u3/s2.wav"
+            },
+            {
+              "id": "s3",
+              "en": "What's your favourite toy?",
+              "zh": "你最喜欢的玩具是什么？",
+              "pattern": "What's your favourite ___?",
+              "chunks": [
+                "What's",
+                "your favourite",
+                "toy?"
+              ],
+              "audio": "sentences/u3/s3.wav"
+            }
           ]
         },
         {
@@ -675,6 +784,43 @@
               "period": 3,
               "label": "Period 3-8",
               "audio": "audio/17531573_8.mp3"
+            }
+          ],
+          "sentences": [
+            {
+              "id": "s1",
+              "en": "This is a pet shop.",
+              "zh": "这是一家宠物店。",
+              "pattern": "This is a ___.",
+              "chunks": [
+                "This is",
+                "a pet shop."
+              ],
+              "audio": "sentences/u4/s1.wav"
+            },
+            {
+              "id": "s2",
+              "en": "We can see a movie in the cinema.",
+              "zh": "我们可以在电影院看电影。",
+              "pattern": "We can ___ in the ___.",
+              "chunks": [
+                "We can",
+                "see a movie",
+                "in the cinema."
+              ],
+              "audio": "sentences/u4/s2.wav"
+            },
+            {
+              "id": "s3",
+              "en": "We can fly kites in the park.",
+              "zh": "我们可以在公园放风筝。",
+              "pattern": "We can ___ in the ___.",
+              "chunks": [
+                "We can",
+                "fly kites",
+                "in the park."
+              ],
+              "audio": "sentences/u4/s3.wav"
             }
           ]
         },
@@ -870,6 +1016,41 @@
               "label": "Period 3-8",
               "audio": "audio/17531576_8.mp3"
             }
+          ],
+          "sentences": [
+            {
+              "id": "s1",
+              "en": "I like cows.",
+              "zh": "我喜欢奶牛。",
+              "pattern": "I like ___.",
+              "chunks": [
+                "I like",
+                "cows."
+              ],
+              "audio": "sentences/u5/s1.wav"
+            },
+            {
+              "id": "s2",
+              "en": "I like sheep.",
+              "zh": "我喜欢绵羊。",
+              "pattern": "I like ___.",
+              "chunks": [
+                "I like",
+                "sheep."
+              ],
+              "audio": "sentences/u5/s2.wav"
+            },
+            {
+              "id": "s3",
+              "en": "They all live on the farm.",
+              "zh": "它们都住在农场里。",
+              "pattern": "They all live on the ___.",
+              "chunks": [
+                "They all live",
+                "on the farm."
+              ],
+              "audio": "sentences/u5/s3.wav"
+            }
           ]
         },
         {
@@ -1055,6 +1236,41 @@
               "period": 3,
               "label": "Period 3-7",
               "audio": "audio/17635235_7.mp3"
+            }
+          ],
+          "sentences": [
+            {
+              "id": "s1",
+              "en": "We eat mooncakes on Mid-Autumn Festival.",
+              "zh": "我们在中秋节吃月饼。",
+              "pattern": "We ___ on Mid-Autumn Festival.",
+              "chunks": [
+                "We eat mooncakes",
+                "on Mid-Autumn Festival."
+              ],
+              "audio": "sentences/u6/s1.wav"
+            },
+            {
+              "id": "s2",
+              "en": "I look at the moon with my family.",
+              "zh": "我和家人一起赏月。",
+              "pattern": "I ___ with my family.",
+              "chunks": [
+                "I look at the moon",
+                "with my family."
+              ],
+              "audio": "sentences/u6/s2.wav"
+            },
+            {
+              "id": "s3",
+              "en": "My cousin and I play with lanterns.",
+              "zh": "我和堂姐一起玩灯笼。",
+              "pattern": "___ and I play with lanterns.",
+              "chunks": [
+                "My cousin and I",
+                "play with lanterns."
+              ],
+              "audio": "sentences/u6/s3.wav"
             }
           ]
         }
