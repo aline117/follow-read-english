@@ -42,13 +42,13 @@
   - 2026-10-27：单词的「认」=「看大图认词」，与跟读同屏；原计划的图片-单词拖拽配对与「每屏配对数 / 最少练习轮数」设置一并取消（句型的词块排序仍属 4.10）
 - [x] 4.4 实现"游戏"模块：听音选图小游戏
 - [x] 4.5 实现"复习"模块：间隔重复调度器（队列按 design「今日任务与学习调度」生成：到期优先、上限读 `LearningSettings`；间隔规则见「奖励与防沉迷参数」，每次作答写 `Attempt(kind="review")`）
-- [ ] 4.6 实现学习单元拆分逻辑（5-8分钟/单元）
+- [x] 4.6 实现学习单元拆分逻辑（5-8分钟/单元）
 - [x] 4.7 实现音频会话管理：category 切换（playback / playAndRecord+defaultToSpeaker）、interruption / routeChange / mediaServicesWereReset 三类通知、录音被打断时丢弃半截 Attempt（见 design「健壮性与合规约定」）
 - [x] 4.8 实现麦克风权限流程：说明页 → `AVAudioApplication.requestRecordPermission` → 拒绝后降级（跳过说环节、正确率显示 `—`、去设置深链）
   - 2026-10-27：已做「请求权限 + 拒绝后卡片（去设置深链 / 先跳过）」，独立说明页与正确率 `—` 待补
 - [ ] 4.9 实现缺失资产降级：占位图 / 静音 3 秒推进 / debug 断言 / 本地诊断日志
 - [ ] 4.10 实现句子学习环节（首版范围 A）：听整句（0.5x / 0.75x / 原速）、跟读整句（复用单词跟读的设备端识别评测与纠错建议）、词块排序（`chunks` 拖拽）、听音补全（3 选 1）、整句复习（共用 `ReviewSchedule`）
-- [ ] 4.11 实现「先跳过」机制：连续失败次数读 `LearningSettings`（默认 3 次，可关闭）后出现跳过入口；不写 `ItemProgress`、不计星、记一条 `Attempt(passed=false)`、不进复习调度
+- [x] 4.11 实现「先跳过」机制：连续失败次数读 `LearningSettings`（默认 3 次，可关闭）后出现跳过入口；不写 `ItemProgress`、不计星、记一条 `Attempt(passed=false)`、不进复习调度
   - 2026-10-27：跟读面板已固定 3 次后出现「先练下一个」，且跳过不计星、不写 `ItemProgress`；读 `LearningSettings`、关闭开关与「不进复习调度」待接
 
 ## 5. 激励系统
