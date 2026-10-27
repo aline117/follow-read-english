@@ -122,6 +122,8 @@ final class ReviewSchedule {
     var stage: Int
     var lastReviewedAt: Date?
 
+    var kind: ItemKind { ItemKind(rawValue: itemKind) ?? .word }
+
     init(profileID: UUID, itemCode: String, itemKind: ItemKind,
          scheduledAt: Date, intervalDays: Int = 1, stage: Int = 1) {
         self.id = UUID()
