@@ -1,6 +1,6 @@
 # 跟着课本学英语 · follow-read-english
 
-> 给自家二年级孩子做的 iPad 英语学习 App：跟着沪教版课本，以「听 → 说 → 认 → 游戏 → 句型 → 复习」为核心，每天 20 分钟，配虚拟星星与真实奖励兑换。
+> 给自家二年级孩子做的 iPad 英语学习 App：跟着沪教版课本，以「学单词（听·认·说）→ 游戏 → 句型 → 复习」为核心，每天 20 分钟，配虚拟星星与真实奖励兑换。
 
 **个人自用项目，不上架 App Store。** 通过 Mac + Xcode 侧载安装到自家 iPad。
 
@@ -10,17 +10,17 @@
 
 | 阶段 | 状态 |
 |---|---|
-| 需求与设计 | ✅ 完成（proposal / design / 4 份 spec / 61 项任务） |
-| 交互原型 | ✅ 32 屏可点击原型（见 [prototype/](openspec/changes/ipad-elementary-english-learning/prototype/index.html)） |
+| 需求与设计 | ✅ 完成（proposal / design / 5 份 spec / 108 项任务） |
+| 交互原型 | ✅ 33 屏可点击原型（见 [prototype/](openspec/changes/ipad-elementary-english-learning/prototype/index.html)） |
 | 内容素材 | ✅ 二年级上（沪教版）6 单元 / 33 词 / 18 句型 / 129 条课文原声 |
-| 代码实现 | 🟡 **刚开始：9 / 61 任务**（仅模型骨架与内容加载器，**当前无法编译**） |
+| 代码实现 | 🟡 **23 / 108 任务**：能下载学期包、能离线听单词和课文原声；学单词（听·认·说）已可跟读达标，游戏/句型/复习与家长端功能还没做 |
 
-> ⚠️ `app/` 目前只有数据模型和内容加载器；`RootView` 引用的 4 个视图还没写，`Package.swift` 仍是 iOS 16（计划改 iOS 18）。现在编译会失败，这是预期状态。
+> ⚠️ 现在走通的是「建档 → 家长模式 → 内容管理下载二年级上 → 学习：单元列表 → 单元页听单词/课文原声」。**App 内不带课文内容**，首次安装后要先在家里 Wi-Fi 下下载（`_download/serve.py`）。学习环节、星星流水、家长端其余功能仍未实现。
 
 进度可用 OpenSpec 查看：
 
 ```bash
-openspec list                     # 9/61 tasks
+openspec list                     # 23/108 tasks
 openspec status --change ipad-elementary-english-learning --json
 ```
 
@@ -81,24 +81,39 @@ iPad 主包（约 10MB）                     家里的电脑（同一 Wi-Fi）
 
 ```
 .
-├── app/                        # SwiftUI App（SwiftPM 包，待转 Xcode App 工程）
-│   ├── Package.swift
+├── app/                        # App 工程 + 源码
+│   ├── EnglishLearning.xcodeproj   # Xcode 工程（唯一构建入口）
+│   ├── Package.swift           # 备用：把 app/ 当 SPM 包构建时用
+│   ├── MAC_SETUP.md            # 工程配置说明 / 手建清单 / 踩坑表
 │   ├── Sources/EnglishLearning/
-│   │   ├── App/                # EnglishLearningApp.swift（SwiftData 容器）、RootView
-│   │   ├── Models/             # 8 个 @Model
-│   │   └── Services/           # CurriculumLoader（JSON 解析 + 资产校验）
-│   └── Resources/Curriculum/   # 二上素材（196 文件：195 媒体 + grade2.json，53MB，走 Git LFS；后续迁出为 packs/）
+│   │   ├── App/                # @main + SwiftData 容器、RootView（两种模式导航）
+│   │   ├── Models/             # 11 个 @Model + 只读内容模型 + manifest/安装记录
+│   │   ├── Services/           # ContentStorage / ResourceLocator / CurriculumLoader /
+│   │   │                       # ContentLibrary / ContentInstaller（下载·校验·解压·原子安装）/ AudioPlayer
+│   │   └── Views/              # Theme（原型配色）+ 首页 A6 / 课程列表 B1 / 单元页 / 内容管理 / 家长入口
+│   ├── Assets.xcassets/        # App 图标
+│   ├── Resources/
+│   │   ├── catalog.json        # 内置学期目录（几 KB，只有 id/标题/大小）
+│   │   └── Curriculum/         # 只作打包源，不再打进 App（53MB，走 Git LFS）
+│   ├── Support/                # Info.plist、PrivacyInfo.xcprivacy
+│   └── tools/MakeIcon.swift    # 图标生成脚本
+│
+├── _download/                  # 内容管线与内容服务（学期包与媒体不进 git）
+│   ├── build_resources.py      # app/Resources/Curriculum → packs/g2s1.zip + meta
+│   ├── serve.py / serve.js     # 家园局域网内容服务（serve.bat 给 Windows）
+│   └── README.md               # 打包 / 起服务 / manifest 协议 / 排错
 │
 ├── openspec/                   # 设计与任务（唯一事实来源）
 │   ├── config.yaml             # 项目上下文 + 各产物写作规则
 │   └── changes/ipad-elementary-english-learning/
 │       ├── proposal.md
 │       ├── design.md           # 决策、参数表、奖励体系、健壮性、合规
-│       ├── tasks.md            # 61 项任务
-│       ├── specs/              # curriculum-sync / learning-cycle / parent-panel / reward-system
-│       └── prototype/          # 32 屏可点击原型（index.html 为入口）
+│       ├── tasks.md            # 108 项任务
+│       ├── specs/              # curriculum-sync / learning-cycle / parent-panel / reward-system / media-library
+│       └── prototype/          # 33 屏可点击原型（index.html 为入口）
 │
 ├── .acecode/skills/            # 12 个 OpenSpec 工作流技能
+```
 ```
 
 ---
@@ -107,7 +122,7 @@ iPad 主包（约 10MB）                     家里的电脑（同一 Wi-Fi）
 
 | 项 | 要求 |
 |---|---|
-| 构建 | **macOS + Xcode**（iOS App 只能在 Mac 上编译） |
+| 构建 | **macOS + Xcode 16 及以上**（需要 iOS 18 SDK） |
 | 设备 | iPad，iPadOS 18 及以上（开发机实测 iPadOS 26.2） |
 | 签名 | 免费 Apple ID 即可，**7 天有效期**，每 7 天在 Xcode 里重签一次 |
 | 内容服务 | 任意一台与 iPad 同 Wi-Fi 的电脑 + Node.js（Windows 也可） |
@@ -125,11 +140,39 @@ npm i -g @fission-ai/openspec      # 可选（注意别装同名的 0.0.0 占位
 
 双击打开 `openspec/changes/ipad-elementary-english-learning/prototype/index.html`，按 A / B / C 三组点进去，屏与屏之间的按钮已经连好跳转。
 
-### 待实现后再做：装到 iPad
+### 现在就能跑：Xcode 打开 App 工程
 
-1. 在 Mac 上用 Xcode 打开 `app/`（后续会转成 Xcode App 工程）
-2. 选中 iPad，按 ⌘R 安装
-3. 首次启动：创建孩子档案 → 设置家长 PIN（抄下 6 位恢复码）→ 选择并下载学期内容
+```bash
+open app/EnglishLearning.xcodeproj      # 或 Xcode 里 File → Open 选 app/ 目录
+```
+
+选一台 iPad 模拟器（如 iPad Air 11-inch (M2)）→ ⌘R。首次启动是建档引导（输入名字），进去后是
+「学习 / 奖励」两个 Tab，右上角 🔒 打开家长模式。
+
+命令行等价物：
+
+```bash
+cd app
+xcodebuild -scheme EnglishLearning \
+           -destination 'platform=iOS Simulator,name=iPad Air 11-inch (M2)' build
+```
+
+### 内容从哪来（App 内零内容）
+
+```bash
+python3 _download/build_resources.py     # 打包：app/Resources/Curriculum → _download/packs/g2s1.zip
+python3 _download/serve.py               # 起服务，打印 http://<host>.local:8080
+```
+
+iPad 上：右上角 🔒 → 内容管理 → 填 `<host>.local:8080` → 连接 → 下载「二年级上」。
+下载一次后**断网也能学**（音频、图片都在本机 `Application Support/Curriculum/g2s1/`）。
+详见 [_download/README.md](_download/README.md)。
+
+### 装到 iPad
+
+1. Xcode 打开 `app/EnglishLearning.xcodeproj`，target → Signing & Capabilities 里选自己的 Team（免费 Apple ID 即可）
+2. iPad 连上 Mac，选中这台 iPad，按 ⌘R
+3. 首次启动：创建孩子档案（家长 PIN、学期包下载还没实现）
 4. 之后每 7～30 天（免费账号 7 天）在 Xcode 里重签一次；**重签不会丢数据，只有卸载才会**
 
 ### 内容服务（待实现）
@@ -188,7 +231,7 @@ openspec doctor                                          # 根健康检查（con
 | `bundle id` | **待定**，首次装 iPad 前必须确定，之后不可更改 |
 | 二年级下（xiace） | 教材版本待定，推迟到寒假补录 |
 | 课文对话全文 / 故事 | 列为后续内容任务（需转录 129 条原声） |
-| 徽章图标 / 头像 | 原型为占位，需绘制矢量素材 |
+| 徽章图标 / 头像 | 原型为占位，需绘制矢量素材（App 图标已完成） |
 | 词块排序、图表趋势线等视觉细节 | 原型阶段，未细化 |
 | 测试 | 计划补 XCTest：内容加载器、复习调度、星星幂等、正确率聚合 |
 
@@ -204,6 +247,13 @@ git lfs pull                      # 克隆后拉取真实素材
 # 进度
 openspec list
 openspec status --change ipad-elementary-english-learning --json
+
+# 编译 / 运行
+open app/EnglishLearning.xcodeproj                          # Xcode 打开工程
+cd app && xcodebuild -scheme EnglishLearning \
+  -destination 'platform=iOS Simulator,name=iPad Air 11-inch (M2)' build
+cd app && swift build --triple x86_64-apple-ios18.0-simulator \
+  --sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)"    # 备用：把 app/ 当 SPM 包
 ```
 
 ---

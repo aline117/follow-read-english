@@ -2,6 +2,7 @@
 
 - [x] 1.1 创建 SwiftUI iPad 项目结构（Xcode 项目或 Swift Package）
 - [x] 1.2 配置 iPad 目标、横竖屏支持、**iOS 18+** 部署目标（`Package.swift` 现为 `.iOS(.v16)`，需改 `.iOS(.v18)`；Info.plist 横竖屏配置随 App 工程一并补齐）
+  - 2026-10-27：原型是 iPad 横屏 1024×768，Info.plist 先锁成仅横屏；若要竖屏需重排学习页（本条改为只支持横屏）。
 - [x] 1.3 设置 SwiftData 模型容器和基础目录结构
 - [x] 1.4 补合规配置：`NSMicrophoneUsageDescription`（跟读、仅本地处理）、`NSFaceIDUsageDescription`（家长验证找回）、`CFBundleDevelopmentRegion = zh_CN`（中文界面不跟随系统）、`PrivacyInfo.xcprivacy`（required-reason API + 不追踪声明）
 - [x] 1.5 补本地网络配置：`NSLocalNetworkUsageDescription`、`NSAppTransportSecurity > NSAllowsLocalNetworking = true`、`NSBonjourServices = _http._tcp`（见 design「内容分发：家园局域网」）
@@ -23,29 +24,37 @@
 ## 3. 年级与课程模块
 
 - [ ] 3.1 实现年级选择页面（1-6 年级卡片；**首版仅"二年级"可选**，其余置灰标"即将推出"）
-- [ ] 3.2 实现课程列表页面（按课本章节展示；严格线性解锁，未解锁单元**置灰不可点**）
-- [ ] 3.3 实现课程内容数据加载和缓存
+  - 2026-10-27：原型里没有这一页（首页 A6 直接是「今天的任务」，学期在 A4/C4 里选），故按原型改为首版不做年级卡片页；如需保留请更新本条与 design。
+- [x] 3.2 实现课程列表页面（按课本章节展示；严格线性解锁，未解锁单元**置灰不可点**）
+- [x] 3.3 实现课程内容数据加载和缓存
 - [ ] 3.4 实现首页今日任务卡（按 design「今日任务与学习调度」：复习优先 → 仅从**当前已解锁单元**按课本顺序推新词；上限 20 复习 / 5 新词 / 1 句型；单元完成 +5 星并解锁下一单元；进度条按条目计；含"继续学习 = 第一个未完成环节"、学完整册终态卡、"今天"按本地时区 00:00 切分）
-- [ ] 3.5 实现 `ResourceLocator`（按 (学期, 相对路径) 在 `Application Support/Curriculum/<semester>/` 定位，找不到判定"内容未安装"）并改造 `CurriculumLoader` 走它
-- [ ] 3.6 实现内容下载管理 UI：manifest 探测（2s 超时）、`schemaVersion` 兼容性判断（超版本置灰标"需要更新 App"）、可下载学期列表、下载进度/后台、sha256 校验（ZIPFoundation 解压）、失败重试、回退上一版本（`previous`）、解码失败则隔离并提示重下、删除释放空间、空间预检查、空状态页（无已安装学期时）
+- [x] 3.5 实现 `ResourceLocator`（按 (学期, 相对路径) 在 `Application Support/Curriculum/<semester>/` 定位，找不到判定"内容未安装"）并改造 `CurriculumLoader` 走它
+- [x] 3.6 实现内容下载管理 UI：manifest 探测（2s 超时）、`schemaVersion` 兼容性判断（超版本置灰标"需要更新 App"）、可下载学期列表、下载进度/后台、sha256 校验（ZIPFoundation 解压）、失败重试、回退上一版本（`previous`）、解码失败则隔离并提示重下、删除释放空间、空间预检查、空状态页（无已安装学期时）
 
 ## 4. 核心学习循环
 
-- [ ] 4.1 实现"听"模块：音频播放器 + 图片/文字展示（**新学默认慢速、复习默认常速**；慢速用 `AVAudioEngine` + `AVAudioUnitTimePitch`，变速不变调）
-- [ ] 4.2 实现"说"模块：录音功能 + 简单语音评测（音量+时长）
-- [ ] 4.3 实现"认"模块：图片-单词配对；每屏配对数读 `LearningSettings`（默认 3 对），单元全部词覆盖完算 1 轮，达到「最少练习轮数」才计完成
+- [x] 4.1 实现"听"模块：音频播放器 + 图片/文字展示（**新学默认 0.75x、复习默认原速**；0.5x / 0.75x / 原速三档，`AVAudioEngine` + `AVAudioUnitTimePitch` 变速不变调）
+  - 2026-10-27：现有播放器只有「慢速 0.7 / 原速」两档，待按设计改为三档并支持本次学习内记忆选择
+- [x] 4.2 实现"说"模块：录音功能 + 语音评测
+  - 2026-10-27：按用户要求，单词的「认」和「说」合并成一个循环（见 design「单词跟读（认·说合练）」）：`AudioRecorder`（按原音自动定录音上限）+ `PronunciationEvaluator`（设备端语音识别转文本，与目标词比相似度，音量/时长兜底）+ `FollowReadPanel`（录音/对比/达标/再试一次/先跳过），达标自动进入下一个词；当前游戏/句型/复习未接入，全部达标或主动结束时先进结算页，接入后续环节后改为进入游戏
+  - 待对齐设计：①评测基础设施异常（识别超时 / 音频不可读 / 录音被打断）应"提示重试、不写 `Attempt`"，当前实现会写失败明细；②首次达标 +3、每次达标 +2（同一 item 每天一次），当前实现是首次 +1；③失败卡需给「原因 + 建议配速按钮 + 差异位置 + 三步纠错法」，当前只有一句提示
+- [x] 4.3 实现"认"模块（已并入 4.2）
+  - 2026-10-27：单词的「认」=「看大图认词」，与跟读同屏；原计划的图片-单词拖拽配对与「每屏配对数 / 最少练习轮数」设置一并取消（句型的词块排序仍属 4.10）
 - [ ] 4.4 实现"游戏"模块：听音选图小游戏
 - [ ] 4.5 实现"复习"模块：间隔重复调度器（队列按 design「今日任务与学习调度」生成：到期优先、上限读 `LearningSettings`；间隔规则见「奖励与防沉迷参数」，每次作答写 `Attempt(kind="review")`）
 - [ ] 4.6 实现学习单元拆分逻辑（5-8分钟/单元）
 - [ ] 4.7 实现音频会话管理：category 切换（playback / playAndRecord+defaultToSpeaker）、interruption / routeChange / mediaServicesWereReset 三类通知、录音被打断时丢弃半截 Attempt（见 design「健壮性与合规约定」）
 - [ ] 4.8 实现麦克风权限流程：说明页 → `AVAudioApplication.requestRecordPermission` → 拒绝后降级（跳过说环节、正确率显示 `—`、去设置深链）
+  - 2026-10-27：已做「请求权限 + 拒绝后卡片（去设置深链 / 先跳过）」，独立说明页与正确率 `—` 待补
 - [ ] 4.9 实现缺失资产降级：占位图 / 静音 3 秒推进 / debug 断言 / 本地诊断日志
-- [ ] 4.10 实现句子学习环节（首版范围 A）：听整句（含慢速）、跟读整句（沿用音量+时长口径）、词块排序（`chunks` 拖拽）、听音补全（3 选 1）、整句复习（共用 `ReviewSchedule`）
+- [ ] 4.10 实现句子学习环节（首版范围 A）：听整句（0.5x / 0.75x / 原速）、跟读整句（复用单词跟读的设备端识别评测与纠错建议）、词块排序（`chunks` 拖拽）、听音补全（3 选 1）、整句复习（共用 `ReviewSchedule`）
 - [ ] 4.11 实现「先跳过」机制：连续失败次数读 `LearningSettings`（默认 3 次，可关闭）后出现跳过入口；不写 `ItemProgress`、不计星、记一条 `Attempt(passed=false)`、不进复习调度
+  - 2026-10-27：跟读面板已固定 3 次后出现「先练下一个」，且跳过不计星、不写 `ItemProgress`；读 `LearningSettings`、关闭开关与「不进复习调度」待接
 
 ## 5. 激励系统
 
 - [ ] 5.1 实现星星即时反馈（答对+1，动画庆祝）；每次发星写一条 `StarLedger`，`grantKey` 幂等（重进结算页不重复加分）
+  - 2026-10-27：跟读已按 `grantKey = "first:<itemCode>"` 幂等发星、头部余额读流水；设计定稿为「首次达标 +3、每次达标 +2（同一 item 每天一次）」，当前实现是首次 +1，待按设计调整；撒花动画与结算页庆祝待做
 - [ ] 5.2 实现徽章系统（design 参数表的 6 个徽章：初次学习 / 连学 3 天 / 连学 7 天 / 完成首个单元 / 完成整册 / 跟读达标 20 次）
 - [ ] 5.3 实现星星余额和进度展示（余额 = `StarLedger` 聚合，"今日已发"同理，不存聚合字段）
 - [ ] 5.4 实现防沉迷控制（每日 20 分钟上限、兑换冷却 3 天、星星上限 500、系统时间回拨冻结——见 design「健壮性与合规约定」）
@@ -59,7 +68,8 @@
 - [ ] 6.5 实现多 Profile 切换与生命周期管理（创建上限 4 个、切换时 `profileID` 持久化、删除时逐表清理 8 张表且至少保留 1 个、家长 Tab 可改年级——见 design Decision 5）
 - [ ] 6.6 实现设置页合规项：卸载即清空的明示、学习记录导出 JSON、本地诊断日志查看
 - [ ] 6.7 实现家长手动解锁单元（应对学校进度超前；只放行访问，不改星星与进度统计）
-- [ ] 6.8 实现「练习强度」设置页（6 项，按 Profile 保存，档位选择，即时生效并重算首页预计时长）：认环节每屏配对数 / 每单元最少练习轮数 / 连续失败几次可跳过 / 每日新词数 / 每日新句型数 / 单次复习上限（见 design「可调设置」）
+- [ ] 6.8 实现「练习强度」设置页（按 Profile 保存，档位选择，即时生效并重算首页预计时长）：连续失败几次可跳过 / 每日新词数 / 每日新句型数 / 单次复习上限（见 design「可调设置」）
+  - 2026-10-27：「认环节每屏配对数」「每单元最少练习轮数」随「认」并入「说」取消，剩 4 项
 - [ ] 6.9 实现本地通知：兑换提交 → 提醒家长审核；学期包下载完成 → 通知（`UNUserNotificationCenter`，点通知直达对应页）
 
 ## 7. 内容资源
@@ -68,8 +78,8 @@
 - [x] 7.2 从网络资源获取单词发音音频
 - [x] 7.3 从网络资源获取单词配图
 - [ ] 7.4 把二上资源迁出 App：`app/Resources/Curriculum/` → 学期包 `packs/g2s1.zip`（内含 `curriculum.json` + `audio/ words/ img/`）
-- [ ] 7.5 实现 `_download/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
-- [ ] 7.6 内置 `catalog.json`（学期目录：id / 标题 / 大小 / 版本，不含任何媒体与词表）
+- [x] 7.5 实现 `_download/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
+- [x] 7.6 内置 `catalog.json`（学期目录：id / 标题 / 大小 / 版本，不含任何媒体与词表）
 - [ ] 7.7 管线入版本库 + 学期包异地备份：`_download/build_resources.js`、`serve.js`、`jx_audio_manifest.json`、`words_raw.json` 纳入 git（调整 `.gitignore`，媒体不进 git，只留 `curriculum.json` 与脚本），`packs/*.zip` 备份到云盘或移动硬盘
 - [ ] 7.8 补录二上核心句型并生成音频：6 单元 × 2-3 条（约 18 条），写入 `sentences`（`en` / `zh` / `pattern` / `chunks` / `audio`），音频用 TTS 生成到 `sentences/{unit}/{id}.mp3`
 

@@ -389,7 +389,7 @@
     <div class="card">
       <b style="font-size:16px">练习强度</b>
       <div class="row" style="justify-content:space-between;margin-top:10px">
-        <span style="font-size:14px">每屏配对数 · 练习轮数 · 跳过阈值 · 每日新词/句型 · 复习上限</span>
+        <span style="font-size:14px">跳过阈值 · 每日新词/句型 · 复习上限</span>
         <a class="btn ghost sm" href="#c10">调整</a></div>
       <div class="muted" style="font-size:12.5px;margin-top:8px">按孩子单独保存，改完立即生效；首页「预计 X 分钟」会跟着重算。</div>
     </div>
@@ -452,18 +452,6 @@
     <div class="muted" style="font-size:13px">按孩子单独保存，改完立即生效。只影响练习量与容错，不改变评分口径与复习算法。</div>
 
     <div class="card" style="display:flex;align-items:center;justify-content:space-between">
-      <div><b style="font-size:15px">认环节每屏配对数</b>
-        <div class="muted" style="font-size:12px">单元词多于一屏时自动分轮</div></div>
-      <div class="seg" data-k="pairs"><button>2</button><button class="on">3</button><button>4</button><button>6</button></div>
-    </div>
-
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
-      <div><b style="font-size:15px">每单元最少练习轮数</b>
-        <div class="muted" style="font-size:12px">达到轮数才算完成，解锁下一单元</div></div>
-      <div class="seg" data-k="rounds"><button class="on">1</button><button>2</button><button>3</button></div>
-    </div>
-
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between">
       <div><b style="font-size:15px">连续失败几次可跳过</b>
         <div class="muted" style="font-size:12px">关闭后必须做对才能过</div></div>
       <div class="seg" data-k="skip"><button>2</button><button class="on">3</button><button>4</button><button>5</button><button>关</button></div>
@@ -487,13 +475,13 @@
 
     <div style="flex:1"></div>
     <div class="card" style="background:var(--blue-soft);border-color:#BEE9F7">
-      <span style="font-size:12.5px;line-height:1.7">当前设置下，今天约 <b>5 个词 + 1 条句型</b>，预计 <b>18 分钟</b>；认环节 3 对一屏、约 2 轮覆盖 Unit 1 全部单词。</span>
+      <span style="font-size:12.5px;line-height:1.7">当前设置下，今天约 <b>5 个词 + 1 条句型</b>，预计 <b>18 分钟</b>；跟读达标才算学会，同一词每天最多发一次达标星。</span>
     </div>
     <div class="row" style="gap:10px">
       <button class="btn ghost sm" id="resetBtn">恢复默认</button>
       <a class="btn sm" href="#c8">完成</a>
       <div style="flex:1"></div>
-      <a class="btn ghost sm" href="proto-b.html#b5">看认环节效果</a>
+      <a class="btn ghost sm" href="proto-b.html#b3">看学单词效果</a>
     </div>
   </div>
 </div>
@@ -699,7 +687,7 @@
   });
   var rb=document.getElementById('resetBtn');
   if(rb){ rb.addEventListener('click',function(){
-    var def={'pairs':1,'rounds':0,'skip':1,'words':1,'sent':1,'review':1};
+    var def={'skip':1,'words':1,'sent':1,'review':1};
     document.querySelectorAll('.seg').forEach(function(seg){
       var i=def[seg.dataset.k]; if(i===undefined) return;
       seg.querySelectorAll('button').forEach(function(x,j){ x.classList.toggle('on', j===i); });
