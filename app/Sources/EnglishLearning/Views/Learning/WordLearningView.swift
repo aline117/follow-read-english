@@ -474,11 +474,11 @@ struct WordLearningView: View {
                 in: modelContext,
                 now: now
             )
-            if !hasFirstPassStar(word.itemCode) {
-                modelContext.insert(StarLedger(profileID: profile.id, amount: 1, reason: "跟读达标",
-                                               grantKey: "first:\(word.itemCode)", at: now))
-                starsThisSession += 1
-            }
+            // 发星统一走 StarService：幂等 + 余额上限 500 + 时间回拨冻结（tasks 5.4）
+            let result = StarService.grant(profileID: profile.id, amount: 1, reason: "跟读达标",
+                                           key: "first:\(word.itemCode)", in: modelContext, now: now)
+            if case .granted = result { starsThisSession += 1 }
+            BadgeEngine.evaluate(profileID: profile.id, curriculum: nil, in: modelContext, now: now)
         }
 
         passedThisSession.insert(word.itemCode)
@@ -490,12 +490,13 @@ struct WordLearningView: View {
     private func grantUnitRewardIfNeeded() {
         guard unitCompleted else { return }
         let key = "unit:\(pack.id)-\(unit.id)"
-        guard !ledger.contains(where: { $0.profileID == profile.id && $0.grantKey == key }) else { return }
-        modelContext.insert(StarLedger(profileID: profile.id, amount: 5,
+        let result = StarService.grant(profileID: profile.id, amount: 5,
                                        reason: "Unit \(unit.number) 完成",
-                                       grantKey: key, at: Date()))
-        unitRewardGranted = true
-        starsThisSession += 5
+                                       key: key, in: modelContext)
+        if case .granted = result {
+            unitRewardGranted = true
+            starsThisSession += 5
+        }
         save()
     }
 

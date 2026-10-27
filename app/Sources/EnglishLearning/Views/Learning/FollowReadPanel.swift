@@ -35,6 +35,8 @@ struct FollowReadPanel: View {
     /// 第一次点麦克风先看说明页，再弹系统授权（tasks 4.8）
     @AppStorage("micPrimerSeen") private var micPrimerSeen = false
     @State private var showMicPrimer = false
+    /// 达标时「+1 ★」飘一下（tasks 5.1）
+    @State private var burst = false
 
     private let player = AudioPlayer.shared
 
@@ -53,6 +55,18 @@ struct FollowReadPanel: View {
                 .frame(maxWidth: .infinity)
             controls
             footer
+        }
+        .overlay(alignment: .center) {
+            if burst {
+                Text("＋1 ★")
+                    .font(.system(size: 42, weight: .black))
+                    .foregroundStyle(Theme.orange)
+                    .shadow(color: Theme.orange.opacity(0.35), radius: 8, y: 4)
+                    .scaleEffect(burst ? 1.15 : 0.6)
+                    .opacity(burst ? 1 : 0)
+                    .allowsHitTesting(false)
+                    .animation(.spring(response: 0.35, dampingFraction: 0.6), value: burst)
+            }
         }
         .kidCard(padding: 20)
         .onAppear {
@@ -348,6 +362,15 @@ struct FollowReadPanel: View {
     }
 
     /// 录音被系统打断：回到 idle 并提示重读（不写半截评测结果）
+    /// 达标星星飘一下：0.9 秒后自动消失，不挡操作
+    private func playBurst() {
+        burst = true
+        Task {
+            try? await Task.sleep(nanoseconds: 900_000_000)
+            await MainActor.run { burst = false }
+        }
+    }
+
     private func handleAudioInterruption() {
         assessmentID = UUID()
         assessment = nil
@@ -393,6 +416,7 @@ struct FollowReadPanel: View {
             guard assessmentID == id else { return }
             assessment = result
             if !result.isPassed { failures += 1 }
+        if result.isPassed { playBurst() }
             phase = .result
             onAssessment(result)
         }

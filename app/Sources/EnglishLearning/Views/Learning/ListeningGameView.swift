@@ -263,11 +263,9 @@ struct ListeningGameView: View {
         if passed {
             correctCount += 1
             let key = "game:\(sessionID.uuidString)-\(question.answer.itemCode)"
-            if !ledger.contains(where: { $0.profileID == profile.id && $0.grantKey == key }) {
-                modelContext.insert(StarLedger(profileID: profile.id, amount: 1, reason: "听音选图答对",
-                                               grantKey: key, at: now))
-                starsEarned += 1
-            }
+            let result = StarService.grant(profileID: profile.id, amount: 1, reason: "听音选图答对",
+                                           key: key, in: modelContext, now: now)
+            if case .granted = result { starsEarned += 1 }
         }
         try? modelContext.save()
 

@@ -549,11 +549,10 @@ struct SentenceLearningView: View {
         if isFirstPass {
             // 首次达标：+1 星（幂等）+ 排复习（明天第一次）
             let key = "first:\(code)"
-            if !ledger.contains(where: { $0.profileID == profile.id && $0.grantKey == key }) {
-                modelContext.insert(StarLedger(profileID: profile.id, amount: 1,
-                                               reason: "句型跟读达标", grantKey: key, at: now))
-                starsThisSession += 1
-            }
+            let result = StarService.grant(profileID: profile.id, amount: 1, reason: "句型跟读达标",
+                                           key: key, in: modelContext, now: now)
+            if case .granted = result { starsThisSession += 1 }
+            BadgeEngine.evaluate(profileID: profile.id, curriculum: nil, in: modelContext, now: now)
             ReviewScheduler.scheduleFirstReview(
                 profileID: profile.id, itemCode: code, itemKind: .sentence,
                 existing: allReviews.first { $0.profileID == profile.id && $0.itemCode == code },

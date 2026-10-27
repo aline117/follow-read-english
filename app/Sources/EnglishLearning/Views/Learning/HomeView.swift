@@ -52,7 +52,11 @@ struct HomeView: View {
         }
         .background(Theme.bg.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .task { loadCurriculum() }
+        .task {
+            loadCurriculum()
+            // 进首页时补算一次徽章（单元/整册这类需要内容的条件在这里判定，tasks 5.2）
+            _ = BadgeEngine.evaluate(profileID: profile.id, curriculum: curriculum, in: modelContext)
+        }
         .navigationDestination(item: $learningUnitID) { id in
             if let pack = library.installed.first,
                let unit = units.first(where: { $0.id == id }) {
@@ -162,6 +166,13 @@ struct HomeView: View {
                 }
             }
             .padding(.top, 16)
+
+            if dailyMinutesReached {
+                Text("今天已经学够 20 分钟啦 · 想继续可以只做复习（不再发星）")
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Theme.blueInk)
+                    .padding(.top, 10)
+            }
 
             HStack(spacing: 12) {
                 if let unit = currentUnit {
@@ -314,6 +325,14 @@ struct HomeView: View {
     private var dueReviewCount: Int {
         ReviewScheduler.dueCount(from: allReviews, profileID: profile.id,
                                  limit: settings?.reviewLimitPerSession ?? 20)
+    }
+
+    /// 今日是否已达 20 分钟软上限（tasks 5.4：超时后只允许无奖励复习）
+    private var dailyMinutesReached: Bool {
+        let start = Calendar.current.startOfDay(for: Date())
+        let seconds = mySessions.filter { $0.startedAt >= start }
+            .reduce(0) { $0 + $1.durationSeconds }
+        return seconds >= 20 * 60
     }
 
     /// 20 分钟预算下按条目数估个大概（design 里 9-10 分钟/单元）
