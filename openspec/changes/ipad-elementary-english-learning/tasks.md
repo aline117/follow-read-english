@@ -110,8 +110,8 @@
 ## 10. 内容侧（家里电脑）
 
 - [ ] 10.1 建立 `media/` 目录结构与命名规则（`media.json` + `files/songs/<id>.mp4` + `files/picture/<id>.mp4`），从素材目录挑出儿歌 82 首与绘本 164 段并重命名为稳定 id；验证：脚本输出条目数 = 246，且每行与源文件一一对应（无重复 id、无空标题）**[素材]**
-- [ ] 10.2 写 `scripts/build-media-manifest.mjs` 产出 `media.json`（字段：`id` / `title` / `kind`(song|picture) / `part` / `durationSec` / `bytes` / `sha256` / `relPath` / `streamable`）；验证：跑一次产出 246 条，`id` 全部以 `m:` 开头、唯一，且体积合计 ≈ 6.30 GB（±1%）**[素材]**
-- [ ] 10.3 写 `scripts/check-faststart.mjs`（读文件头前 1 MB 查找 `moov` box，判定 `streamable`）；验证：对至少 3 个样本文件的判定结果与「拖到中段能否秒开」的真机表现一致 **[素材]**
+- [x] 10.2 写 `scripts/build-media-manifest.mjs` 产出 `media.json`（字段：`id` / `title` / `kind`(song|picture) / `part` / `durationSec` / `bytes` / `sha256` / `relPath` / `streamable`）；验证：跑一次产出 246 条，`id` 全部以 `m:` 开头、唯一，且体积合计 ≈ 6.30 GB（±1%）**[素材]**
+- [x] 10.3 写 `scripts/check-faststart.mjs`（读文件头前 1 MB 查找 `moov` box，判定 `streamable`）；验证：对至少 3 个样本文件的判定结果与「拖到中段能否秒开」的真机表现一致 **[素材]**
 - [ ] 10.4 Node 静态服务增加 `/media/*` 路由与 Range 支持；验证：`curl -H "Range: bytes=0-1023"` 返回 `206` 且 `Content-Range` / `Content-Length` 正确，`curl -I` 返回 `Accept-Ranges: bytes` **[家里电脑]**
 - [ ] 10.5 打包脚本加路径守卫：目标目录落在仓库内时非零退出并提示改用仓库外目录；验证：`node scripts/build-media-manifest.mjs --out ./media` 退出码 ≠ 0，`git status` 无新增 mp4
 - [ ] 10.6 写内容侧 runbook（`docs/media-runbook.md`，仓库内只写流程不写本机绝对路径）：加一批新素材的完整步骤 + Range/faststart 自检命令；验证：按文档从空目录走一遍能产出可用 `media.json`
@@ -120,18 +120,18 @@
 
 ## 11. 清单与状态层（App）
 
-- [ ] 11.1 定义 `MediaManifest` / `MediaAsset` 为纯 `Decodable`（不新增 `@Model`），含 `mediaSchemaVersion` 校验与 `m:` 命名空间校验；验证：单测覆盖「正常清单」「含 `w:` 前缀的非法项」「缺必需字段」三种输入，后两种整体拒绝
-- [ ] 11.2 实现版本闸门：`mediaSchemaVersion` 高于 App 上限时整包置灰且不删本地缓存；验证：用伪造清单跑单测，断言状态为 `.requiresAppUpdate` 且缓存索引未变
-- [ ] 11.3 实现 `MediaStateStore`（`Application Support/media/media-state.json`，按 `profileID` 分组，单写队列 + 临时文件原子替换，损坏按空状态重建）；验证：单测并发写 100 次后读取字段完整；注入截断 JSON 后重建为空且不抛错
-- [ ] 11.4 实现观看时长聚合（按本地 0 点切日，保留 14 天，5 秒落盘）；验证：单测用可注入时钟跨 0 点累加，断言分属两天的数值正确、第 15 天被淘汰
-- [ ] 11.5 实现 `MediaCacheStore`（`Library/Caches/Media/`，索引 `media-cache.json`，LRU + 剩余空间 < 1 GB 停止预取）；验证：单测「加 3 项越界」断言淘汰 `lastAccessAt` 最旧项；模拟剩余空间 0.5 GB 时断言拒绝新任务
-- [ ] 11.6 验证删除 Profile 会清掉该 profile 在 `media-state.json` 的键且不影响其他 profile；验证：单测 + 手工走查各一次
-- [ ] 11.7 实现时长回填（`media-duration.json`：清单 `durationSec` 为 0/缺失时，首次播放写入 `AVAsset.duration`；显示优先级 清单 > 回填 >「未看过」；两者差 > 2 秒写诊断日志）；验证：单测覆盖三档优先级，真机播放一首时长为 0 的项后家长端显示实测值（对应 spec「时长缺失时的回填」）**[真机]**
+- [x] 11.1 定义 `MediaManifest` / `MediaAsset` 为纯 `Decodable`（不新增 `@Model`），含 `mediaSchemaVersion` 校验与 `m:` 命名空间校验；验证：单测覆盖「正常清单」「含 `w:` 前缀的非法项」「缺必需字段」三种输入，后两种整体拒绝
+- [x] 11.2 实现版本闸门：`mediaSchemaVersion` 高于 App 上限时整包置灰且不删本地缓存；验证：用伪造清单跑单测，断言状态为 `.requiresAppUpdate` 且缓存索引未变
+- [x] 11.3 实现 `MediaStateStore`（`Application Support/media/media-state.json`，按 `profileID` 分组，单写队列 + 临时文件原子替换，损坏按空状态重建）；验证：单测并发写 100 次后读取字段完整；注入截断 JSON 后重建为空且不抛错
+- [x] 11.4 实现观看时长聚合（按本地 0 点切日，保留 14 天，5 秒落盘）；验证：单测用可注入时钟跨 0 点累加，断言分属两天的数值正确、第 15 天被淘汰
+- [x] 11.5 实现 `MediaCacheStore`（`Library/Caches/Media/`，索引 `media-cache.json`，LRU + 剩余空间 < 1 GB 停止预取）；验证：单测「加 3 项越界」断言淘汰 `lastAccessAt` 最旧项；模拟剩余空间 0.5 GB 时断言拒绝新任务
+- [x] 11.6 验证删除 Profile 会清掉该 profile 在 `media-state.json` 的键且不影响其他 profile；验证：单测 + 手工走查各一次
+- [x] 11.7 实现时长回填（`media-duration.json`：清单 `durationSec` 为 0/缺失时，首次播放写入 `AVAsset.duration`；显示优先级 清单 > 回填 >「未看过」；两者差 > 2 秒写诊断日志）；验证：单测覆盖三档优先级，真机播放一首时长为 0 的项后家长端显示实测值（对应 spec「时长缺失时的回填」）**[真机]**
 
 ## 12. 下载与校验
 
-- [ ] 12.1 实现逐项下载器（`URLSession`，下载到临时文件 → `sha256` 校验 → 原子移入缓存 → 更新索引），状态机：未请求 / 下载中 / 已就绪 / 损坏；验证：真机下载 1 项后 `sha256` 与清单一致；手工改坏 1 字节后重试判定为「内容损坏」且不影响其他项 **[家里电脑]**
-- [ ] 12.2 实现顺序预取队列（并发固定 1，可取消）；验证：连续点 5 项时观察服务端日志同时只有 1 个请求在传输
+- [x] 12.1 实现逐项下载器（`URLSession`，下载到临时文件 → `sha256` 校验 → 原子移入缓存 → 更新索引），状态机：未请求 / 下载中 / 已就绪 / 损坏；验证：真机下载 1 项后 `sha256` 与清单一致；手工改坏 1 字节后重试判定为「内容损坏」且不影响其他项 **[家里电脑]**
+- [x] 12.2 实现顺序预取队列（并发固定 1，可取消）；验证：连续点 5 项时观察服务端日志同时只有 1 个请求在传输
 - [ ] 12.3 下载进度与「已下载」标记接入列表；验证：真机观察单条从 0% 到「已下载」，中途退出重进后状态仍正确（不重复下载）
 - [ ] 12.4 校验失败隔离：仅坏项不可播，其余项正常；验证：构造清单里 3 项 sha256 错误，真机断言 3 项显示「内容损坏」、其余 243 项可播（对应 spec「单项校验失败」）
 
