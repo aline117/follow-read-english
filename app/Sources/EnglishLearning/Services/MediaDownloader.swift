@@ -60,6 +60,11 @@ final class MediaDownloader {
         pump(limitGB: limitGB)
     }
 
+    /// 清空缓存后调用：让列表重新按磁盘判断「已下载」
+    func forgetAll() {
+        statuses.removeAll()
+    }
+
     func cancelAll() {
         queue.removeAll()
         pending.forEach { $0.cancel() }

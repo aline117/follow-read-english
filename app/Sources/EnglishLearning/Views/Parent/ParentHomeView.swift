@@ -48,6 +48,20 @@ struct ParentHomeView: View {
                     }
                 }
 
+                Section("听和看") {
+                    NavigationLink {
+                        MediaSettingsView()
+                    } label: {
+                        Label("媒体设置", systemImage: "play.rectangle.fill")
+                    }
+
+                    NavigationLink {
+                        MediaWatchDetailView(profile: profile)
+                    } label: {
+                        Label("今天看了什么", systemImage: "eye.fill")
+                    }
+                }
+
                 Section("奖励") {
                     NavigationLink {
                         RewardLibraryView()
