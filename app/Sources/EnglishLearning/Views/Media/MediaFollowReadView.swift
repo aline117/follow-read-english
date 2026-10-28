@@ -376,9 +376,10 @@ struct MediaFollowReadView: View {
         let firstTry = failures == 0
         MediaStateStore.shared.recordLinePassed(item.id, line: line.index,
                                                 firstTry: firstTry, profileID: profile.id)
+        // MediaAsset.id 已带 `m:` 前缀，别再重复加一层
         let key = item.kind == .picture
-            ? "m:\(item.id)#s\(line.index)"
-            : "m:\(item.id)#l\(line.index)"
+            ? "\(item.id)#s\(line.index)"
+            : "\(item.id)#l\(line.index)"
         let result = StarService.grant(profileID: profile.id, amount: 1,
                                        reason: "跟读达标", key: key, in: modelContext)
         if case .granted = result {
