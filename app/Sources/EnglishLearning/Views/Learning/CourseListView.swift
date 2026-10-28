@@ -11,6 +11,7 @@ struct CourseListView: View {
 
     @State private var curriculum: Curriculum?
     @State private var loadError: String?
+    @State private var mediaLibrary = MediaLibrary.shared
 
     private var units: [Unit] { curriculum?.volumes.first?.units ?? [] }
 
@@ -49,7 +50,14 @@ struct CourseListView: View {
                         ForEach(Array(units.enumerated()), id: \.element.id) { index, unit in
                             unitRow(unit, index: index)
                         }
-                        listeningEntry
+                        if mediaLibrary.state != .missing {
+                            NavigationLink {
+                                MediaLibraryView(profile: profile)
+                            } label: {
+                                listeningEntry
+                            }
+                            .buttonStyle(.plain)
+                        }
                         Text("学校进度超前？家长可在家长面板手动解锁单元")
                             .font(.system(size: 13))
                             .foregroundStyle(Theme.faint)
@@ -64,7 +72,10 @@ struct CourseListView: View {
         }
         .background(Theme.bg.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .task { loadCurriculum() }
+        .task {
+            loadCurriculum()
+            await mediaLibrary.refresh()
+        }
     }
 
     // MARK: - 顶部
@@ -189,7 +200,7 @@ struct CourseListView: View {
         return Double(unit.itemCodes.filter { codes.contains($0) }.count) / Double(total)
     }
 
-    // MARK: - 听和看（媒体库，D 组，还没实现）
+    // MARK: - 听和看（媒体库）
 
     private var listeningEntry: some View {
         HStack(spacing: 16) {
@@ -200,19 +211,20 @@ struct CourseListView: View {
                 .background(Theme.blueSoft)
                 .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
 
-            Text("听和看 · 儿歌与绘本")
-                .font(.system(size: 19, weight: .bold))
-                .foregroundStyle(Theme.ink)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("听和看 · 儿歌与绘本")
+                    .font(.system(size: 19, weight: .bold))
+                    .foregroundStyle(Theme.ink)
+                Text("\(mediaLibrary.songs.count) 首儿歌 · \(mediaLibrary.pictures.count) 段绘本")
+                    .font(.system(size: 12.5))
+                    .foregroundStyle(Theme.muted)
+            }
 
             Spacer()
 
-            Text("待做")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(Theme.faint)
-                .padding(.horizontal, 9)
-                .padding(.vertical, 4)
-                .background(Theme.chipBg)
-                .clipShape(Capsule())
+            Image(systemName: "chevron.right")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(Theme.blueInk)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
@@ -222,7 +234,6 @@ struct CourseListView: View {
             RoundedRectangle(cornerRadius: 17, style: .continuous)
                 .strokeBorder(Color(hex: 0xBFE9F7), lineWidth: 2)
         )
-        .opacity(0.75)
     }
 
     // MARK: - 规则

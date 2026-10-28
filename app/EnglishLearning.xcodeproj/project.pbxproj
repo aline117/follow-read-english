@@ -60,6 +60,11 @@
 		CCCCCCCCCCCCCCCCCC0019 /* PracticeSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0019 /* PracticeSettingsView.swift */; };
 		CCCCCCCCCCCCCCCCCC0020 /* ReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0020 /* ReportView.swift */; };
 		CCCCCCCCCCCCCCCCCC0021 /* RewardAdminViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0021 /* RewardAdminViews.swift */; };
+		FFFFFFFFFFFFFFFFFFFF0001 /* MediaSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0001 /* MediaSettingsStore.swift */; };
+		FFFFFFFFFFFFFFFFFFFF0002 /* MediaLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0002 /* MediaLibrary.swift */; };
+		FFFFFFFFFFFFFFFFFFFF0003 /* MediaPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0003 /* MediaPlayerService.swift */; };
+		FFFFFFFFFFFFFFFFFFFF0004 /* MediaLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0004 /* MediaLibraryView.swift */; };
+		FFFFFFFFFFFFFFFFFFFF0005 /* MediaPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0005 /* MediaPlayerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -117,6 +122,11 @@
 		BBBBBBBBBBBBBBBBBB0019 /* PracticeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeSettingsView.swift; sourceTree = "<group>"; };
 		BBBBBBBBBBBBBBBBBB0020 /* ReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportView.swift; sourceTree = "<group>"; };
 		BBBBBBBBBBBBBBBBBB0021 /* RewardAdminViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardAdminViews.swift; sourceTree = "<group>"; };
+		EEEEEEEEEEEEEEEEEEEE0001 /* MediaSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSettingsStore.swift; sourceTree = "<group>"; };
+		EEEEEEEEEEEEEEEEEEEE0002 /* MediaLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLibrary.swift; sourceTree = "<group>"; };
+		EEEEEEEEEEEEEEEEEEEE0003 /* MediaPlayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPlayerService.swift; sourceTree = "<group>"; };
+		EEEEEEEEEEEEEEEEEEEE0004 /* MediaLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLibraryView.swift; sourceTree = "<group>"; };
+		EEEEEEEEEEEEEEEEEEEE0005 /* MediaPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPlayerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -215,6 +225,9 @@
 				BBBBBBBBBBBBBBBBBB0010 /* ParentOverrides.swift */,
 				BBBBBBBBBBBBBBBBBB0011 /* ReviewScheduler.swift */,
 				BBBBBBBBBBBBBBBBBB0012 /* StarService.swift */,
+				EEEEEEEEEEEEEEEEEEEE0001 /* MediaSettingsStore.swift */,
+				EEEEEEEEEEEEEEEEEEEE0002 /* MediaLibrary.swift */,
+				EEEEEEEEEEEEEEEEEEEE0003 /* MediaPlayerService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -228,6 +241,7 @@
 				AAAAAAAAAAAAAAAAAAAAAA2A /* ProfileSetupView.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA5C /* Theme.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA2B /* RewardCenterView.swift */,
+				DDDDDDDDDDDDDDDDDDDD0001 /* Media */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -277,6 +291,15 @@
 				AAAAAAAAAAAAAAAAAAAAAA59 /* ContentManagementView.swift */,
 			);
 			path = Content;
+			sourceTree = "<group>";
+		};
+		DDDDDDDDDDDDDDDDDDDD0001 /* Media */ = {
+			isa = PBXGroup;
+			children = (
+				EEEEEEEEEEEEEEEEEEEE0004 /* MediaLibraryView.swift */,
+				EEEEEEEEEEEEEEEEEEEE0005 /* MediaPlayerView.swift */,
+			);
+			path = Media;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -406,6 +429,11 @@
 				CCCCCCCCCCCCCCCCCC0019 /* PracticeSettingsView.swift in Sources */,
 				CCCCCCCCCCCCCCCCCC0020 /* ReportView.swift in Sources */,
 				CCCCCCCCCCCCCCCCCC0021 /* RewardAdminViews.swift in Sources */,
+				FFFFFFFFFFFFFFFFFFFF0001 /* MediaSettingsStore.swift in Sources */,
+				FFFFFFFFFFFFFFFFFFFF0002 /* MediaLibrary.swift in Sources */,
+				FFFFFFFFFFFFFFFFFFFF0003 /* MediaPlayerService.swift in Sources */,
+				FFFFFFFFFFFFFFFFFFFF0004 /* MediaLibraryView.swift in Sources */,
+				FFFFFFFFFFFFFFFFFFFF0005 /* MediaPlayerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
