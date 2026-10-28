@@ -48,6 +48,12 @@ enum StarService {
         return .granted(total: current + amount)
     }
 
+    /// 本地自然日戳，用于「同一 item 每天只发一次」的幂等键
+    static func dayStamp(_ date: Date = Date(), calendar: Calendar = .current) -> String {
+        let c = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
+    }
+
     // MARK: - 查询
 
     static func balance(profileID: UUID, in context: ModelContext) -> Int {

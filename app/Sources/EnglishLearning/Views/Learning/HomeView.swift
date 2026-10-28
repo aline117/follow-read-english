@@ -7,6 +7,8 @@ struct HomeView: View {
     let profile: Profile
     var onParentMode: () -> Void = {}
 
+    @Environment(\.modelContext) private var modelContext
+
     @Query private var ledger: [StarLedger]
     @Query private var settingsList: [LearningSettings]
     @Query private var allProgress: [ItemProgress]

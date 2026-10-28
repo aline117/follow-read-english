@@ -39,6 +39,27 @@
 		AAAAAAAAAAAAAAAAAAAAAA6E /* AudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA5E /* AudioRecorder.swift */; };
 		AAAAAAAAAAAAAAAAAAAAAA6F /* PronunciationEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA5F /* PronunciationEvaluator.swift */; };
 		AAAAAAAAAAAAAAAAAAAAAA76 /* FollowReadPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAA75 /* FollowReadPanel.swift */; };
+		CCCCCCCCCCCCCCCCCC0001 /* MediaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0001 /* MediaModels.swift */; };
+		CCCCCCCCCCCCCCCCCC0002 /* AudioSessionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0002 /* AudioSessionCoordinator.swift */; };
+		CCCCCCCCCCCCCCCCCC0003 /* BadgeEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0003 /* BadgeEngine.swift */; };
+		CCCCCCCCCCCCCCCCCC0004 /* DiagnosticsLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0004 /* DiagnosticsLog.swift */; };
+		CCCCCCCCCCCCCCCCCC0005 /* LocalNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0005 /* LocalNotifications.swift */; };
+		CCCCCCCCCCCCCCCCCC0006 /* MediaCacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0006 /* MediaCacheStore.swift */; };
+		CCCCCCCCCCCCCCCCCC0007 /* MediaDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0007 /* MediaDownloader.swift */; };
+		CCCCCCCCCCCCCCCCCC0008 /* MediaStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0008 /* MediaStateStore.swift */; };
+		CCCCCCCCCCCCCCCCCC0009 /* ParentAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0009 /* ParentAuth.swift */; };
+		CCCCCCCCCCCCCCCCCC0010 /* ParentOverrides.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0010 /* ParentOverrides.swift */; };
+		CCCCCCCCCCCCCCCCCC0011 /* ReviewScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0011 /* ReviewScheduler.swift */; };
+		CCCCCCCCCCCCCCCCCC0012 /* StarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0012 /* StarService.swift */; };
+		CCCCCCCCCCCCCCCCCC0013 /* ListeningGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0013 /* ListeningGameView.swift */; };
+		CCCCCCCCCCCCCCCCCC0014 /* MicPermissionPrimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0014 /* MicPermissionPrimer.swift */; };
+		CCCCCCCCCCCCCCCCCC0015 /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0015 /* ReviewView.swift */; };
+		CCCCCCCCCCCCCCCCCC0016 /* SentenceLearningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0016 /* SentenceLearningView.swift */; };
+		CCCCCCCCCCCCCCCCCC0017 /* ParentAdminViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0017 /* ParentAdminViews.swift */; };
+		CCCCCCCCCCCCCCCCCC0018 /* ParentGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0018 /* ParentGateView.swift */; };
+		CCCCCCCCCCCCCCCCCC0019 /* PracticeSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0019 /* PracticeSettingsView.swift */; };
+		CCCCCCCCCCCCCCCCCC0020 /* ReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0020 /* ReportView.swift */; };
+		CCCCCCCCCCCCCCCCCC0021 /* RewardAdminViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBBBBBBBBBBBBBBB0021 /* RewardAdminViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +96,27 @@
 		AAAAAAAAAAAAAAAAAAAAAA5E /* AudioRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorder.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAAAA5F /* PronunciationEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PronunciationEvaluator.swift; sourceTree = "<group>"; };
 		AAAAAAAAAAAAAAAAAAAAAA75 /* FollowReadPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowReadPanel.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0001 /* MediaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaModels.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0002 /* AudioSessionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionCoordinator.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0003 /* BadgeEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeEngine.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0004 /* DiagnosticsLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsLog.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0005 /* LocalNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotifications.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0006 /* MediaCacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCacheStore.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0007 /* MediaDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDownloader.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0008 /* MediaStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStateStore.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0009 /* ParentAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentAuth.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0010 /* ParentOverrides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentOverrides.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0011 /* ReviewScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewScheduler.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0012 /* StarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarService.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0013 /* ListeningGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListeningGameView.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0014 /* MicPermissionPrimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicPermissionPrimer.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0015 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0016 /* SentenceLearningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SentenceLearningView.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0017 /* ParentAdminViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentAdminViews.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0018 /* ParentGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentGateView.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0019 /* PracticeSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeSettingsView.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0020 /* ReportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportView.swift; sourceTree = "<group>"; };
+		BBBBBBBBBBBBBBBBBB0021 /* RewardAdminViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardAdminViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +187,7 @@
 				AAAAAAAAAAAAAAAAAAAAAA25 /* Profile.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA26 /* RewardModels.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA50 /* ContentPackModels.swift */,
+				BBBBBBBBBBBBBBBBBB0001 /* MediaModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -161,6 +204,17 @@
 				AAAAAAAAAAAAAAAAAAAAAA55 /* AudioPlayer.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA5E /* AudioRecorder.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA5F /* PronunciationEvaluator.swift */,
+				BBBBBBBBBBBBBBBBBB0002 /* AudioSessionCoordinator.swift */,
+				BBBBBBBBBBBBBBBBBB0003 /* BadgeEngine.swift */,
+				BBBBBBBBBBBBBBBBBB0004 /* DiagnosticsLog.swift */,
+				BBBBBBBBBBBBBBBBBB0005 /* LocalNotifications.swift */,
+				BBBBBBBBBBBBBBBBBB0006 /* MediaCacheStore.swift */,
+				BBBBBBBBBBBBBBBBBB0007 /* MediaDownloader.swift */,
+				BBBBBBBBBBBBBBBBBB0008 /* MediaStateStore.swift */,
+				BBBBBBBBBBBBBBBBBB0009 /* ParentAuth.swift */,
+				BBBBBBBBBBBBBBBBBB0010 /* ParentOverrides.swift */,
+				BBBBBBBBBBBBBBBBBB0011 /* ReviewScheduler.swift */,
+				BBBBBBBBBBBBBBBBBB0012 /* StarService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -182,6 +236,11 @@
 			isa = PBXGroup;
 			children = (
 				AAAAAAAAAAAAAAAAAAAAAA2D /* ParentHomeView.swift */,
+				BBBBBBBBBBBBBBBBBB0017 /* ParentAdminViews.swift */,
+				BBBBBBBBBBBBBBBBBB0018 /* ParentGateView.swift */,
+				BBBBBBBBBBBBBBBBBB0019 /* PracticeSettingsView.swift */,
+				BBBBBBBBBBBBBBBBBB0020 /* ReportView.swift */,
+				BBBBBBBBBBBBBBBBBB0021 /* RewardAdminViews.swift */,
 			);
 			path = Parent;
 			sourceTree = "<group>";
@@ -204,6 +263,10 @@
 				AAAAAAAAAAAAAAAAAAAAAA5B /* HomeView.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA57 /* CourseListView.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA58 /* UnitDetailView.swift */,
+				BBBBBBBBBBBBBBBBBB0013 /* ListeningGameView.swift */,
+				BBBBBBBBBBBBBBBBBB0014 /* MicPermissionPrimer.swift */,
+				BBBBBBBBBBBBBBBBBB0015 /* ReviewView.swift */,
+				BBBBBBBBBBBBBBBBBB0016 /* SentenceLearningView.swift */,
 			);
 			path = Learning;
 			sourceTree = "<group>";
@@ -322,6 +385,27 @@
 				AAAAAAAAAAAAAAAAAAAAAA67 /* CourseListView.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAAAA68 /* UnitDetailView.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAAAA69 /* ContentManagementView.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0001 /* MediaModels.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0002 /* AudioSessionCoordinator.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0003 /* BadgeEngine.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0004 /* DiagnosticsLog.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0005 /* LocalNotifications.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0006 /* MediaCacheStore.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0007 /* MediaDownloader.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0008 /* MediaStateStore.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0009 /* ParentAuth.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0010 /* ParentOverrides.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0011 /* ReviewScheduler.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0012 /* StarService.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0013 /* ListeningGameView.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0014 /* MicPermissionPrimer.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0015 /* ReviewView.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0016 /* SentenceLearningView.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0017 /* ParentAdminViews.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0018 /* ParentGateView.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0019 /* PracticeSettingsView.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0020 /* ReportView.swift in Sources */,
+				CCCCCCCCCCCCCCCCCC0021 /* RewardAdminViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

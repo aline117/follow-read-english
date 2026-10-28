@@ -42,7 +42,7 @@ struct ParentGateView: View {
             .presentationDetents([.large])
         }
         .sheet(isPresented: $showSetPin) {
-            ParentSetPinView { pin, code in
+            ParentSetPinView { _, code in
                 newRecoveryCode = code
                 showSetPin = false
                 ParentAuth.audit("pin_created")

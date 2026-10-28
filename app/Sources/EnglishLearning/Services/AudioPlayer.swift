@@ -4,8 +4,8 @@ import Observation
 
 /// 音频播放器（design「音频方案」）。
 ///
-/// - 常速：`AVAudioPlayerNode` 直接播
-/// - 慢速：串一个 `AVAudioUnitTimePitch`（rate 0.7，**变速不变调**），不预生成慢速文件
+/// - 原速：`AVAudioPlayerNode` 直接播
+/// - 0.5x / 0.75x：串一个 `AVAudioUnitTimePitch`（**变速不变调**），不预生成慢速文件
 @MainActor
 @Observable
 final class AudioPlayer {
@@ -25,8 +25,10 @@ final class AudioPlayer {
     /// 被系统打断（来电/闹钟）暂停过：用于判断能否 resume
     private var pausedByInterruption = false
 
-    /// 新学默认慢速；复习默认常速（design）
-    static let slowRate: Double = 0.7
+    /// 三档配速（design「单词跟读」）：新学默认 0.75x，复习默认原速
+    static let halfRate: Double = 0.5
+    static let slowRate: Double = 0.75
+    static let normalRate: Double = 1
 
     func isPlaying(_ url: URL, rate: Double? = nil) -> Bool {
         guard playingURL == url else { return false }

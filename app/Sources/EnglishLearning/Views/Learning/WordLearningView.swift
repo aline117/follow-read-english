@@ -26,6 +26,8 @@ struct WordLearningView: View {
     @State private var passedThisSession: Set<String> = []
     @State private var skippedThisSession: Set<String> = []
     @State private var starsThisSession = 0
+    /// 本次学单词的配速（0.5 / 0.75 / 1），后续词沿用；离开学习页即重置
+    @State private var playbackRate: Double = 0.75
     /// 本次是否拿到了「单元完成 +5」奖励（只影响结算文案）
     @State private var unitRewardGranted = false
     /// 今天的新词配额用完（tasks 4.6：一次会话 5-8 分钟，不把整单元一次灌完）
@@ -72,6 +74,8 @@ struct WordLearningView: View {
                     wordPanel(word)
                     FollowReadPanel(word: word.en, referenceURL: audioURL,
                                     isPaused: showSummary,
+                                    initialRate: playbackRate,
+                                    onRateChange: { playbackRate = $0 },
                                     onAssessment: { handle($0) },
                                     onSkip: { skipCurrentWord() },
                                     skipAfterFailures: settings?.skipAfterFailures ?? 3)
@@ -189,23 +193,15 @@ struct WordLearningView: View {
 
             HStack(spacing: 10) {
                 Button {
-                    if isSlowPlaying { player.stop() } else { play(slow: true) }
+                    if isPlayingReference { player.stop() } else { playReference() }
                 } label: {
-                    KidButtonLabel(title: isSlowPlaying ? "停止" : "再听一遍（慢速）",
-                                   systemImage: isSlowPlaying ? "stop.fill" : "play.fill",
+                    KidButtonLabel(title: isPlayingReference ? "停止" : "再听一遍（\(Self.rateLabel(playbackRate))）",
+                                   systemImage: isPlayingReference ? "stop.fill" : "play.fill",
                                    compact: true)
                 }
                 .buttonStyle(KidButtonStyle())
-
-                Button {
-                    play(slow: false)
-                } label: {
-                    KidButtonLabel(title: "常速", style: .ghost, compact: true)
-                        .frame(width: 96)
-                }
-                .buttonStyle(KidButtonStyle())
             }
-            .frame(maxWidth: 360)
+            .frame(maxWidth: 280)
 
             HStack(spacing: 6) {
                 ForEach(Array(unit.words.enumerated()), id: \.element.id) { offset, item in
@@ -243,7 +239,7 @@ struct WordLearningView: View {
         }
         .frame(width: 320, height: 236)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .onTapGesture { play(slow: true) }
+        .onTapGesture { playReference() }
         .accessibilityLabel("\(word.en) 的图片，点一下播放读音")
     }
 
@@ -343,7 +339,7 @@ struct WordLearningView: View {
         }
 
         startSession()
-        play(slow: true)
+        playReference()
     }
 
     private func handle(_ assessment: PronunciationAssessment) {
@@ -382,7 +378,7 @@ struct WordLearningView: View {
         if let next = pendingIndices.first(where: { $0 > index }) ?? pendingIndices.first {
             index = next
             player.stop()
-            play(slow: true)
+            playReference()
         } else {
             showSummary = true
         }
@@ -416,18 +412,22 @@ struct WordLearningView: View {
         !unit.words.isEmpty && unit.words.allSatisfy { doneCodes.contains($0.itemCode) }
     }
 
-    private func play(slow: Bool) {
+    private func playReference() {
         guard let audioURL else {
             // 内容缺音频：记一条诊断（Debug 下直接断言），界面继续可用
             DiagnosticsLog.assertAsset(nil, path: word?.audio ?? "-", context: "WordLearningView.play")
             return
         }
-        player.play(url: audioURL, rate: slow ? AudioPlayer.slowRate : 1)
+        player.play(url: audioURL, rate: playbackRate)
     }
 
-    private var isSlowPlaying: Bool {
+    private var isPlayingReference: Bool {
         guard let audioURL else { return false }
-        return player.isPlaying(audioURL, rate: AudioPlayer.slowRate)
+        return player.isPlaying(audioURL, rate: playbackRate)
+    }
+
+    private static func rateLabel(_ rate: Double) -> String {
+        abs(rate - 1) < 0.01 ? "原速" : String(format: "%.2gx", rate)
     }
 
     // MARK: - 进度写入
@@ -474,11 +474,18 @@ struct WordLearningView: View {
                 in: modelContext,
                 now: now
             )
-            // 发星统一走 StarService：幂等 + 余额上限 500 + 时间回拨冻结（tasks 5.4）
-            let result = StarService.grant(profileID: profile.id, amount: 1, reason: "跟读达标",
-                                           key: "first:\(word.itemCode)", in: modelContext, now: now)
-            if case .granted = result { starsThisSession += 1 }
             BadgeEngine.evaluate(profileID: profile.id, curriculum: nil, in: modelContext, now: now)
+        }
+
+        // 发星统一走 StarService：+2 每次达标（同一词每天一次）+ 首次额外 +3
+        let day = StarService.dayStamp(now)
+        let daily = StarService.grant(profileID: profile.id, amount: 2, reason: "跟读达标",
+                                      key: "speak:\(word.itemCode):\(day)", in: modelContext, now: now)
+        if case .granted = daily { starsThisSession += 2 }
+        if isFirstPass {
+            let first = StarService.grant(profileID: profile.id, amount: 3, reason: "首次达标",
+                                          key: "first:\(word.itemCode)", in: modelContext, now: now)
+            if case .granted = first { starsThisSession += 3 }
         }
 
         passedThisSession.insert(word.itemCode)

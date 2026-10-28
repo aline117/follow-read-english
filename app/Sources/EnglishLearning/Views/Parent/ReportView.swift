@@ -225,19 +225,20 @@ struct ReportView: View {
             stats[attempt.itemCode] = current
         }
         let titles = itemTitles
-        return stats
-            .filter { $0.value.failed > 0 }
-            .map { WeakItem(code: $0.key,
-                            title: titles[$0.key] ?? $0.key,
-                            failedCount: $0.value.failed,
-                            totalCount: $0.value.total) }
-            .sorted { lhs, rhs in
-                lhs.failedCount == rhs.failedCount
-                    ? lhs.totalCount > rhs.totalCount
-                    : lhs.failedCount > rhs.failedCount
+        var items: [WeakItem] = []
+        for (code, value) in stats where value.failed > 0 {
+            items.append(WeakItem(code: code,
+                                  title: titles[code] ?? code,
+                                  failedCount: value.failed,
+                                  totalCount: value.total))
+        }
+        items.sort { lhs, rhs in
+            if lhs.failedCount == rhs.failedCount {
+                return lhs.totalCount > rhs.totalCount
             }
-            .prefix(5)
-            .map { $0 }
+            return lhs.failedCount > rhs.failedCount
+        }
+        return Array(items.prefix(5))
     }
 
     /// itemCode → 显示的英文（内容只在内存里解码，不进库）

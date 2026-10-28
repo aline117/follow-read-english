@@ -4,6 +4,16 @@ import Speech
 
 /// 跟读评测结果：**只给「达标 / 再试一次」的定性结论**，不显示准确率百分比。
 struct PronunciationAssessment {
+    /// 未达标的诊断，用来决定建议配速与纠正文案
+    enum Issue: Equatable {
+        case tooQuiet
+        case tooShort
+        case wrongWord
+        case close
+        case dragging
+        case unrecognized
+    }
+
     let isPassed: Bool
     /// 设备本地语音识别听到的文本（没有识别能力时为 nil）
     let recognizedText: String?
@@ -16,30 +26,52 @@ struct PronunciationAssessment {
     let isLoudEnough: Bool
     let isLongEnough: Bool
     let recordingURL: URL
+    /// 未达标诊断；达标时为 nil
+    let issue: Issue?
+    /// 与目标词不一致的位置（开头 / 结尾 / 中间 / 漏了某个词）
+    let difference: String?
 
     /// `play with lanterns` 这类短语也适用
     var headline: String {
         if isPassed { return "和原音很像！" }
-        if !isLoudEnough { return "声音太小啦" }
-        if !isLongEnough { return "还没读完呢" }
-        if usedSpeechRecognition { return "再跟着原音读一遍" }
-        return "再来一次"
+        switch issue {
+        case .tooQuiet: return "声音太小啦"
+        case .tooShort: return "还没读完呢"
+        case .wrongWord: return "读的不是这个词"
+        case .close: return "有点接近了"
+        case .dragging: return "读得有点拖"
+        case .unrecognized, .none: return "再试一次"
+        }
     }
 
-    var hint: String {
+    /// 一句可执行建议（含建议配速）
+    var advice: String {
         if isPassed {
             if let recognizedText, !recognizedText.isEmpty {
                 return "听到你说「\(recognizedText)」，下一个词继续加油"
             }
             return "读得又清楚又响亮，继续下一个词吧"
         }
-        if !isLoudEnough { return "靠近 iPad 一点，大声读出来" }
-        if !isLongEnough { return "把整个词读完，不要只说一半" }
-        if let recognizedText, !recognizedText.isEmpty {
-            return "听到的是「\(recognizedText)」，先听原音再读一遍"
+        switch issue {
+        case .tooQuiet: return "靠近 iPad 大声读；先 0.75x 听一遍再读"
+        case .tooShort: return "把尾音读完；用 0.5x 跟着读"
+        case .wrongWord: return "先 0.75x 听，再跟着读；注意开头音"
+        case .close: return "用 0.5x 听，注意\(difference ?? "细节")，再读一遍"
+        case .dragging: return "用 0.75x 连起来读，不要一字一顿"
+        case .unrecognized, .none: return "先 0.5x 听清，再按原速读"
         }
-        if usedSpeechRecognition { return "没听清，先听原音，再完整读一遍" }
-        return "先听原音，再跟着读一遍（节奏和原音差得多）"
+    }
+
+    /// 保留旧字段名，避免其它页面改动
+    var hint: String { advice }
+
+    /// 失败卡上的「建议配速」；达标时为 nil
+    var suggestedRate: Double? {
+        guard !isPassed else { return nil }
+        switch issue {
+        case .tooQuiet, .wrongWord, .dragging: return 0.75
+        case .tooShort, .close, .unrecognized, .none: return 0.5
+        }
     }
 }
 
@@ -102,6 +134,29 @@ final class PronunciationEvaluator {
             isPassed = isLoudEnough && isLongEnough && ratioOK
         }
 
+        let issue: PronunciationAssessment.Issue?
+        if isPassed {
+            issue = nil
+        } else if !isLoudEnough {
+            issue = .tooQuiet
+        } else if !isLongEnough {
+            issue = .tooShort
+        } else {
+            switch recognition {
+            case .done where !heard.isEmpty:
+                issue = (similarity ?? 0) < 0.4 ? .wrongWord : .close
+            case .done, .failed:
+                issue = .unrecognized
+            case .skipped, .unavailable:
+                if let referenceDuration, recording.duration / referenceDuration > 2.5 {
+                    issue = .dragging
+                } else {
+                    issue = .unrecognized
+                }
+            }
+        }
+        let difference = best.flatMap { Self.difference(target: target, heard: $0.text) }
+
         return PronunciationAssessment(isPassed: isPassed,
                                        recognizedText: best?.text,
                                        usedSpeechRecognition: recognition.isDone,
@@ -111,7 +166,9 @@ final class PronunciationEvaluator {
                                        peakPower: recording.peakPower,
                                        isLoudEnough: isLoudEnough,
                                        isLongEnough: isLongEnough,
-                                       recordingURL: recording.url)
+                                       recordingURL: recording.url,
+                                       issue: issue,
+                                       difference: difference)
     }
 
     // MARK: - 语音识别
@@ -206,6 +263,34 @@ final class PronunciationEvaluator {
         let sampleRate = file.processingFormat.sampleRate
         guard sampleRate > 0 else { return nil }
         return Double(file.length) / sampleRate
+    }
+
+    /// 指出不一致的位置：多词短语先说漏词，再退到开头 / 结尾 / 中间
+    static func difference(target: String, heard: String) -> String? {
+        let targetTokens = normalize(target).split(separator: " ").map(String.init)
+        let heardTokens = normalize(heard).split(separator: " ").map(String.init)
+        if targetTokens.count > 1 || heardTokens.count > 1 {
+            let missing = targetTokens.filter { !heardTokens.contains($0) }
+            if !missing.isEmpty { return "漏了 \(missing.joined(separator: "、"))" }
+            let extra = heardTokens.filter { !targetTokens.contains($0) }
+            if !extra.isEmpty { return "多了 \(extra.joined(separator: "、"))" }
+        }
+
+        let a = Array(normalize(target).replacingOccurrences(of: " ", with: ""))
+        let b = Array(normalize(heard).replacingOccurrences(of: " ", with: ""))
+        guard !a.isEmpty, !b.isEmpty else { return nil }
+        if a == b { return nil }
+
+        var prefix = 0
+        while prefix < min(a.count, b.count), a[prefix] == b[prefix] { prefix += 1 }
+        var suffix = 0
+        while suffix < min(a.count, b.count) - prefix,
+              a[a.count - 1 - suffix] == b[b.count - 1 - suffix] { suffix += 1 }
+
+        if prefix == 0 { return "开头不一样" }
+        if prefix >= a.count || prefix >= b.count { return "结尾不一样" }
+        if prefix <= 1 { return "开头不一样" }
+        return "中间不一样"
     }
 
     /// 归一化后的编辑距离相似度；空白差异不算错（`icecream` ≈ `ice cream`）

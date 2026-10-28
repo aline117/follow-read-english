@@ -157,6 +157,7 @@ struct SentenceLearningView: View {
                     FollowReadPanel(word: sentence.en,
                                     referenceURL: audioURL(of: sentence),
                                     isPaused: showSummary,
+                                    initialRate: 0.75,
                                     onAssessment: { handleAssessment($0, sentence: sentence) },
                                     onSkip: { advanceStep(from: .speak, sentence: sentence) },
                                     skipAfterFailures: settings?.skipAfterFailures ?? 3)

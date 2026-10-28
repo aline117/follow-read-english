@@ -225,7 +225,7 @@ struct ParentSettingsView: View {
 
             Section {
                 Toggle("大额兑换需要二次确认", isOn: $largeRedemptionNeedsConfirm)
-                Toggle("完成今日任务后才能兑换", isOn: $requireDailyTaskBeforeRedemptionBinding)
+                Toggle("完成今日任务后才能兑换", isOn: requireDailyTaskBeforeRedemptionBinding)
             } header: {
                 Text("兑换限制")
             }

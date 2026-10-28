@@ -12,6 +12,10 @@ struct FollowReadPanel: View {
     let referenceURL: URL?
     /// 上层弹出结算页 / 页面切走时暂停：停录音、停播放
     var isPaused = false
+    /// 进入本词时的配速；上层记住本次学习里的选择，后续词沿用
+    var initialRate: Double = 1
+    /// 配速变化回调（0.5 / 0.75 / 1）
+    var onRateChange: ((Double) -> Void)? = nil
 
     var onAssessment: (PronunciationAssessment) -> Void = { _ in }
     /// 连续失败 / 没有麦克风时允许先练下一个
@@ -32,6 +36,8 @@ struct FollowReadPanel: View {
     @State private var errorMessage: String?
     /// 丢弃过期的评测结果（录音被取消 / 结算页弹出）
     @State private var assessmentID = UUID()
+    /// 当前播放/跟读配速
+    @State private var rate: Double = 1
     /// 第一次点麦克风先看说明页，再弹系统授权（tasks 4.8）
     @AppStorage("micPrimerSeen") private var micPrimerSeen = false
     @State private var showMicPrimer = false
@@ -48,10 +54,11 @@ struct FollowReadPanel: View {
     }
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             header
+            speedPicker
             stage
-                .frame(height: 248)
+                .frame(height: 300)
                 .frame(maxWidth: .infinity)
             controls
             footer
@@ -70,6 +77,7 @@ struct FollowReadPanel: View {
         }
         .kidCard(padding: 20)
         .onAppear {
+            rate = Self.sanitizedRate(initialRate)
             recorder.onFinish = handleRecording
             recorder.onInterrupted = handleAudioInterruption
             wireAudioSession()
@@ -124,6 +132,44 @@ struct FollowReadPanel: View {
                     .clipShape(Capsule())
             }
         }
+    }
+
+    private static let rates: [Double] = [0.5, 0.75, 1]
+
+    private static func sanitizedRate(_ value: Double) -> Double {
+        rates.min { abs($0 - value) < abs($1 - value) } ?? 0.75
+    }
+
+    private static func rateLabel(_ value: Double) -> String {
+        abs(value - 1) < 0.01 ? "原速" : String(format: "%.2gx", value)
+    }
+
+    /// 三档配速：切换即播放；录音 / 评测中禁用
+    private var speedPicker: some View {
+        HStack(spacing: 4) {
+            ForEach(Self.rates, id: \.self) { value in
+                let selected = abs(rate - value) < 0.01
+                Button {
+                    setRate(value)
+                } label: {
+                    Text(Self.rateLabel(value))
+                        .font(.system(size: 12.5, weight: .heavy))
+                        .foregroundStyle(selected ? Theme.orangeDark : Theme.muted)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 30)
+                        .background(selected ? Color.white : Color.clear)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(4)
+        .background(Theme.orangeSoft)
+        .clipShape(Capsule())
+        .overlay(Capsule().strokeBorder(Theme.orangeLine, lineWidth: 1.5))
+        .disabled(phase == .recording || phase == .assessing)
+        .opacity(phase == .recording || phase == .assessing ? 0.5 : 1)
     }
 
     // MARK: - 主区
@@ -205,21 +251,29 @@ struct FollowReadPanel: View {
     @ViewBuilder
     private var resultStage: some View {
         if let assessment {
-            VStack(spacing: 10) {
-                Image(systemName: assessment.isPassed ? "checkmark.seal.fill" : "arrow.clockwise.circle.fill")
-                    .font(.system(size: 42))
-                    .foregroundStyle(assessment.isPassed ? Theme.greenInk : Theme.orangeDark)
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: assessment.isPassed ? "checkmark.seal.fill" : "arrow.clockwise.circle.fill")
+                        .font(.system(size: 32))
+                        .foregroundStyle(assessment.isPassed ? Theme.greenInk : Theme.orangeDark)
+                    Text(assessment.headline)
+                        .font(.system(size: 20, weight: .heavy))
+                        .foregroundStyle(Theme.ink)
+                }
 
-                Text(assessment.headline)
-                    .font(.system(size: 20, weight: .heavy))
-                    .foregroundStyle(Theme.ink)
-
-                Text(assessment.hint)
-                    .font(.system(size: 13.5))
+                Text(assessment.advice)
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.muted)
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 6)
+
+                if !assessment.isPassed, let heard = assessment.recognizedText, !heard.isEmpty {
+                    Text("听到的是「\(heard)」" + (assessment.difference.map { " · \($0)" } ?? ""))
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(Theme.orangeDark)
+                        .lineLimit(2)
+                }
 
                 if assessment.isPassed {
                     Text("准备下一个词…")
@@ -230,30 +284,45 @@ struct FollowReadPanel: View {
                         .background(Theme.greenSoft)
                         .clipShape(Capsule())
                 } else {
-                    Button {
-                        startRecording()
-                    } label: {
-                        KidButtonLabel(title: "再读一次", systemImage: "mic.fill", compact: true)
-                            .frame(width: 170)
+                    HStack(spacing: 8) {
+                        if let suggested = assessment.suggestedRate {
+                            Button {
+                                setRate(suggested)
+                            } label: {
+                                KidButtonLabel(title: "用 \(Self.rateLabel(suggested)) 听",
+                                               systemImage: "speaker.wave.2.fill",
+                                               style: .ghost, compact: true)
+                            }
+                            .buttonStyle(KidButtonStyle())
+                        }
+
+                        Button {
+                            startRecording()
+                        } label: {
+                            KidButtonLabel(title: "再读一次", systemImage: "mic.fill", compact: true)
+                        }
+                        .buttonStyle(KidButtonStyle())
                     }
-                    .buttonStyle(KidButtonStyle())
                     .padding(.top, 2)
 
-                    // 连续失败到阈值才出现「先跳过」（tasks 4.11，0 = 关闭）
                     if canSkipNow {
                         Button {
                             onSkip()
                         } label: {
                             Text("先跳过，练下一个")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 12.5, weight: .semibold))
                                 .foregroundStyle(Theme.muted)
                         }
                         .buttonStyle(.plain)
                     }
+
+                    Text("三步法：0.5x 听清 → 0.75x 跟读 → 原速读一遍")
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(Theme.faint)
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(14)
+            .padding(12)
             .background(assessment.isPassed ? Theme.greenSoft : Theme.orangeSoft)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
@@ -319,18 +388,8 @@ struct FollowReadPanel: View {
 
     private var footer: some View {
         Group {
-            if failures >= 3 && phase != .result {
-                Button {
-                    onSkip()
-                } label: {
-                    Text("连续 3 次没达标 · 先练下一个 →")
-                        .font(.system(size: 12.5))
-                        .foregroundStyle(Theme.muted)
-                        .underline()
-                }
-                .buttonStyle(.plain)
-            } else if phase == .idle {
-                Text("读完后会自动和原音对比，达标就进入下一个词")
+            if phase == .idle {
+                Text("听就在这一屏：可反复听、换配速，读完自动对比原音")
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.faint)
                     .multilineTextAlignment(.center)
@@ -424,7 +483,14 @@ struct FollowReadPanel: View {
 
     private func playReference() {
         guard let referenceURL else { return }
-        player.toggle(url: referenceURL, rate: AudioPlayer.slowRate)
+        player.toggle(url: referenceURL, rate: rate)
+    }
+
+    private func setRate(_ value: Double) {
+        guard phase != .recording, phase != .assessing else { return }
+        rate = Self.sanitizedRate(value)
+        onRateChange?(rate)
+        playReference()
     }
 
     private func openSettings() {

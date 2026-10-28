@@ -111,13 +111,15 @@ struct ListeningGameView: View {
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Theme.muted)
 
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)],
-                      spacing: 16) {
-                ForEach(currentQuestion.options) { option in
-                    optionCard(option)
+            if let question = currentQuestion {
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)],
+                          spacing: 16) {
+                    ForEach(question.options) { option in
+                        optionCard(option)
+                    }
                 }
+                .frame(maxWidth: 720)
             }
-            .frame(maxWidth: 720)
 
             Spacer(minLength: 0)
         }
