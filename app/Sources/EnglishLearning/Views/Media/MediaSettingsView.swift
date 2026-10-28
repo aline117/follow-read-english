@@ -70,6 +70,7 @@ struct MediaSettingsView: View {
     }
 
     private func clearCache() {
+        MediaDownloader.shared.cancelAll()
         MediaCacheStore.shared.removeAll()
         MediaDownloader.shared.forgetAll()
         ParentAuth.audit("media_cache_cleared")
