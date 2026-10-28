@@ -259,6 +259,32 @@ cd app && swift build --triple x86_64-apple-ios18.0-simulator \
 
 ---
 
+## 本地素材接入（听和看）
+
+媒体素材（儿歌 / 绘本视频）**不进仓库**，只在家里电脑和 iPad 上存在。接入分三步：
+
+```bash
+# 1. 把素材放成约定结构（任何盘都行，仓库外）
+#    <媒体目录>/files/songs/    儿歌
+#    <媒体目录>/files/picture/  绘本跟读（按部建子目录）
+
+# 2. 体检 + 生成清单（不能秒开的先 remux，否则只能「先下后播」）
+node scripts/check-faststart.mjs <媒体目录>/files/songs/*.mp4
+node scripts/remux-faststart.mjs --in <媒体目录>/files --out <媒体目录>/files-faststart
+node scripts/build-media-manifest.mjs --media <媒体目录> --out <媒体目录>/media.json --version 1
+
+# 3. 让内容服务也提供 media.json 与 files/（家长模式 → 媒体设置 → 同步内容清单）
+```
+
+- `media.json` 里每项带 `sha256`、`bytes`、`streamable`；App 逐项校验后才启用
+- 儿歌/绘本的"可跟读句"写在 `lines` 里（`text` + 起止秒），没标注时跟读入口会提示「还没标注」
+- 换素材只改文件与 `contentVersion`，App 不用重装
+- 隐私：素材与本机日志都只留在家里电脑 / iPad，不上传任何服务
+
+---
+
+---
+
 ## 许可证
 
 个人项目，未授权他人使用或分发。内容素材版权归原出处所有。
