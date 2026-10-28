@@ -67,6 +67,7 @@
 		FFFFFFFFFFFFFFFFFFFF0005 /* MediaPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0005 /* MediaPlayerView.swift */; };
 		ACACACACACACACACAC0001 /* MediaSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABABABABABABABABAB0001 /* MediaSettingsView.swift */; };
 		ACACACACACACACACAC0002 /* MediaWatchDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABABABABABABABABAB0002 /* MediaWatchDetailView.swift */; };
+		AEAEAEAEAEAEAEAEAE0001 /* MediaFollowReadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADADADADADADADADAD0001 /* MediaFollowReadView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -131,6 +132,7 @@
 		EEEEEEEEEEEEEEEEEEEE0005 /* MediaPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPlayerView.swift; sourceTree = "<group>"; };
 		ABABABABABABABABAB0001 /* MediaSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSettingsView.swift; sourceTree = "<group>"; };
 		ABABABABABABABABAB0002 /* MediaWatchDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaWatchDetailView.swift; sourceTree = "<group>"; };
+		ADADADADADADADADAD0001 /* MediaFollowReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFollowReadView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -304,6 +306,7 @@
 				EEEEEEEEEEEEEEEEEEEE0005 /* MediaPlayerView.swift */,
 				ABABABABABABABABAB0001 /* MediaSettingsView.swift */,
 				ABABABABABABABABAB0002 /* MediaWatchDetailView.swift */,
+				ADADADADADADADADAD0001 /* MediaFollowReadView.swift */,
 			);
 			path = Media;
 			sourceTree = "<group>";
@@ -442,6 +445,7 @@
 				FFFFFFFFFFFFFFFFFFFF0005 /* MediaPlayerView.swift in Sources */,
 				ACACACACACACACACAC0001 /* MediaSettingsView.swift in Sources */,
 				ACACACACACACACACAC0002 /* MediaWatchDetailView.swift in Sources */,
+				AEAEAEAEAEAEAEAEAE0001 /* MediaFollowReadView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

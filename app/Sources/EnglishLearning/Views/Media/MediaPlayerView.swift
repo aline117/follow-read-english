@@ -9,6 +9,7 @@ struct MediaPlayerView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var service = MediaPlayerService()
+    @State private var showFollowRead = false
     @State private var showFollowReadNote = false
     @State private var scrub: Double?
 
@@ -40,10 +41,13 @@ struct MediaPlayerView: View {
         .onChange(of: service.state) { _, state in
             if state == .ended { scrub = nil }
         }
-        .alert("跟读还没做", isPresented: $showFollowReadNote) {
+        .fullScreenCover(isPresented: $showFollowRead) {
+            MediaFollowReadView(profile: profile, item: item, sourceURL: service.sourceURL)
+        }
+        .alert("还没有可播放的原声", isPresented: $showFollowReadNote) {
             Button("知道了", role: .cancel) {}
         } message: {
-            Text("媒体跟读属于 tasks 14.2 / 14.6，下一版接。")
+            Text("等这条视频加载好，或先下载到 iPad 再跟读。")
         }
     }
 
@@ -182,9 +186,14 @@ struct MediaPlayerView: View {
                 .accessibilityLabel(service.isPlaying ? "暂停" : "播放")
 
                 Button {
-                    showFollowReadNote = true
+                    if service.sourceURL == nil {
+                        showFollowReadNote = true
+                    } else {
+                        service.pause()
+                        showFollowRead = true
+                    }
                 } label: {
-                    Label("跟读", systemImage: "mic.fill")
+                    Label(item.lines.isEmpty ? "跟读（待标注）" : "跟读", systemImage: "mic.fill")
                         .font(.system(size: 15, weight: .heavy))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 18)
@@ -193,6 +202,8 @@ struct MediaPlayerView: View {
                         .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
+                .disabled(item.lines.isEmpty)
+                .opacity(item.lines.isEmpty ? 0.55 : 1)
 
                 Spacer(minLength: 0)
 

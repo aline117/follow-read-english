@@ -27,6 +27,8 @@ final class MediaPlayerService {
     private(set) var duration: Double = 0
     private(set) var isUsingCache = false
     private(set) var downloadProgress: Double?
+    /// 当前播放源（本地缓存或串流），跟读页复用
+    private(set) var sourceURL: URL?
 
     private var profileID: UUID?
     private var timeObserver: Any?
@@ -82,6 +84,13 @@ final class MediaPlayerService {
         }
     }
 
+    func pause() {
+        guard state == .playing else { return }
+        player.pause()
+        state = .paused
+        flush()
+    }
+
     func retry() {
         guard let item, let profileID else { return }
         open(item, profileID: profileID)
@@ -108,6 +117,7 @@ final class MediaPlayerService {
         state = .idle
         downloadProgress = nil
         isUsingCache = false
+        sourceURL = nil
         lastTick = nil
         loadDeadline = nil
     }
@@ -153,6 +163,7 @@ final class MediaPlayerService {
 
     private func start(url: URL, cached: Bool) {
         isUsingCache = cached
+        sourceURL = url
         state = .loading
         loadDeadline = Date().addingTimeInterval(8)
         downloadProgress = nil

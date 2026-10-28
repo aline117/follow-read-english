@@ -101,8 +101,9 @@ final class PronunciationEvaluator {
 
     func assess(recording: AudioRecorder.Recording,
                 referenceURL: URL?,
-                target: String) async -> PronunciationAssessment {
-        let referenceDuration = Self.referenceDuration(of: referenceURL)
+                target: String,
+                referenceDuration: TimeInterval? = nil) async -> PronunciationAssessment {
+        let referenceDuration = referenceDuration ?? Self.referenceDuration(of: referenceURL)
         let isLoudEnough = recording.peakPower > Self.loudFloor && recording.voiceRatio >= 0.04
         let isLongEnough = recording.duration >= Self.shortestDuration
 
