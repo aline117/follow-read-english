@@ -107,7 +107,7 @@
 - 唯一性：`ItemProgress` 用 `#Unique([\.profileID, \.itemCode])` 保证「一个孩子 x 一个条目」唯一；`Attempt` 不做唯一约束（明细允许重复）
 - `WordProgress` 重命名为 **`ItemProgress`**（语义覆盖 word / sentence），并带 `itemKind: String`（`word` / `sentence`）便于按类型统计
 
-**奖励记账：** `Reward` 聚合模型取消，改为 `StarLedger` 流水（`grantKey` 唯一保证幂等），余额与"今日已发"由流水聚合，`earnedToday` / `lastEarnDate` 字段不再需要。
+**奖励记账：** `Reward` 聚合模型取消，改为 `StarLedger` 流水（`grantKey` **按 profile 唯一**保证幂等；入库值带 `<profileID>|` 前缀，老数据裸 key 由查询兼容），余额与"今日已发"由流水聚合，`earnedToday` / `lastEarnDate` 字段不再需要。
 
 **理由：** JSON 解码不产生 UUID，若进度表存 UUID 则永远关联不到真实单词（历史缺陷）；业务码同时是排查内容问题的天然标识。
 

@@ -98,7 +98,8 @@
 
 ## 9. 质量保障
 
-- [ ] 9.1 单元测试（XCTest）覆盖四个纯逻辑模块：`CurriculumLoader` 解码与资产校验、复习间隔算法（1→3→7→14→30 与答错回退）、`StarLedger` 幂等（同一 grantKey 重复发放只生效一次）、`AccuracyRule` 聚合口径
+- [x] 9.1 单元测试（XCTest）覆盖四个纯逻辑模块：`CurriculumLoader` 解码与资产校验、复习间隔算法（1→3→7→14→30 与答错回退）、`StarLedger` 幂等（同一 grantKey 重复发放只生效一次）、`AccuracyRule` 聚合口径
+  - 2026-10-28：新增 `EnglishLearningTests` target（10 个用例）；顺带修出多 Profile 发星键冲突：`grantKey` 入库时按 profile 加前缀，`hasGrant` 兼容老数据，`xcodebuild test` 通过
 - [ ] 9.2 手测清单：Reduce Motion 下动画降级、VoiceOver 朗读关键按钮、44pt 点击区、连输错 5 次锁定、系统时间回拨冻结发星
 
 ---
