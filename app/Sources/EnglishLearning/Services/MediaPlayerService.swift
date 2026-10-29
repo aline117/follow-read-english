@@ -40,6 +40,8 @@ final class MediaPlayerService {
     private var lastTick: Date?
     private var pendingWatched: Double = 0
     private var lastSaveAt = Date.distantPast
+    /// 当前在串流、后台预取完成后自动切本地
+    private var prefetchUpgradeAllowed = false
 
     private let cache = MediaCacheStore.shared
     private let downloads = MediaDownloader.shared
@@ -77,6 +79,7 @@ final class MediaPlayerService {
             start(url: stream, cached: false)
             // 串流时顺手预取，最多缓存到家长设的上限
             downloads.enqueue(item, baseURL: base, limitGB: settings.cacheLimitGB)
+            prefetchUpgradeAllowed = true
         } else {
             state = .loading
             downloadProgress = 0
@@ -116,6 +119,7 @@ final class MediaPlayerService {
         player.replaceCurrentItem(with: nil)
         state = .idle
         downloadProgress = nil
+        prefetchUpgradeAllowed = false
         isUsingCache = false
         sourceURL = nil
         lastTick = nil
@@ -135,6 +139,10 @@ final class MediaPlayerService {
             state = .paused
             flush()
         case .paused:
+            if !isUsingCache, let item, let local = cache.fileURL(for: item.id) {
+                start(url: local, cached: true)
+                return
+            }
             player.play()
             state = .playing
             lastTick = Date()
@@ -154,6 +162,8 @@ final class MediaPlayerService {
 
     var isPlaying: Bool { state == .playing }
 
+    private var modeLabel: String { isUsingCache ? "local" : "stream" }
+
     var progress: Double {
         guard duration > 0 else { return 0 }
         return min(1, max(0, position / duration))
@@ -162,7 +172,22 @@ final class MediaPlayerService {
     // MARK: - 起播
 
     private func start(url: URL, cached: Bool) {
+        // 预取完成切本地时会再次进入：先摘掉旧的观察者，避免重复 tick
+        if let timeObserver {
+            player.removeTimeObserver(timeObserver)
+            self.timeObserver = nil
+        }
+        if let endObserver {
+            NotificationCenter.default.removeObserver(endObserver)
+            self.endObserver = nil
+        }
+        statusObservation?.invalidate()
+        statusObservation = nil
+        ticker?.invalidate()
+        ticker = nil
+
         isUsingCache = cached
+        if cached { prefetchUpgradeAllowed = false }
         sourceURL = url
         state = .loading
         loadDeadline = Date().addingTimeInterval(8)
@@ -219,7 +244,13 @@ final class MediaPlayerService {
                 case .failed:
                     let message = item.error?.localizedDescription ?? "视频解码失败"
                     self.state = .failed(message)
-                    DiagnosticsLog.log("media_decode_failed", ["error": message])
+                    let httpStatus = item.errorLog()?.events.last?.errorStatusCode ?? 0
+                    DiagnosticsLog.log("media_playback_failed", [
+                        "item": self.item?.id ?? "",
+                        "mode": self.modeLabel,
+                        "code": httpStatus > 0 ? "http_\(httpStatus)" : "decode",
+                        "error": message
+                    ])
                 default:
                     break
                 }
@@ -272,7 +303,11 @@ final class MediaPlayerService {
         if state == .loading {
             if let deadline = loadDeadline, Date() > deadline {
                 state = .failed("视频 8 秒还没起来，检查家里电脑或先下载到 iPad")
-                DiagnosticsLog.log("media_start_timeout", ["item": item?.id ?? ""])
+                DiagnosticsLog.log("media_start_timeout", [
+                    "item": item?.id ?? "",
+                    "mode": modeLabel,
+                    "code": "timeout"
+                ])
                 loadDeadline = nil
                 player.pause()
             }
@@ -280,6 +315,14 @@ final class MediaPlayerService {
         }
         guard state == .playing else {
             lastTick = nil
+            return
+        }
+
+        // 串流中后台预取完成：切到本地文件，之后断网也能继续
+        if prefetchUpgradeAllowed, !isUsingCache, let item,
+           let local = cache.fileURL(for: item.id) {
+            prefetchUpgradeAllowed = false
+            start(url: local, cached: true)
             return
         }
 

@@ -47,6 +47,18 @@ enum DiagnosticsLog {
         }
     }
 
+    /// 只取媒体相关事件（tasks 15.6）
+    static func mediaEntries() -> [Entry] {
+        entries().filter { $0.event.hasPrefix("media") }
+    }
+
+    /// 只清媒体相关事件，保留学习/家长操作的日志
+    static func clearMedia() {
+        queue.async {
+            rewrite(readAll().filter { !$0.event.hasPrefix("media") })
+        }
+    }
+
     // MARK: - 私有
 
     private static func append(_ entry: Entry) {
@@ -60,6 +72,19 @@ enum DiagnosticsLog {
         var combined = existing + line
         if let trimmed = trim(combined, keeping: limit) { combined = trimmed }
         try? combined.write(to: fileURL, options: .atomic)
+    }
+
+    private static func rewrite(_ entries: [Entry]) {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        var out = Data()
+        for entry in entries {
+            guard let line = try? encoder.encode(entry) else { continue }
+            out.append(line)
+            out.append(0x0A)
+        }
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try? out.write(to: fileURL, options: .atomic)
     }
 
     private static func readAll() -> [Entry] {

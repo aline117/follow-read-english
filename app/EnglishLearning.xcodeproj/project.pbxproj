@@ -68,6 +68,7 @@
 		ACACACACACACACACAC0001 /* MediaSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABABABABABABABABAB0001 /* MediaSettingsView.swift */; };
 		ACACACACACACACACAC0002 /* MediaWatchDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABABABABABABABABAB0002 /* MediaWatchDetailView.swift */; };
 		AEAEAEAEAEAEAEAEAE0001 /* MediaFollowReadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADADADADADADADADAD0001 /* MediaFollowReadView.swift */; };
+		BABABABABABABABABA0001 /* MediaDiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFAFAFAFAFAFAFAFAF0001 /* MediaDiagnosticsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -133,6 +134,7 @@
 		ABABABABABABABABAB0001 /* MediaSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSettingsView.swift; sourceTree = "<group>"; };
 		ABABABABABABABABAB0002 /* MediaWatchDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaWatchDetailView.swift; sourceTree = "<group>"; };
 		ADADADADADADADADAD0001 /* MediaFollowReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFollowReadView.swift; sourceTree = "<group>"; };
+		AFAFAFAFAFAFAFAFAF0001 /* MediaDiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDiagnosticsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -307,6 +309,7 @@
 				ABABABABABABABABAB0001 /* MediaSettingsView.swift */,
 				ABABABABABABABABAB0002 /* MediaWatchDetailView.swift */,
 				ADADADADADADADADAD0001 /* MediaFollowReadView.swift */,
+				AFAFAFAFAFAFAFAFAF0001 /* MediaDiagnosticsView.swift */,
 			);
 			path = Media;
 			sourceTree = "<group>";
@@ -446,6 +449,7 @@
 				ACACACACACACACACAC0001 /* MediaSettingsView.swift in Sources */,
 				ACACACACACACACACAC0002 /* MediaWatchDetailView.swift in Sources */,
 				AEAEAEAEAEAEAEAEAE0001 /* MediaFollowReadView.swift in Sources */,
+				BABABABABABABABABA0001 /* MediaDiagnosticsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

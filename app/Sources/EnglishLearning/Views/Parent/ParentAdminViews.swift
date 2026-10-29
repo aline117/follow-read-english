@@ -232,6 +232,12 @@ struct ParentSettingsView: View {
 
             Section {
                 Button("查看诊断日志（\(diagnostics.count) 条）") { reloadLogs() }
+                NavigationLink {
+                    MediaDiagnosticsView()
+                } label: {
+                    Label("媒体日志（\(DiagnosticsLog.mediaEntries().count) 条）",
+                          systemImage: "film")
+                }
                 Button("清空诊断日志", role: .destructive) {
                     DiagnosticsLog.clear()
                     reloadLogs()
