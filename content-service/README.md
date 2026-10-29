@@ -8,9 +8,9 @@ content-service/
 ├── serve/
 │   ├── serve.py        # Python 3 标准库，Mac/Linux 直接跑
 │   ├── serve.js        # Node 版（Windows 也可用）
-│   ├── serve.sh        # macOS / Linux 启动（优先 Python，其次 Node）
+│   ├── serve.sh        # macOS / Linux 启动（默认 Node，--runtime 切换）
 │   ├── serve.command   # macOS 双击入口（调用 serve.sh）
-│   └── serve.bat       # Windows 双击启动（需要 Node）
+│   └── serve.bat       # Windows 启动（默认 Node，--runtime 切换）
 ├── build/
 │   ├── build_resources.py            # 学期包 → packs/*.zip + meta
 │   ├── build-media-manifest.mjs      # 媒体目录 → media/media.json
@@ -30,24 +30,31 @@ content-service/
 最简方式：把整个 `content-service/` 拷到家里电脑（U 盘 / 云盘都行），再准备 `packs/` 与 `media/` 数据。
 
 ```bash
-# macOS / Linux：一条命令（优先 Python，没 Python 再用 Node）
+# macOS / Linux：默认用 Node
 ./serve/serve.sh
 
-# macOS 也可以直接在 Finder 里双击 serve/serve.command
+# 想用 Python：
+./serve/serve.sh --runtime python
+
+# 不指定，按机器选择（有 python3 用 Python，否则 Node）
+./serve/serve.sh --runtime auto
+
+# macOS 也可以直接在 Finder 里双击 serve/serve.command（默认 Node）
 # Linux 可加别名/软链到 ~/bin 之类
 
-# Windows（装了 Node）
+# Windows：默认 Node
 serve\serve.bat
-# 或
-node serve\serve.js
+serve\serve.bat --runtime python
 ```
 
-`serve.sh` 只是启动器，参数与 `serve.py` / `serve.js` 一致，例如：
+`--runtime` 只是启动器的参数，不会传给 `serve.py` / `serve.js`；其余参数原样透传：
 
 ```bash
-./serve/serve.sh --port 9000
-./serve/serve.sh --root /path/to/content-service
+./serve/serve.sh --runtime python --port 9000
+./serve/serve.sh --runtime node --root /path/to/content-service
 ```
+
+两种实现（Python / Node）提供完全相同的接口；默认选 Node 是为了和 Windows 侧、以及 `build/` 里的 Node 工具保持一致。
 
 启动后会打印可用地址：
 
