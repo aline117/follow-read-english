@@ -3,9 +3,9 @@
 // 无损（-c copy），体积基本不变，几十秒可跑完上百个文件。
 //
 // 用法：
-//   node content-service/build/remux-faststart.mjs --in <源目录> --out <目标目录> [--dry-run]
+//   node content-service/build/remux-faststart.mjs --in <源目录> --out <目标目录> [--dry-run] [--ffmpeg <路径>]
 //
-// 依赖本机 ffmpeg（默认 D:\bin\ffmpeg\bin\ffmpeg.exe，可用 --ffmpeg 覆盖）
+// 依赖本机 ffmpeg：默认取 PATH 里的 `ffmpeg`，放到别处时用 `--ffmpeg` 指向实际路径
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,7 +13,7 @@ import { execFileSync } from 'node:child_process';
 import { isStreamable } from './check-faststart.mjs';
 
 function parseArgs(argv) {
-  const args = { in: '', out: '', ffmpeg: 'D:\\bin\\ffmpeg\\bin\\ffmpeg.exe', dryRun: false };
+  const args = { in: '', out: '', ffmpeg: 'ffmpeg', dryRun: false };
   for (let i = 2; i < argv.length; i += 1) {
     const key = argv[i];
     if (key === '--in') { args.in = argv[i + 1]; i += 1; }
@@ -36,11 +36,14 @@ function walk(dir) {
 
 const args = parseArgs(process.argv);
 if (!args.in || !args.out) {
-  console.error('用法: node content-service/build/remux-faststart.mjs --in <源目录> --out <目标目录> [--dry-run]');
+  console.error('用法: node content-service/build/remux-faststart.mjs --in <源目录> --out <目标目录> [--dry-run] [--ffmpeg <路径>]');
   process.exit(1);
 }
-if (!fs.existsSync(args.ffmpeg)) {
-  console.error(`找不到 ffmpeg：${args.ffmpeg}\n用 --ffmpeg 指向实际路径。`);
+// ffmpeg 在 PATH 里也行、给绝对路径也行，统一用一次 -version 探活
+try {
+  execFileSync(args.ffmpeg, ['-version'], { stdio: 'ignore' });
+} catch {
+  console.error(`执行不了 ffmpeg：${args.ffmpeg}\n装到 PATH 里，或用 --ffmpeg 指向实际路径。`);
   process.exit(2);
 }
 
