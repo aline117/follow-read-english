@@ -30,6 +30,9 @@ struct PronunciationAssessment {
     let issue: Issue?
     /// 与目标词不一致的位置（开头 / 结尾 / 中间 / 漏了某个词）
     let difference: String?
+    /// 评测基础设施异常（识别超时 / 识别器报错 / 音频读不出）：**不算读错**。
+    /// 调用方据此只提示重试，且不得写 `Attempt`（design「评测基础设施异常 ≠ 读错」）
+    var isInfrastructureFailure = false
 
     /// `play with lanterns` 这类短语也适用
     var headline: String {
@@ -127,6 +130,9 @@ final class PronunciationEvaluator {
         case .done, .failed:
             // 识别通道在，但没听到词：不判达标，让孩子再读一遍
             isPassed = false
+        case .timedOut:
+            // 基础设施异常：结论一律不达标，但调用方不会记成「读错」
+            isPassed = false
         case .skipped, .unavailable:
             // 没有识别能力（模拟器 / 未下载听写资源 / 无权限）：退回音量 + 时长
             let ratioOK = referenceDuration.map { ratio in
@@ -147,6 +153,8 @@ final class PronunciationEvaluator {
             case .done where !heard.isEmpty:
                 issue = (similarity ?? 0) < 0.4 ? .wrongWord : .close
             case .done, .failed:
+                issue = .unrecognized
+            case .timedOut:
                 issue = .unrecognized
             case .skipped, .unavailable:
                 if let referenceDuration, recording.duration / referenceDuration > 2.5 {
@@ -169,7 +177,8 @@ final class PronunciationEvaluator {
                                        isLongEnough: isLongEnough,
                                        recordingURL: recording.url,
                                        issue: issue,
-                                       difference: difference)
+                                       difference: difference,
+                                       isInfrastructureFailure: recognition.isInfrastructureFailure)
     }
 
     // MARK: - 语音识别
@@ -177,15 +186,22 @@ final class PronunciationEvaluator {
     private enum RecognitionOutcome {
         /// 识别能力不可用（无权限 / 不支持设备端识别 / 模拟器）
         case unavailable
-        /// 识别跑过但失败（没听到人声、资源缺失）
+        /// 识别跑过但没听到人声
         case failed
         /// 识别跑过且拿到了结果
         case done([String])
         /// 声音太小，没必要识别
         case skipped
+        /// 识别超时 / 识别器报错：属基础设施异常，不是读错
+        case timedOut
 
         var isDone: Bool {
             if case .done = self { return true }
+            return false
+        }
+
+        var isInfrastructureFailure: Bool {
+            if case .timedOut = self { return true }
             return false
         }
 
@@ -210,23 +226,24 @@ final class PronunciationEvaluator {
         request.taskHint = .dictation
         request.contextualStrings = Self.contextualStrings(for: target)
 
-        let outcome: [String]? = await withCheckedContinuation { continuation in
+        let outcome: RecognitionOutcome = await withCheckedContinuation { continuation in
             let once = ResumeOnce(continuation)
             let task = recognizer.recognitionTask(with: request) { result, error in
                 if let result, result.isFinal {
-                    once.finish(result.transcriptions.map(\.formattedString))
+                    let texts = result.transcriptions.map(\.formattedString)
+                    once.finish(texts.isEmpty ? .failed : .done(texts))
                 } else if error != nil {
-                    once.finish([])
+                    // 识别器报错：按基础设施异常处理，不记成「读错」
+                    once.finish(.timedOut)
                 }
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
                 task.cancel()
-                once.finish(nil)
+                once.finish(.timedOut)
             }
         }
 
-        guard let outcome else { return .failed }
-        return outcome.isEmpty ? .failed : .done(outcome)
+        return outcome
     }
 
     /// 只允许「已授权」，未授权时弹一次系统询问
@@ -346,15 +363,15 @@ final class PronunciationEvaluator {
 }
 
 /// 保证 continuation 只 resume 一次（识别回调 + 超时可能都来）。
-private final class ResumeOnce: @unchecked Sendable {
+private final class ResumeOnce<Value>: @unchecked Sendable {
     private let lock = NSLock()
-    private var continuation: CheckedContinuation<[String]?, Never>?
+    private var continuation: CheckedContinuation<Value, Never>?
 
-    init(_ continuation: CheckedContinuation<[String]?, Never>) {
+    init(_ continuation: CheckedContinuation<Value, Never>) {
         self.continuation = continuation
     }
 
-    func finish(_ value: [String]?) {
+    func finish(_ value: Value) {
         lock.lock()
         let continuation = self.continuation
         self.continuation = nil

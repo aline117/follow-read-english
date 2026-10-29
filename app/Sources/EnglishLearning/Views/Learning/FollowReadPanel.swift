@@ -477,9 +477,16 @@ struct FollowReadPanel: View {
                                                                     referenceURL: referenceURL,
                                                                     target: word)
             guard assessmentID == id else { return }
+            // 基础设施异常（识别超时 / 识别器报错）：只提示重试，不算读错、不写 Attempt
+            if result.isInfrastructureFailure {
+                assessment = nil
+                phase = .idle
+                errorMessage = "刚才没听清，再读一次"
+                return
+            }
             assessment = result
             if !result.isPassed { failures += 1 }
-        if result.isPassed { playBurst() }
+            if result.isPassed { playBurst() }
             phase = .result
             onAssessment(result)
         }

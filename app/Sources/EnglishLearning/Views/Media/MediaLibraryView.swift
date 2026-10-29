@@ -157,10 +157,16 @@ struct MediaLibraryView: View {
                 Spacer()
             }
             ForEach(items) { item in
+                let status = downloads.status(for: item.id)
                 Button {
-                    selectedID = item.id
+                    // tasks 12.4：校验失败的坏项不可播，点一下重下；其余项照常打开
+                    if case .corrupted = status {
+                        retryDownload(item)
+                    } else {
+                        selectedID = item.id
+                    }
                 } label: {
-                    row(item)
+                    row(item, status: status)
                 }
                 .buttonStyle(.plain)
             }
@@ -168,11 +174,16 @@ struct MediaLibraryView: View {
         .padding(.top, 4)
     }
 
-    private func row(_ item: MediaAsset) -> some View {
+    private func row(_ item: MediaAsset, status: MediaDownloader.Status) -> some View {
         let state = MediaStateStore.shared.itemState(item.id, profileID: profile.id)
         let duration = MediaStateStore.shared.displayDuration(for: item)
         let cached = MediaCacheStore.shared.isCached(item.id)
         let progress = (duration ?? 0) > 0 ? min(1, state.positionSec / (duration ?? 1)) : 0
+        // tasks 12.4：只有校验失败的坏项被拦下，其余（含「下载失败但可在线播放」）照常可播
+        let corrupted: Bool = {
+            if case .corrupted = status { return true }
+            return false
+        }()
 
         return HStack(spacing: 14) {
             ZStack {
@@ -196,7 +207,7 @@ struct MediaLibraryView: View {
                     } else {
                         Text("未看过")
                     }
-                    if cached {
+                    if cached && !corrupted {
                         Label("已下载", systemImage: "arrow.down.circle.fill")
                             .foregroundStyle(Theme.greenInk)
                     }
@@ -208,6 +219,8 @@ struct MediaLibraryView: View {
                 .font(.system(size: 12.5, weight: .semibold))
                 .foregroundStyle(Theme.muted)
 
+                downloadStatusLine(status)
+
                 if progress > 0.01 {
                     KidProgressBar(value: progress, tint: .orange, height: 6)
                         .frame(maxWidth: 360)
@@ -216,9 +229,9 @@ struct MediaLibraryView: View {
 
             Spacer(minLength: 0)
 
-            Image(systemName: "play.circle.fill")
+            Image(systemName: corrupted ? "arrow.clockwise.circle.fill" : "play.circle.fill")
                 .font(.system(size: 30))
-                .foregroundStyle(Theme.orange)
+                .foregroundStyle(corrupted ? Theme.red : Theme.orange)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -226,7 +239,39 @@ struct MediaLibraryView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 17, style: .continuous)
-            .strokeBorder(Theme.line, lineWidth: 2))
+            .strokeBorder(corrupted ? Theme.red.opacity(0.5) : Theme.line, lineWidth: 2))
+    }
+
+    /// tasks 12.3：把逐项下载状态接进列表（进度 / 已下好 / 内容损坏 / 下载失败）
+    @ViewBuilder
+    private func downloadStatusLine(_ status: MediaDownloader.Status) -> some View {
+        switch status {
+        case .downloading(let progress):
+            HStack(spacing: 8) {
+                Text("下载中 \(Int((progress * 100).rounded()))%")
+                    .font(.system(size: 12.5, weight: .semibold))
+                    .foregroundStyle(Theme.blueInk)
+                KidProgressBar(value: progress, tint: .green, height: 6)
+                    .frame(maxWidth: 220)
+            }
+        case .corrupted:
+            Label("内容损坏 · 点一下重新下载", systemImage: "exclamationmark.triangle.fill")
+                .font(.system(size: 12.5, weight: .semibold))
+                .foregroundStyle(Theme.red)
+        case .failed(let message):
+            Label("下载失败（可在线播放）· \(message)", systemImage: "wifi.exclamationmark")
+                .font(.system(size: 12.5, weight: .semibold))
+                .foregroundStyle(Theme.orangeDark)
+                .lineLimit(2)
+        case .ready, .idle:
+            EmptyView()
+        }
+    }
+
+    /// 坏项重下：清掉旧的坏状态，重新入队（并发仍由 `MediaDownloader` 控制）
+    private func retryDownload(_ item: MediaAsset) {
+        guard let base = library.baseURL else { return }
+        downloads.enqueue(item, baseURL: base, limitGB: settings.cacheLimitGB)
     }
 
     private func emptyState(title: String, message: String) -> some View {

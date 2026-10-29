@@ -356,6 +356,12 @@ struct MediaFollowReadView: View {
                 referenceDuration: lineDuration
             )
             assessment = result
+            // 基础设施异常（识别超时 / 识别器报错）：只提示重试，不算读错、不写 Attempt
+            if result.isInfrastructureFailure {
+                phase = .idle
+                errorMessage = "刚才没听清，再读一次"
+                return
+            }
             phase = .result
             if result.isPassed {
                 recordPass(line)
