@@ -43,8 +43,11 @@ enum StarService {
             return .balanceCapped(current: current)
         }
 
+        // 幂等键按 profile 隔离：不同孩子可以有同样的 `first:w:1`；
+        // 老数据没有前缀，查询时兼容
+        let storedKey = storageKey(key, profileID: profileID)
         context.insert(StarLedger(profileID: profileID, amount: amount, reason: reason,
-                                  grantKey: key, at: now))
+                                  grantKey: storedKey, at: now))
         return .granted(total: current + amount)
     }
 
@@ -77,9 +80,18 @@ enum StarService {
 
     static func hasGrant(key: String, profileID: UUID, in context: ModelContext) -> Bool {
         let pid = profileID
+        let stored = storageKey(key, profileID: profileID)
         let entries = (try? context.fetch(
-            FetchDescriptor<StarLedger>(predicate: #Predicate { $0.profileID == pid && $0.grantKey == key }))) ?? []
+            FetchDescriptor<StarLedger>(predicate: #Predicate {
+                $0.profileID == pid && ($0.grantKey == stored || $0.grantKey == key)
+            }))) ?? []
         return !entries.isEmpty
+    }
+
+    /// 数据库里的 `grantKey` 带 profile 前缀，避免 `#Unique(grantKey)` 把另一个孩子的同名奖励挡掉。
+    /// 老数据是裸 key，`hasGrant` 会同时认两种。
+    private static func storageKey(_ key: String, profileID: UUID) -> String {
+        "\(profileID.uuidString)|\(key)"
     }
 
     // MARK: - 时钟守卫

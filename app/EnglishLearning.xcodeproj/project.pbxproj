@@ -69,6 +69,10 @@
 		ACACACACACACACACAC0002 /* MediaWatchDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABABABABABABABABAB0002 /* MediaWatchDetailView.swift */; };
 		AEAEAEAEAEAEAEAEAE0001 /* MediaFollowReadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADADADADADADADADAD0001 /* MediaFollowReadView.swift */; };
 		BABABABABABABABABA0001 /* MediaDiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFAFAFAFAFAFAFAFAF0001 /* MediaDiagnosticsView.swift */; };
+		AAAAAAAAAAAAAAAAAAAAB020 /* CurriculumLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAB010 /* CurriculumLoaderTests.swift */; };
+		AAAAAAAAAAAAAAAAAAAAB021 /* ReviewSchedulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAB011 /* ReviewSchedulerTests.swift */; };
+		AAAAAAAAAAAAAAAAAAAAB022 /* StarServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAB012 /* StarServiceTests.swift */; };
+		AAAAAAAAAAAAAAAAAAAAB023 /* AccuracyRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAB013 /* AccuracyRuleTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -135,6 +139,11 @@
 		ABABABABABABABABAB0002 /* MediaWatchDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaWatchDetailView.swift; sourceTree = "<group>"; };
 		ADADADADADADADADAD0001 /* MediaFollowReadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFollowReadView.swift; sourceTree = "<group>"; };
 		AFAFAFAFAFAFAFAFAF0001 /* MediaDiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaDiagnosticsView.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAB010 /* CurriculumLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurriculumLoaderTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAB011 /* ReviewSchedulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSchedulerTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAB012 /* StarServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarServiceTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAB013 /* AccuracyRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccuracyRuleTests.swift; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAB001 /* EnglishLearningTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EnglishLearningTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,6 +152,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				AAAAAAAAAAAAAAAAAAAAAA74 /* ZIPFoundation in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAAAAAAAAAAAAAAAAAAAB004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,6 +173,7 @@
 				AAAAAAAAAAAAAAAAAAAAAA5A /* catalog.json */,
 				AAAAAAAAAAAAAAAAAAAAAA30 /* Support */,
 				AAAAAAAAAAAAAAAAAAAAAA03 /* Products */,
+				AAAAAAAAAAAAAAAAAAAAB002 /* EnglishLearningTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -164,6 +181,7 @@
 			isa = PBXGroup;
 			children = (
 				AAAAAAAAAAAAAAAAAAAAAA05 /* EnglishLearning.app */,
+				AAAAAAAAAAAAAAAAAAAAB001 /* EnglishLearningTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -314,6 +332,17 @@
 			path = Media;
 			sourceTree = "<group>";
 		};
+		AAAAAAAAAAAAAAAAAAAAB002 /* EnglishLearningTests */ = {
+			isa = PBXGroup;
+			children = (
+				AAAAAAAAAAAAAAAAAAAAB010 /* CurriculumLoaderTests.swift */,
+				AAAAAAAAAAAAAAAAAAAAB011 /* ReviewSchedulerTests.swift */,
+				AAAAAAAAAAAAAAAAAAAAB012 /* StarServiceTests.swift */,
+				AAAAAAAAAAAAAAAAAAAAB013 /* AccuracyRuleTests.swift */,
+			);
+			path = Tests/EnglishLearningTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -337,7 +366,43 @@
 			productReference = AAAAAAAAAAAAAAAAAAAAAA05 /* EnglishLearning.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AAAAAAAAAAAAAAAAAAAAB000 /* EnglishLearningTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAAAAAAAAAAAAAAAAAAAB006 /* Build configuration list for PBXNativeTarget "EnglishLearningTests" */;
+			buildPhases = (
+				AAAAAAAAAAAAAAAAAAAAB003 /* Sources */,
+				AAAAAAAAAAAAAAAAAAAAB004 /* Frameworks */,
+				AAAAAAAAAAAAAAAAAAAAB005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AAAAAAAAAAAAAAAAAAAAB009 /* PBXTargetDependency */,
+			);
+			name = EnglishLearningTests;
+			productName = EnglishLearningTests;
+			productReference = AAAAAAAAAAAAAAAAAAAAB001 /* EnglishLearningTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		AAAAAAAAAAAAAAAAAAAAB00A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAAAAAAAAAAAAAAAAAAAAA01 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AAAAAAAAAAAAAAAAAAAAAA04;
+			remoteInfo = EnglishLearning;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		AAAAAAAAAAAAAAAAAAAAB009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AAAAAAAAAAAAAAAAAAAAAA04 /* EnglishLearning */;
+			targetProxy = AAAAAAAAAAAAAAAAAAAAB00A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		AAAAAAAAAAAAAAAAAAAAAA01 /* Project object */ = {
@@ -349,6 +414,10 @@
 				TargetAttributes = {
 					AAAAAAAAAAAAAAAAAAAAAA04 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					AAAAAAAAAAAAAAAAAAAAB000 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = AAAAAAAAAAAAAAAAAAAAAA04;
 					};
 				};
 			};
@@ -370,6 +439,7 @@
 			projectRoot = "";
 			targets = (
 				AAAAAAAAAAAAAAAAAAAAAA04 /* EnglishLearning */,
+				AAAAAAAAAAAAAAAAAAAAB000 /* EnglishLearningTests */,
 			);
 		};
 /* End PBXProject section */
@@ -382,6 +452,13 @@
 				AAAAAAAAAAAAAAAAAAAAAA36 /* Assets.xcassets in Resources */,
 				AAAAAAAAAAAAAAAAAAAAAA6A /* catalog.json in Resources */,
 				AAAAAAAAAAAAAAAAAAAAAA35 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAAAAAAAAAAAAAAAAAAAB005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,6 +527,17 @@
 				ACACACACACACACACAC0002 /* MediaWatchDetailView.swift in Sources */,
 				AEAEAEAEAEAEAEAEAE0001 /* MediaFollowReadView.swift in Sources */,
 				BABABABABABABABABA0001 /* MediaDiagnosticsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAAAAAAAAAAAAAAAAAAAB003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AAAAAAAAAAAAAAAAAAAAB020 /* CurriculumLoaderTests.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAB021 /* ReviewSchedulerTests.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAB022 /* StarServiceTests.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAB023 /* AccuracyRuleTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -605,6 +693,54 @@
 			};
 			name = Release;
 		};
+		AAAAAAAAAAAAAAAAAAAAB007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aline117.englishlearning.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EnglishLearning.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EnglishLearning";
+			};
+			name = Debug;
+		};
+		AAAAAAAAAAAAAAAAAAAAB008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.aline117.englishlearning.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 2;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EnglishLearning.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EnglishLearning";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -622,6 +758,15 @@
 			buildConfigurations = (
 				AAAAAAAAAAAAAAAAAAAAAA0D /* Debug */,
 				AAAAAAAAAAAAAAAAAAAAAA0E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAAAAAAAAAAAAAAAAAAAB006 /* Build configuration list for PBXNativeTarget "EnglishLearningTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAAAAAAAAAAAAAAAAAAAB007 /* Debug */,
+				AAAAAAAAAAAAAAAAAAAAB008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
