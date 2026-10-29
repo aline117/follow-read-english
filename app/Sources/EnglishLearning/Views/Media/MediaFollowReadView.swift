@@ -14,6 +14,8 @@ struct MediaFollowReadView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    /// 适配约定：动效响应「减弱动态效果」（撒花降级为淡入淡出）
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var recorder = AudioRecorder()
     @State private var linePlayer = LineSegmentPlayer()
@@ -285,7 +287,7 @@ struct MediaFollowReadView: View {
                         .font(.system(size: 38, weight: .black))
                         .foregroundStyle(Theme.orange)
                         .allowsHitTesting(false)
-                        .transition(.scale.combined(with: .opacity))
+                        .transition(reduceMotion ? .opacity : .scale.combined(with: .opacity))
                 }
             }
         }

@@ -7,6 +7,8 @@ struct RewardCenterView: View {
     let profile: Profile
 
     @Environment(\.modelContext) private var modelContext
+    /// 适配约定：动效响应「减弱动态效果」
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var ledger: [StarLedger]
     @Query private var badges: [Badge]
     @Query(sort: \RedemptionRule.sortOrder) private var rules: [RedemptionRule]
@@ -39,7 +41,7 @@ struct RewardCenterView: View {
                     .background(Theme.orange)
                     .clipShape(Capsule())
                     .padding(.top, 8)
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
         }
         .onAppear {
@@ -171,6 +173,7 @@ struct RewardCenterView: View {
                         .padding(.vertical, 8)
                         .background(affordable ? Theme.orange : Theme.track)
                         .clipShape(Capsule())
+                        .kidTapTarget()
                 }
                 .buttonStyle(.plain)
                 .disabled(!affordable)
@@ -223,12 +226,13 @@ struct RewardCenterView: View {
                                     ruleTitle: rule.title, starCost: rule.starCost)
         modelContext.insert(redemption)
         try? modelContext.save()
-        toast = "已提交，等家长确认"
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
+            toast = "已提交，等家长确认"
+        }
         ParentAuth.audit("redemption_submitted", detail: rule.title)
         Task {
             await LocalNotifications.redemptionSubmitted(title: rule.title, starCost: rule.starCost)
         }
-        withAnimation { }
         Task {
             try? await Task.sleep(nanoseconds: 2_000_000_000)
             await MainActor.run { toast = nil }

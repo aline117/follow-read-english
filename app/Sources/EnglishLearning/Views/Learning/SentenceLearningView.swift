@@ -83,6 +83,7 @@ struct SentenceLearningView: View {
                     .frame(width: 38, height: 38)
                     .background(Theme.chipBg)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .kidTapTarget()
             }
             .buttonStyle(.plain)
 
@@ -233,6 +234,7 @@ struct SentenceLearningView: View {
                 .frame(width: 66, height: 40)
                 .background(Theme.orangeSoft)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .kidTapTarget()
         }
         .buttonStyle(.plain)
         .disabled(audioURL(of: sentence) == nil)
@@ -356,6 +358,7 @@ struct SentenceLearningView: View {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .strokeBorder(Theme.line, lineWidth: 1.2)
             )
+            .kidTapTarget()
     }
 
     // MARK: - 结算

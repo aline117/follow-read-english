@@ -14,6 +14,8 @@ struct WordLearningView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    /// 适配约定：动效响应「减弱动态效果」
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var allProgress: [ItemProgress]
     @Query private var ledger: [StarLedger]
     @Query private var allReviews: [ReviewSchedule]
@@ -151,6 +153,7 @@ struct WordLearningView: View {
                     .frame(height: 36)
                     .background(Theme.chipBg)
                     .clipShape(Capsule())
+                    .kidTapTarget()
             }
             .buttonStyle(.plain)
         }
@@ -210,7 +213,7 @@ struct WordLearningView: View {
                         .frame(width: offset == index ? 22 : 8, height: 8)
                 }
             }
-            .animation(.easeOut(duration: 0.2), value: index)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: index)
 
             Text(statusLine)
                 .font(.system(size: 13))

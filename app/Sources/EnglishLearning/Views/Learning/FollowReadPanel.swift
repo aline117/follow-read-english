@@ -43,6 +43,8 @@ struct FollowReadPanel: View {
     @State private var showMicPrimer = false
     /// 达标时「+1 ★」飘一下（tasks 5.1）
     @State private var burst = false
+    /// 适配约定：动效响应「减弱动态效果」（撒花降级为淡入淡出）
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let player = AudioPlayer.shared
 
@@ -72,7 +74,7 @@ struct FollowReadPanel: View {
                     .scaleEffect(burst ? 1.15 : 0.6)
                     .opacity(burst ? 1 : 0)
                     .allowsHitTesting(false)
-                    .animation(.spring(response: 0.35, dampingFraction: 0.6), value: burst)
+                    .animation(reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.6), value: burst)
             }
         }
         .kidCard(padding: 20)
@@ -159,6 +161,7 @@ struct FollowReadPanel: View {
                         .frame(height: 30)
                         .background(selected ? Color.white : Color.clear)
                         .clipShape(Capsule())
+                        .kidTapTarget()
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: .infinity)
@@ -312,6 +315,7 @@ struct FollowReadPanel: View {
                             Text("先跳过，练下一个")
                                 .font(.system(size: 12.5, weight: .semibold))
                                 .foregroundStyle(Theme.muted)
+                                .kidTapTarget()
                         }
                         .buttonStyle(.plain)
                     }

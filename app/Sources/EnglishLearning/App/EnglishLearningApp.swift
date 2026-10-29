@@ -38,6 +38,8 @@ struct EnglishLearningApp: App {
         WindowGroup {
             RootView()
                 .modelContainer(modelContainer)
+                // 适配约定：首版锁定字号，不跟随 Dynamic Type（布局按固定字号排版）
+                .dynamicTypeSize(.large)
         }
     }
 }

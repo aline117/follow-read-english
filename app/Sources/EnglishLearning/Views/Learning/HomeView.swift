@@ -102,6 +102,7 @@ struct HomeView: View {
                     .frame(width: 38, height: 38)
                     .background(Theme.chipBg)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .kidTapTarget()
             }
             .buttonStyle(.plain)
             .accessibilityLabel("家长模式")

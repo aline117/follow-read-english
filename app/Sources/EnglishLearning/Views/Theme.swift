@@ -92,6 +92,9 @@ struct KidProgressBar: View {
     var tint: Tint = .orange
     var height: CGFloat = 15
 
+    /// 适配约定：动效响应「减弱动态效果」，开启后只保留数值变化不补间
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
@@ -102,7 +105,27 @@ struct KidProgressBar: View {
             }
         }
         .frame(height: height)
-        .animation(.easeOut(duration: 0.4), value: value)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.4), value: value)
+    }
+}
+
+// MARK: - 点击区
+
+/// 适配约定：可点元素最小 44×44pt（儿童手指精度低）。
+/// 视觉尺寸不变，只把可点范围撑到 44pt。
+private struct KidTapTarget: ViewModifier {
+    var minSize: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .frame(minWidth: minSize, minHeight: minSize)
+            .contentShape(Rectangle())
+    }
+}
+
+extension View {
+    func kidTapTarget(_ minSize: CGFloat = 44) -> some View {
+        modifier(KidTapTarget(minSize: minSize))
     }
 }
 
