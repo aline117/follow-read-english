@@ -173,12 +173,12 @@ iPad 上：右上角 🔒 → 内容管理 → 填 `<host>.local:8080` → 连�
 
 1. Xcode 打开 `app/EnglishLearning.xcodeproj`，target → Signing & Capabilities 里选自己的 Team（免费 Apple ID 即可）
 2. iPad 连上 Mac，选中这台 iPad，按 ⌘R
-3. 首次启动：创建孩子档案（家长 PIN、学期包下载还没实现）
+3. 首次启动：创建孩子档案；内容在家长模式里从家里电脑下载
 4. 之后每 7～30 天（免费账号 7 天）在 Xcode 里重签一次；**重签不会丢数据，只有卸载才会**
 
-### 内容服务（待实现）
+### 内容服务（已实现）
 
-在家里电脑上起一个只读静态服务（监听 8080），提供学期包与 `manifest.json`；只需内网访问，不做端口映射。
+`_download/serve.py` / `serve.js` 提供只读静态服务（监听 8080），提供学期包、`manifest.json` 与媒体文件；只需内网访问，不做端口映射。
 
 iPad 端地址：`http://<host>.local:8080`（Bonjour 主机名，避免 IP 变化；设置页可手动改）。
 
@@ -273,15 +273,13 @@ node scripts/check-faststart.mjs <媒体目录>/files/songs/*.mp4
 node scripts/remux-faststart.mjs --in <媒体目录>/files --out <媒体目录>/files-faststart
 node scripts/build-media-manifest.mjs --media <媒体目录> --out <媒体目录>/media.json --version 1
 
-# 3. 让内容服务也提供 media.json 与 files/（家长模式 → 媒体设置 → 同步内容清单）
+# 3. 让内容服务也提供 media.json 与 files/（App 进入「听和看」时自动拉取并校验）
 ```
 
 - `media.json` 里每项带 `sha256`、`bytes`、`streamable`；App 逐项校验后才启用
 - 儿歌/绘本的"可跟读句"写在 `lines` 里（`text` + 起止秒），没标注时跟读入口会提示「还没标注」
 - 换素材只改文件与 `contentVersion`，App 不用重装
 - 隐私：素材与本机日志都只留在家里电脑 / iPad，不上传任何服务
-
----
 
 ---
 
