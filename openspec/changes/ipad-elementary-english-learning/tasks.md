@@ -39,7 +39,7 @@
   - 2026-10-28：已改为 0.5x / 0.75x / 原速三档；本次「学单词」内记住最近一次选择，后续词沿用（`WordLearningView.playbackRate`），复习与退出后重置
 - [x] 4.2 实现"说"模块：录音功能 + 语音评测
   - 2026-10-28：单词「认·说」合练完成：`AudioRecorder` + `PronunciationEvaluator`（设备端识别 + 相似度 + 音量/时长兜底）+ `FollowReadPanel`（三档配速、录音、对比、原因 + 建议配速 + 差异位置 + 三步纠错、先跳过）；达标自动下一个词，全部达标进入后续环节
-  - 待对齐设计：评测基础设施异常（识别超时 / 音频不可读 / 录音被打断）应"提示重试、不写 `Attempt`"，当前实现会写失败明细
+  - 2026-10-29：已对齐设计——`PronunciationAssessment` 新增 `isInfrastructureFailure`，识别超时 / 识别器报错归为基础设施异常；`FollowReadPanel` 与 `MediaFollowReadView` 遇到时只提示「刚才没听清，再读一次」，**不写 `Attempt`、不计入失败次数、不弹结果卡**；`unavailable`（无设备端识别）仍按音量/时长兜底，属正常路径
 - [x] 4.3 实现"认"模块（已并入 4.2）
   - 2026-10-27：单词的「认」=「看大图认词」，与跟读同屏；原计划的图片-单词拖拽配对与「每屏配对数 / 最少练习轮数」设置一并取消（句型的词块排序仍属 4.10）
 - [x] 4.4 实现"游戏"模块：听音选图小游戏
@@ -82,8 +82,10 @@
 - [ ] 7.4 把二上资源迁出 App：`app/Resources/Curriculum/` → 学期包 `packs/g2s1.zip`（内含 `curriculum.json` + `audio/ words/ img/`）
 - [x] 7.5 实现 `content-service/serve/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
 - [x] 7.6 内置 `catalog.json`（学期目录：id / 标题 / 大小 / 版本，不含任何媒体与词表）
-- [ ] 7.7 管线入版本库 + 学期包异地备份：`content-service/build/build_resources.py`、`content-service/serve/serve.js`、`jx_audio_manifest.json`、`words_raw.json` 纳入 git（调整 `.gitignore`，媒体不进 git，只留 `curriculum.json` 与脚本），`packs/*.zip` 备份到云盘或移动硬盘
+- [x] 7.7 管线入版本库：`content-service/build/*`（`build_resources.py`、`build-media-manifest.mjs`、`check-faststart.mjs`、`remux-faststart.mjs`）、`content-service/serve/*`、课程 JSON（`app/Resources/Curriculum/grade2.json`）与素材（mp3/png/wav 走 LFS 指针）均已入库
+  - 2026-10-29：逐项核对 `git ls-files`，上述文件全部 tracked（`.app` 包内只有 `catalog.json`，内容本体不进包）。`jx_audio_manifest.json` / `words_raw.json` 是当年一次性抓取清单，磁盘上已不存在，且重打包不依赖它们（`build_resources.py` 只读 `grade2.json` + 资源目录），故不再补入。学期包备份拆到 7.9
 - [x] 7.8 补录二上核心句型并生成音频：6 单元 × 2-3 条（约 18 条），写入 `sentences`（`en` / `zh` / `pattern` / `chunks` / `audio`），音频用 TTS 生成到 `sentences/{unit}/{id}.mp3`
+- [ ] 7.9 学期包异地备份：`content-service/packs/*.zip` 备份到云盘或移动硬盘（前置：备份介质与家里电脑；仓库内只留脚本与课程 JSON）
 
 > 后续内容任务（不阻塞首版）：档位 B「课文对话全文」约 300-400 句，需转录 129 条课文原声并按句切时间点（3-6 小时，用于逐句高亮跟读）；档位 C「Read a story」6 篇故事。两者都只涉及内容补录与 JSON 扩展，不改架构。
 
@@ -108,7 +110,7 @@
 
 > 以下 8 组（第 10–17 组）来自原 `add-media-library` 变更（听和看 / 媒体库），设计见 `design.md` 的「媒体库（听和看）」一节，规格见 `specs/media-library/spec.md`。
 >
-> 前置依赖标注：**[素材]** 需要本地素材目录（`G:\新概念英语\...`，不入库）；**[家里电脑]** 需要 Node 服务在局域网可访问；**[真机]** 需要 iPad + Mac 侧载；**[ffmpeg]** 需要在本机安装 ffmpeg（本次不阻塞，仅 remux 兜底时用）。
+> 前置依赖标注：**[素材]** 需要本地素材目录（仓库外，路径各机自定，不入库）；**[家里电脑]** 需要 Node 服务在局域网可访问；**[真机]** 需要 iPad + Mac 侧载；**[ffmpeg]** 需要在本机安装 ffmpeg（本次不阻塞，仅 remux 兜底时用）。
 
 ## 10. 内容侧（家里电脑）
 
@@ -139,7 +141,9 @@
 - [x] 12.1 实现逐项下载器（`URLSession`，下载到临时文件 → `sha256` 校验 → 原子移入缓存 → 更新索引），状态机：未请求 / 下载中 / 已就绪 / 损坏；验证：真机下载 1 项后 `sha256` 与清单一致；手工改坏 1 字节后重试判定为「内容损坏」且不影响其他项 **[家里电脑]**
 - [x] 12.2 实现顺序预取队列（并发固定 1，可取消）；验证：连续点 5 项时观察服务端日志同时只有 1 个请求在传输
 - [ ] 12.3 下载进度与「已下载」标记接入列表；验证：真机观察单条从 0% 到「已下载」，中途退出重进后状态仍正确（不重复下载）
+  - 2026-10-29：列表已接 `MediaDownloader.status(for:)`——`downloading` 显示「下载中 N%」+ 细进度条、`ready`/已缓存显示「已下载」、`failed` 显示「下载失败（可在线播放）+ 原因」；真机 0%→已下载 与「退出重进不重复下载」观察待做
 - [ ] 12.4 校验失败隔离：仅坏项不可播，其余项正常；验证：构造清单里 3 项 sha256 错误，真机断言 3 项显示「内容损坏」、其余 243 项可播（对应 spec「单项校验失败」）
+  - 2026-10-29：坏项在列表里标红「内容损坏 · 点一下重新下载」，点击不再进播放页而是重新入队下载（其余项照常可播）；真机构造 3 项坏 sha256 的清单验证待做
 
 ## 13. 播放
 

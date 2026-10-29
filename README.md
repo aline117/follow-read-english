@@ -10,10 +10,10 @@
 
 | 阶段 | 状态 |
 |---|---|
-| 需求与设计 | ✅ 完成（proposal / design / 5 份 spec / 108 项任务） |
+| 需求与设计 | ✅ 完成（proposal / design / 5 份 spec / 109 项任务） |
 | 交互原型 | ✅ 33 屏可点击原型（见 [prototype/](openspec/changes/ipad-elementary-english-learning/prototype/index.html)） |
 | 内容素材 | ✅ 二年级上（沪教版）6 单元 / 33 词 / 18 句型 / 129 条课文原声 |
-| 代码实现 | 🟢 **70 / 108 任务**：学期包下载/校验、学单词（听·认·说 + 三档配速 + 纠错建议）、听音选图、句型、复习、星星/徽章、家长面板、媒体库清单/缓存/下载/播放/列表、媒体跟读、家长媒体设置与观看明细已实现（待真机与素材验证）；适配约定（锁定字号 / 减弱动态效果 / 44pt 点击区）与内容侧媒体 runbook 已完成；单元测试已覆盖 4 个纯逻辑模块；真机验证、手测与集成验证待做 |
+| 代码实现 | 🟢 **71 / 109 任务**：学期包下载/校验、学单词（听·认·说 + 三档配速 + 纠错建议）、听音选图、句型、复习、星星/徽章、家长面板、媒体库清单/缓存/下载/播放/列表（含逐项下载进度与「内容损坏」重下）、媒体跟读、家长媒体设置与观看明细已实现（待真机与素材验证）；跟读的评测异常已按设计区分（超时不记为读错）；适配约定（锁定字号 / 减弱动态效果 / 44pt 点击区）与内容侧媒体 runbook 已完成；单元测试已覆盖 4 个纯逻辑模块；真机验证、手测与集成验证待做 |
 | 构建 | ✅ `xcodebuild`（iPad Simulator / iOS 18）通过，无 error |
 
 > ⚠️ **App 内不带课文内容**，首次安装后要先在家里 Wi-Fi 下下载（`content-service/serve/serve.py`）。现在可走通「建档 → 下载二年级上 → 学单词/游戏/句型/复习 → 星星与结算 → 家长报告/奖励/设置」；媒体库播放与列表已接好，真机串流/素材验证、9.2 手测与集成验证仍未完成。
@@ -21,7 +21,7 @@
 进度可用 OpenSpec 查看：
 
 ```bash
-openspec list                     # 70/108 tasks
+openspec list                     # 71/109 tasks
 openspec status --change ipad-elementary-english-learning --json
 ```
 
@@ -112,7 +112,7 @@ iPad 主包（约 10MB）                     家里的电脑（同一 Wi-Fi）
 │   └── changes/ipad-elementary-english-learning/
 │       ├── proposal.md
 │       ├── design.md           # 决策、参数表、奖励体系、健壮性、合规
-│       ├── tasks.md            # 108 项任务
+│       ├── tasks.md            # 109 项任务
 │       ├── specs/              # curriculum-sync / learning-cycle / parent-panel / reward-system / media-library
 │       └── prototype/          # 33 屏可点击原型（index.html 为入口）
 │
