@@ -96,15 +96,24 @@ python3 build/build_resources.py --version 2     # 改内容后出 g2s1-v2.zip�
 
 ## 4. 生成媒体清单
 
-媒体素材更新频率低，但清单必须和文件一致：
+媒体素材更新频率低，但清单必须和文件一致。完整流程（挑选、命名、自检、回滚）见
+[`docs/media-runbook.md`](../docs/media-runbook.md)，这里只列最小命令：
 
 ```bash
-# 先体检（不能秒开的项会走「先下后播」）
+# ① 体检：不能秒开（moov 不在头部）的项会走「先下后播」，有不合格项时退出码 2
 node build/check-faststart.mjs media/files/songs/*.mp4
 
-# 生成 media/media.json
+# ② 需要时 remux（无损，-c copy，把 moov 移到文件头）；输出到别的目录再替换回来
+#    ffmpeg 默认取 PATH 里的，不在 PATH 就用 --ffmpeg 指路
+node build/remux-faststart.mjs --in media/files/songs --out /tmp/media-faststart
+
+# ③ 生成 media/media.json
 node build/build-media-manifest.mjs --media media --out media/media.json --version 1
 ```
+
+- `--out` 只允许 `content-service/media/` 或仓库外；仓库内其它位置会被拒绝（退出码 3）
+- 每条带 `sha256` / `bytes` / `streamable`，App 逐项校验后才启用
+- `durationSec` 默认 0，App 首次播放会回填实测时长
 
 目录约定：
 
