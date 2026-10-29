@@ -4,6 +4,8 @@
 
 **个人自用项目，不上架 App Store。** 通过 Mac + Xcode 侧载安装到自家 iPad。
 
+代码以 [MIT](LICENSE) 授权（Copyright © 2026 aline117）；**教材素材不在授权范围内**，见文末「许可证」。
+
 ---
 
 ## 当前状态
@@ -117,6 +119,8 @@ iPad 主包（约 10MB）                     家里的电脑（同一 Wi-Fi）
 │       └── prototype/          # 33 屏可点击原型（index.html 为入口）
 │
 ├── .acecode/skills/            # 12 个 OpenSpec 工作流技能
+│
+└── LICENSE                     # 代码 MIT（教材素材不在授权范围）
 ```
 ```
 
@@ -214,7 +218,7 @@ openspec doctor                                          # 根健康检查（con
 
 ## 内容与版权
 
-- 目前素材：课文原声来自公开教学站点，单词发音与配图来自第三方词库，**仅供个人学习使用**
+- 目前素材：课文原声来自公开教学站点，单词发音与配图来自第三方词库，**仅供个人学习使用**，**不随 [MIT](LICENSE) 授权分发**
 - 若要分发或上架，必须替换为授权素材或自采录音
 - 句型音频当前用 TTS 生成，后续可**原路径替换**为教材原音切片，代码与 JSON 都不用改
 - 原始素材与抓取清单只保留在本地，不随仓库分发
@@ -288,4 +292,14 @@ node content-service/build/build-media-manifest.mjs --media content-service/medi
 
 ## 许可证
 
-个人项目，未授权他人使用或分发。内容素材版权归原出处所有。
+**代码**以 [MIT](LICENSE) 授权，Copyright © 2026 aline117。覆盖范围：`app/`（Swift 源码、工程文件、`Resources/catalog.json`）、`content-service/` 的脚本、`docs/`、`openspec/`。
+
+不在 MIT 范围内的部分：
+
+| 内容 | 版权 / 处理 |
+|---|---|
+| 教材素材：`app/Resources/Curriculum/` 下的课文原声、单词发音与配图（`*.mp3` / `*.png` / `*.wav`） | 版权归原出处，仅作个人学习使用，**不随 MIT 分发**；公开使用请自行替换为授权素材或自采录音 |
+| 媒体素材：`content-service/media/`、`packs/*.zip` | 不进仓库、不分发（`.gitignore` 已覆盖） |
+| 第三方依赖（ZIPFoundation 等） | 按各自许可证 |
+
+> 也就是说：拿去改代码、二次开发没问题；但别把仓库里的教材音频/配图当成 MIT 素材再分发。
