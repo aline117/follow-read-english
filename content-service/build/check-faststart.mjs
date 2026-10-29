@@ -3,7 +3,7 @@
 // 只读文件头 1 MB，不需要 ffprobe。
 //
 // 用法：
-//   node scripts/check-faststart.mjs <file> [more files...]
+//   node content-service/build/check-faststart.mjs <file> [more files...]
 //   import { isStreamable } from './check-faststart.mjs'
 
 import fs from 'node:fs';
@@ -49,7 +49,7 @@ if (import.meta.url === `file://${process.argv[1]?.replace(/\\/g, '/')}` ||
     process.argv[1]?.endsWith('check-faststart.mjs')) {
   const files = process.argv.slice(2);
   if (files.length === 0) {
-    console.error('用法: node scripts/check-faststart.mjs <file> [more files...]');
+    console.error('用法: node content-service/build/check-faststart.mjs <file> [more files...]');
     process.exit(1);
   }
   let bad = 0;

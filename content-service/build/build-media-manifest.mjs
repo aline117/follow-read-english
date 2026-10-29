@@ -7,11 +7,11 @@
 //   <media>/ids.json                   可选：{ "<相对路径>": "m:自定义id" } 覆盖自动 id
 //
 // 用法：
-//   node scripts/build-media-manifest.mjs --media D:\media --out D:\media\media.json --version 1
+//   node content-service/build/build-media-manifest.mjs --media content-service/media --out content-service/media/media.json --version 1
 //
 // 说明：
 // - durationSec 默认写 0（App 首次播放会回填实测时长，见 services/MediaStateStore）
-// - streamable 由 scripts/check-faststart.mjs 判定
+// - streamable 由同目录的 check-faststart.mjs 判定
 // - lines 留空，等 10.7 标注儿歌可跟读句后再补
 
 import fs from 'node:fs';
@@ -61,16 +61,19 @@ function listVideos(dir) {
 
 const args = parseArgs(process.argv);
 if (!args.media || !args.out) {
-  console.error('用法: node scripts/build-media-manifest.mjs --media <媒体目录> --out <media.json> [--version N] [--part N]');
+  console.error('用法: node content-service/build/build-media-manifest.mjs --media <媒体目录> --out <media.json> [--version N] [--part N]');
   process.exit(1);
 }
 
 // 目标路径落在仓库内就报错退出（素材与产物都不进 git）
 const scriptDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
-const repoRoot = path.resolve(scriptDir, '..');
+const repoRoot = path.resolve(scriptDir, '..', '..');
+const allowedRoot = path.resolve(scriptDir, '..', 'media');
 const outResolved = path.resolve(args.out);
-if (outResolved.startsWith(repoRoot + path.sep) && !outResolved.includes(`${path.sep}_download${path.sep}`)) {
-  console.error(`拒绝写入仓库内的路径：${outResolved}\n请换到仓库外，或放到 _download/ 下。`);
+const insideRepo = outResolved === repoRoot || outResolved.startsWith(repoRoot + path.sep);
+const insideMediaDir = outResolved === allowedRoot || outResolved.startsWith(allowedRoot + path.sep);
+if (insideRepo && !insideMediaDir) {
+  console.error(`拒绝写入仓库内的路径：${outResolved}\n请放到 content-service/media/ 下，或换到仓库外。`);
   process.exit(3);
 }
 

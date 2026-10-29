@@ -92,7 +92,7 @@ final class MediaDownloader {
     // MARK: - 真正的下载
 
     private func download(_ asset: MediaAsset, from baseURL: URL, limitGB: Int) async {
-        let url = baseURL.appendingPathComponent(asset.relPath)
+        let url = baseURL.appendingPathComponent("media").appendingPathComponent(asset.relPath)
         do {
             let (tempURL, response) = try await session.download(from: url)
             guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {

@@ -13,19 +13,18 @@ DerivedData/
 *.xcuserstate
 xcuserdata/
 
+# Python 工具
+__pycache__/
+*.pyc
+
 # 编辑器
 .idea/
 .vscode/
 *.swp
 
-# 采集/下载暂存目录（体积约 70MB，内容与 app/Resources 重复）
-# 只放行内容管线与内容服务脚本（tasks 7.5/7.7）；学期包与媒体不进 git
-_download/*
-!_download/README.md
-!_download/build_resources.py
-!_download/serve.py
-!_download/serve.js
-!_download/serve.bat
+# 内容服务的数据目录：脚本进 git，学期包/媒体数据不进
+content-service/packs/
+content-service/media/
 
 # 媒体素材与产物（听和看）：只在家里电脑 / iPad 上存在，不进仓库
 # 用 /media/ 只匹配仓库根，避免误伤 app/Sources/**/Media/ 目录（Windows 上大小写不敏感）

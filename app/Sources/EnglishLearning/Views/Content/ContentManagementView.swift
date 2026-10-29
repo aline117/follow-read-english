@@ -76,7 +76,7 @@ struct ContentManagementView: View {
         } header: {
             Text("内容服务地址")
         } footer: {
-            Text("电脑上跑 _download/serve.py（或 serve.js）后，这里填它打印的 `<host>.local:8080`。只有连接和下载需要局域网。")
+            Text("电脑上跑 content-service/serve/serve.py（或 serve.js）后，这里填它打印的 `<host>.local:8080`。只有连接和下载需要局域网。")
         }
     }
 

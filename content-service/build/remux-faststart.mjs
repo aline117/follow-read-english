@@ -3,7 +3,7 @@
 // 无损（-c copy），体积基本不变，几十秒可跑完上百个文件。
 //
 // 用法：
-//   node scripts/remux-faststart.mjs --in <源目录> --out <目标目录> [--dry-run]
+//   node content-service/build/remux-faststart.mjs --in <源目录> --out <目标目录> [--dry-run]
 //
 // 依赖本机 ffmpeg（默认 D:\bin\ffmpeg\bin\ffmpeg.exe，可用 --ffmpeg 覆盖）
 
@@ -36,7 +36,7 @@ function walk(dir) {
 
 const args = parseArgs(process.argv);
 if (!args.in || !args.out) {
-  console.error('用法: node scripts/remux-faststart.mjs --in <源目录> --out <目标目录> [--dry-run]');
+  console.error('用法: node content-service/build/remux-faststart.mjs --in <源目录> --out <目标目录> [--dry-run]');
   process.exit(1);
 }
 if (!fs.existsSync(args.ffmpeg)) {

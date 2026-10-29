@@ -2,15 +2,15 @@
 """把某学期的资源目录打成学期包（tasks 7.4）。
 
 输入：app/Resources/Curriculum/（grade2.json + audio/ words/ img/）
-输出：_download/packs/<id>.zip + <id>.meta.json
+输出：content-service/packs/<id>.zip + <id>.meta.json
 
 包内结构（design「内容分发：家园局域网」）：
     <id>/curriculum.json      = 原 grade2.json + 顶层 schemaVersion
     <id>/audio/  <id>/words/  <id>/img/
 
 用法：
-    python3 _download/build_resources.py                    # 默认二上、版本 1
-    python3 _download/build_resources.py --version 2        # 产出 g2s1-v2.zip（给 manifest 的 previous 用）
+    python3 content-service/build/build_resources.py                    # 默认二上、版本 1
+    python3 content-service/build/build_resources.py --version 2        # 产出 g2s1-v2.zip（给 previous 回退用）
 
 只依赖标准库；Node 版（build_resources.js）等家里电脑装 Node 后再补，两边产物要一致。
 """
@@ -25,7 +25,8 @@ import sys
 import time
 import zipfile
 
-REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SERVICE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(SERVICE_ROOT)
 
 # 内容结构版本：JSON 结构变了才 +1（design「版本兼容」）
 SCHEMA_VERSION = 2
@@ -70,7 +71,7 @@ def main() -> int:
     parser.add_argument("--title", default="二年级上")
     parser.add_argument("--version", type=int, default=1, help="内容版本；>1 时文件名带 -vN")
     parser.add_argument("--src", default=os.path.join(REPO, "app", "Resources", "Curriculum"))
-    parser.add_argument("--out", default=os.path.join(REPO, "_download", "packs"))
+    parser.add_argument("--out", default=os.path.join(SERVICE_ROOT, "packs"))
     args = parser.parse_args()
 
     src = args.src
