@@ -13,7 +13,7 @@
 | 需求与设计 | ✅ 完成（proposal / design / 5 份 spec / 108 项任务） |
 | 交互原型 | ✅ 33 屏可点击原型（见 [prototype/](openspec/changes/ipad-elementary-english-learning/prototype/index.html)） |
 | 内容素材 | ✅ 二年级上（沪教版）6 单元 / 33 词 / 18 句型 / 129 条课文原声 |
-| 代码实现 | 🟢 **67 / 108 任务**：学期包下载/校验、学单词（听·认·说 + 三档配速 + 纠错建议）、听音选图、句型、复习、星星/徽章、家长面板、媒体库清单/缓存/下载/播放/列表、媒体跟读、家长媒体设置与观看明细已实现（待真机与素材验证）；单元测试已覆盖 4 个纯逻辑模块；真机验证、手测与集成验证待做 |
+| 代码实现 | 🟢 **70 / 108 任务**：学期包下载/校验、学单词（听·认·说 + 三档配速 + 纠错建议）、听音选图、句型、复习、星星/徽章、家长面板、媒体库清单/缓存/下载/播放/列表、媒体跟读、家长媒体设置与观看明细已实现（待真机与素材验证）；适配约定（锁定字号 / 减弱动态效果 / 44pt 点击区）与内容侧媒体 runbook 已完成；单元测试已覆盖 4 个纯逻辑模块；真机验证、手测与集成验证待做 |
 | 构建 | ✅ `xcodebuild`（iPad Simulator / iOS 18）通过，无 error |
 
 > ⚠️ **App 内不带课文内容**，首次安装后要先在家里 Wi-Fi 下下载（`content-service/serve/serve.py`）。现在可走通「建档 → 下载二年级上 → 学单词/游戏/句型/复习 → 星星与结算 → 家长报告/奖励/设置」；媒体库播放与列表已接好，真机串流/素材验证、9.2 手测与集成验证仍未完成。
@@ -21,7 +21,7 @@
 进度可用 OpenSpec 查看：
 
 ```bash
-openspec list                     # 67/108 tasks
+openspec list                     # 70/108 tasks
 openspec status --change ipad-elementary-english-learning --json
 ```
 
@@ -103,6 +103,9 @@ iPad 主包（约 10MB）                     家里的电脑（同一 Wi-Fi）
 │   ├── build/                  # 打学期包 / 媒体清单 / faststart 体检
 │   ├── serve/                  # 家园局域网服务（serve.py / serve.js / serve.bat）
 │   └── README.md               # 部署 / 打包 / manifest 协议 / 排错
+│
+├── docs/
+│   └── media-runbook.md        # 内容侧：加一批新素材的完整流程 + 自检命令
 │
 ├── openspec/                   # 设计与任务（唯一事实来源）
 │   ├── config.yaml             # 项目上下文 + 各产物写作规则
@@ -220,7 +223,7 @@ openspec doctor                                          # 根健康检查（con
 
 - 学习记录、录音、星星流水全部**只存本机**，不上传任何服务器
 - 录音仅在跟读评分时临时生成，评分完成即删
-- 不接入任何第三方语音评测 SDK，正确率基于「音量 + 时长」启发式判定
+- 不接入任何第三方语音评测 SDK：跟读用系统**设备端**语音识别（`requiresOnDeviceRecognition`）+ 相似度比较，识别不可用时降级为「音量 + 时长」兜底
 - **卸载 App 会清空全部学习记录**，设置页提供导出 JSON 备份
 
 ---
@@ -229,7 +232,7 @@ openspec doctor                                          # 根健康检查（con
 
 | 项 | 状态 |
 |---|---|
-| `bundle id` | **待定**，首次装 iPad 前必须确定，之后不可更改 |
+| `bundle id` | **已定** `com.aline117.englishlearning`（测试 target `.tests`）。上架才不可改；换 id = 换 App 身份，旧进度/内容包需重导 |
 | 二年级下（xiace） | 教材版本待定，推迟到寒假补录 |
 | 课文对话全文 / 故事 | 列为后续内容任务（需转录 129 条原声） |
 | 徽章图标 / 头像 | 原型为占位，需绘制矢量素材（App 图标已完成） |
@@ -241,9 +244,9 @@ openspec doctor                                          # 根健康检查（con
 ## 常用命令速查
 
 ```bash
-# git / LFS
-git lfs ls-files | wc -l          # 195 个 LFS 文件（音频/图片）
-git lfs pull                      # 克隆后拉取真实素材
+# git / LFS（.gitattributes 里音频/视频/图片按 LFS 存储；先装 git-lfs 才会真正生效）
+git lfs version                   # 本机没装时：brew install git-lfs && git lfs install
+git lfs ls-files                  # 当前入库的媒体文件列表（句型 wav 等）
 
 # 进度
 openspec list

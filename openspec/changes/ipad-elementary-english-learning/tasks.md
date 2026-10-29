@@ -6,9 +6,11 @@
 - [x] 1.3 设置 SwiftData 模型容器和基础目录结构
 - [x] 1.4 补合规配置：`NSMicrophoneUsageDescription`（跟读、仅本地处理）、`NSFaceIDUsageDescription`（家长验证找回）、`CFBundleDevelopmentRegion = zh_CN`（中文界面不跟随系统）、`PrivacyInfo.xcprivacy`（required-reason API + 不追踪声明）
 - [x] 1.5 补本地网络配置：`NSLocalNetworkUsageDescription`、`NSAppTransportSecurity > NSAllowsLocalNetworking = true`、`NSBonjourServices = _http._tcp`（见 design「内容分发：家园局域网」）
-- [ ] 1.6 补适配约定：`UIRequiresFullScreen = true`（关闭 iPad 多任务）、动画响应 `accessibilityReduceMotion`、锁定字号、可点元素 ≥44x44pt（见 design「适配约定」）
+- [x] 1.6 补适配约定：`UIRequiresFullScreen = true`（关闭 iPad 多任务）、动画响应 `accessibilityReduceMotion`、锁定字号、可点元素 ≥44x44pt（见 design「适配约定」）
+  - 2026-10-29：`UIRequiresFullScreen` 原已在 Info.plist；本轮补完其余三项——根视图 `.dynamicTypeSize(.large)` 锁定字号；`Theme.kidTapTarget()`（44pt 命中区）应用到首页 🔒、各页返回键、结束学习、兑换、配速档、词块、跳过等小控件；`KidProgressBar`、单词进度点、达标飘星、吐司、媒体跟读飘星等动画全部读 `accessibilityReduceMotion`，开启时降级为无补间/淡入淡出
 - [x] 1.7 引入 **ZIPFoundation**（SPM）作为学期包解压依赖（iOS 无原生 zip API）
-- [ ] 1.8 确定并固定 `bundle id`（**首次装到 iPad 前必须定**，一旦确定不可再改；占用例 `com.aline117.englishlearning`）
+- [x] 1.8 确定并固定 `bundle id`（**首次装到 iPad 前必须定**；占用例 `com.aline117.englishlearning`）
+  - 2026-10-29：定为 `com.aline117.englishlearning`（与 pbxproj 现值一致，测试 target 为 `.tests`）。更正：`不可再改` 只在上架 App Store 时成立；本项目不上架，换 id 的真实代价是换 App 身份、旧容器数据（进度/内容包）需重导，故按「已定」处理并写进 README
 - [x] 1.9 搭导航骨架：孩子模式只有「学习 / 奖励」两个 Tab + 顶栏右上角 🔒 家长入口；家长模式用 `fullScreenCover` + 独立 `NavigationStack`（6 个入口 + 退出家长模式）——见 design「导航结构」
 
 ## 2. 数据模型
@@ -117,7 +119,8 @@
   - 2026-10-29：`serve.py` 与 `serve.js` 均支持 `/media.json`、`/media/files/*`、Range/206 与 416；已用 curl 验证（见 content-service/README）
 - [x] 10.5 打包脚本加路径守卫：目标目录落在仓库内时非零退出并提示改用仓库外目录；验证：`node content-service/build/build-media-manifest.mjs --out ./media` 退出码 ≠ 0，`git status` 无新增 mp4
   - 2026-10-29：守卫改为只放行 `content-service/media/` 与仓库外路径；实测 `--out ./media/media.json` 退出码 3
-- [ ] 10.6 写内容侧 runbook（`docs/media-runbook.md`，仓库内只写流程不写本机绝对路径）：加一批新素材的完整步骤 + Range/faststart 自检命令；验证：按文档从空目录走一遍能产出可用 `media.json`
+- [x] 10.6 写内容侧 runbook（`docs/media-runbook.md`，仓库内只写流程不写本机绝对路径）：加一批新素材的完整步骤 + Range/faststart 自检命令；验证：按文档从空目录走一遍能产出可用 `media.json`
+  - 2026-10-29：文档已写入 `docs/media-runbook.md`（含素材命名、faststart 体检/remux、清单生成、Range/416 自检、App 侧验收、排错表、回滚）。已用一段合成的 2 秒测试片从空目录按文档走通：`check-faststart`（moov 后置 → 退出码 2）→ `remux-faststart` → 复检通过 → `build-media-manifest` 产出字段齐全的 `media.json`（`m:` id / sha256 / relPath / streamable）；`--out` 指向仓库内非 `content-service/media/` 的位置实测退出码 3。真实 82 首儿歌 / 164 段绘本的批量走查仍属 10.1/10.7/10.8
 - [ ] 10.7 给 82 首儿歌各标注 2–3 个可跟读句（文本 + 起止秒），写入 `media.json` 的 `lines[]`，避开 `la la la`、拟声词与说唱段；验证：82 首全部 2–3 句，人工试读抽样 10 首一次性通过率 ≥ 70%，不达标的句子重标 **[素材]**
 - [ ] 10.8 产出素材验收清单 `docs/media-acceptance.md` 并完成 10 条抽样（水印/片头广告、爆音与音量一致性、是否以英文为主、时长、首尾完整性）；验证：10 条记录齐全，不合格项从 `media.json` 移除并写明原因 **[素材]**
 

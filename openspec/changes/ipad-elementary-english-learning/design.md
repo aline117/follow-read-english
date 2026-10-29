@@ -625,8 +625,8 @@ iPad App (ipa 约 10MB, 零内容本体)
   - 签名有效期 7 天：每 7 天内在 Xcode 里对 iPad 按一次 Run 重新签名即可（首次有线配对一次，之后同一 Wi-Fi 下无线安装，iPad 不用拿到电脑前），耗时约 1 分钟
   - 过期表现为"图标还在、点开闪退"；重新签名即恢复，**数据容器不清空**（只有手动卸载才会丢数据）
   - 免费账号限制：最多 3 台设备；无 Push / iCloud / App Groups / ODR / TestFlight / 上架能力——本项目均不需要
-  - `bundle id` 必须唯一且**确定后不再更改**（如 `com.aline117.englishlearning`）：改 id 等于换了一个新 App，数据全部丢失
-  - **状态：待定**（工程里先用占位符）。首次装到 iPad 之前必须定下来；一旦定下就写死，不再改动
+  - `bundle id` 只在**上架 App Store** 时不可更改（本项目不上架）。换 id 等于换了一个新 App：新容器，旧的学习进度 / 已下载内容包不会跟过去（需重导），旧 App 可保留可删除；7 天重签与 id 无关
+  - **状态：已定 `com.aline117.englishlearning`**（测试 target 为 `com.aline117.englishlearning.tests`）。以后真要换，按「换 App 身份 + 重导数据」处理，不当作硬约束
   - 若嫌每周重签麻烦：① AltStore / SideStore 自动续签（需家里电脑常开 AltServer，可与内容服务合用同一台机器）；② 升级付费账号 ¥688/年 + TestFlight（build 90 天）
 - 不上架 → 无 App Review；但本地网络权限、麦克风用途文案、`PrivacyInfo.xcprivacy` 仍需配置
 
