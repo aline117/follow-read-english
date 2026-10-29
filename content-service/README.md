@@ -8,6 +8,8 @@ content-service/
 ├── serve/
 │   ├── serve.py        # Python 3 标准库，Mac/Linux 直接跑
 │   ├── serve.js        # Node 版（Windows 也可用）
+│   ├── serve.sh        # macOS / Linux 启动（优先 Python，其次 Node）
+│   ├── serve.command   # macOS 双击入口（调用 serve.sh）
 │   └── serve.bat       # Windows 双击启动（需要 Node）
 ├── build/
 │   ├── build_resources.py            # 学期包 → packs/*.zip + meta
@@ -28,13 +30,23 @@ content-service/
 最简方式：把整个 `content-service/` 拷到家里电脑（U 盘 / 云盘都行），再准备 `packs/` 与 `media/` 数据。
 
 ```bash
-# macOS / Linux（系统自带 Python 3 即可）
-python3 serve/serve.py
+# macOS / Linux：一条命令（优先 Python，没 Python 再用 Node）
+./serve/serve.sh
+
+# macOS 也可以直接在 Finder 里双击 serve/serve.command
+# Linux 可加别名/软链到 ~/bin 之类
 
 # Windows（装了 Node）
 serve\serve.bat
 # 或
 node serve\serve.js
+```
+
+`serve.sh` 只是启动器，参数与 `serve.py` / `serve.js` 一致，例如：
+
+```bash
+./serve/serve.sh --port 9000
+./serve/serve.sh --root /path/to/content-service
 ```
 
 启动后会打印可用地址：

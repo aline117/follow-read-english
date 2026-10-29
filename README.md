@@ -162,7 +162,7 @@ xcodebuild -scheme EnglishLearning \
 
 ```bash
 python3 content-service/build/build_resources.py     # 打包 → content-service/packs/g2s1.zip
-python3 content-service/serve/serve.py               # 起服务，打印 http://<host>.local:8080
+./content-service/serve/serve.sh                    # 起服务（macOS/Linux；Windows 用 serve.bat）
 ```
 
 iPad 上：右上角 🔒 → 内容管理 → 填 `<host>.local:8080` → 连接 → 下载「二年级上」。
