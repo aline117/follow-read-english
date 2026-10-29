@@ -2,7 +2,7 @@
 
 ## 数据来源
 
-18 条核心句型（6 单元 × 3 条）取自**沪教牛津（2024 新教材）二年级上册**各单元 Period 1 的教案页文本（`_download/jx/d*.html`，来源站点：教习网），
+18 条核心句型（6 单元 × 3 条）取自**沪教牛津（2024 新教材）二年级上册**各单元 Period 1 的教案页文本（原始暂存于旧 `_download/jx/`，现不入库；来源站点：教习网），
 与 `grade2.json` 里的单词、单元标题同源，可按单元号对应：
 
 | 单元 | 教案页 | 选用的句型 |
@@ -27,10 +27,10 @@
 sentences/u1/s1.wav   ← 换成 s1.mp3 时，把 grade2.json 里 audio 后缀一起改掉
 ```
 
-课时原声（`_download/jx_audio/*.mp3`，即 `listenings`）里包含这些句子，但目前没有按句切分——要切成单句需要 ffmpeg（本机未安装）。
+课时原声（原始暂存于旧 `_download/jx_audio/`，即 `listenings`）里包含这些句子，但目前没有按句切分——要切成单句需要 ffmpeg（本机未安装）。
 所以优先级建议：**先跑通流程 → 有 ffmpeg 后再批量切句替换**。
 
 ## 改内容后要做的两件事
 
-1. `python _download/build_resources.py --version <n+1>` 重新出学期包（脚本会校验每个 `audio` 路径都存在）
+1. `python3 content-service/build/build_resources.py --version <n+1>` 重新出学期包（脚本会校验每个 `audio` 路径都存在）
 2. App 里「内容管理」重新下载该学期

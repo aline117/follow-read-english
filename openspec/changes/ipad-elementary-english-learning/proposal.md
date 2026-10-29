@@ -54,7 +54,7 @@
 | 合计 | 246 项 | **约 6.30 GB** | — | 清单 `media.json` 约 60 KB |
 
 - App 安装体积不变（只内置清单）；iPad 缓存默认上限 2 GB（LRU），其余走串流
-- 新增内容管线（家里电脑）：`media/` 目录、`scripts/build-media-manifest.mjs`、`scripts/check-faststart.mjs`、Node `/media/*` 路由 + Range
+- 新增内容管线（家里电脑）：`media/` 目录、`content-service/build/build-media-manifest.mjs`、`content-service/build/check-faststart.mjs`、Node `/media/*` 路由 + Range
 - 一次性人工成本：儿歌跟读句标注 82 首 × 2–3 句 ≈ 2 小时；素材抽样验收 10 条 ≈ 1 小时
 - 版权：付费课程素材，仅自家设备自用；`media/` 与打包产物不入仓库、不上传、不分发
 

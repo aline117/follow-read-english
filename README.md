@@ -13,15 +13,15 @@
 | 需求与设计 | ✅ 完成（proposal / design / 5 份 spec / 108 项任务） |
 | 交互原型 | ✅ 33 屏可点击原型（见 [prototype/](openspec/changes/ipad-elementary-english-learning/prototype/index.html)） |
 | 内容素材 | ✅ 二年级上（沪教版）6 单元 / 33 词 / 18 句型 / 129 条课文原声 |
-| 代码实现 | 🟢 **62 / 108 任务**：学期包下载/校验、学单词（听·认·说 + 三档配速 + 纠错建议）、听音选图、句型、复习、星星/徽章、家长面板、媒体库清单/缓存/下载/播放/列表、媒体跟读、家长媒体设置与观看明细已实现（待真机与素材验证）；单元测试已覆盖 4 个纯逻辑模块；真机验证、手测与集成验证待做 |
+| 代码实现 | 🟢 **67 / 108 任务**：学期包下载/校验、学单词（听·认·说 + 三档配速 + 纠错建议）、听音选图、句型、复习、星星/徽章、家长面板、媒体库清单/缓存/下载/播放/列表、媒体跟读、家长媒体设置与观看明细已实现（待真机与素材验证）；单元测试已覆盖 4 个纯逻辑模块；真机验证、手测与集成验证待做 |
 | 构建 | ✅ `xcodebuild`（iPad Simulator / iOS 18）通过，无 error |
 
-> ⚠️ **App 内不带课文内容**，首次安装后要先在家里 Wi-Fi 下下载（`_download/serve.py`）。现在可走通「建档 → 下载二年级上 → 学单词/游戏/句型/复习 → 星星与结算 → 家长报告/奖励/设置」；媒体库播放与列表已接好，真机串流/素材验证、9.2 手测与集成验证仍未完成。
+> ⚠️ **App 内不带课文内容**，首次安装后要先在家里 Wi-Fi 下下载（`content-service/serve/serve.py`）。现在可走通「建档 → 下载二年级上 → 学单词/游戏/句型/复习 → 星星与结算 → 家长报告/奖励/设置」；媒体库播放与列表已接好，真机串流/素材验证、9.2 手测与集成验证仍未完成。
 
 进度可用 OpenSpec 查看：
 
 ```bash
-openspec list                     # 62/108 tasks
+openspec list                     # 67/108 tasks
 openspec status --change ipad-elementary-english-learning --json
 ```
 
@@ -99,10 +99,10 @@ iPad 主包（约 10MB）                     家里的电脑（同一 Wi-Fi）
 │   ├── Support/                # Info.plist、PrivacyInfo.xcprivacy
 │   └── tools/MakeIcon.swift    # 图标生成脚本
 │
-├── _download/                  # 内容管线与内容服务（学期包与媒体不进 git）
-│   ├── build_resources.py      # app/Resources/Curriculum → packs/g2s1.zip + meta
-│   ├── serve.py / serve.js     # 家园局域网内容服务（serve.bat 给 Windows）
-│   └── README.md               # 打包 / 起服务 / manifest 协议 / 排错
+├── content-service/            # 独立的内容服务（学期包与媒体数据不进 git）
+│   ├── build/                  # 打学期包 / 媒体清单 / faststart 体检
+│   ├── serve/                  # 家园局域网服务（serve.py / serve.js / serve.bat）
+│   └── README.md               # 部署 / 打包 / manifest 协议 / 排错
 │
 ├── openspec/                   # 设计与任务（唯一事实来源）
 │   ├── config.yaml             # 项目上下文 + 各产物写作规则
@@ -161,13 +161,13 @@ xcodebuild -scheme EnglishLearning \
 ### 内容从哪来（App 内零内容）
 
 ```bash
-python3 _download/build_resources.py     # 打包：app/Resources/Curriculum → _download/packs/g2s1.zip
-python3 _download/serve.py               # 起服务，打印 http://<host>.local:8080
+python3 content-service/build/build_resources.py     # 打包 → content-service/packs/g2s1.zip
+python3 content-service/serve/serve.py               # 起服务，打印 http://<host>.local:8080
 ```
 
 iPad 上：右上角 🔒 → 内容管理 → 填 `<host>.local:8080` → 连接 → 下载「二年级上」。
 下载一次后**断网也能学**（音频、图片都在本机 `Application Support/Curriculum/g2s1/`）。
-详见 [_download/README.md](_download/README.md)。
+详见 [content-service/README.md](content-service/README.md)。
 
 ### 装到 iPad
 
@@ -178,7 +178,7 @@ iPad 上：右上角 🔒 → 内容管理 → 填 `<host>.local:8080` → 连�
 
 ### 内容服务（已实现）
 
-`_download/serve.py` / `serve.js` 提供只读静态服务（监听 8080），提供学期包、`manifest.json` 与媒体文件；只需内网访问，不做端口映射。
+`content-service/serve/serve.py` / `serve.js` 提供只读静态服务（监听 8080），提供学期包、`manifest.json` 与媒体文件；只需内网访问，不做端口映射。
 
 iPad 端地址：`http://<host>.local:8080`（Bonjour 主机名，避免 IP 变化；设置页可手动改）。
 
@@ -264,16 +264,16 @@ cd app && swift build --triple x86_64-apple-ios18.0-simulator \
 媒体素材（儿歌 / 绘本视频）**不进仓库**，只在家里电脑和 iPad 上存在。接入分三步：
 
 ```bash
-# 1. 把素材放成约定结构（任何盘都行，仓库外）
-#    <媒体目录>/files/songs/    儿歌
-#    <媒体目录>/files/picture/  绘本跟读（按部建子目录）
+# 1. 把素材放到 content-service/media/（不进 git，可单独备份）
+#    content-service/media/files/songs/    儿歌
+#    content-service/media/files/picture/  绘本跟读（按部建子目录）
 
 # 2. 体检 + 生成清单（不能秒开的先 remux，否则只能「先下后播」）
-node scripts/check-faststart.mjs <媒体目录>/files/songs/*.mp4
-node scripts/remux-faststart.mjs --in <媒体目录>/files --out <媒体目录>/files-faststart
-node scripts/build-media-manifest.mjs --media <媒体目录> --out <媒体目录>/media.json --version 1
+node content-service/build/check-faststart.mjs content-service/media/files/songs/*.mp4
+node content-service/build/remux-faststart.mjs --in content-service/media/files --out /tmp/media-faststart  # 再替换回 media/files
+node content-service/build/build-media-manifest.mjs --media content-service/media --out content-service/media/media.json --version 1
 
-# 3. 让内容服务也提供 media.json 与 files/（App 进入「听和看」时自动拉取并校验）
+# 3. 起服务后，App 进入「听和看」会自动拉取 /media.json 并校验
 ```
 
 - `media.json` 里每项带 `sha256`、`bytes`、`streamable`；App 逐项校验后才启用

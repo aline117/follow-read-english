@@ -78,9 +78,9 @@
 - [x] 7.2 从网络资源获取单词发音音频
 - [x] 7.3 从网络资源获取单词配图
 - [ ] 7.4 把二上资源迁出 App：`app/Resources/Curriculum/` → 学期包 `packs/g2s1.zip`（内含 `curriculum.json` + `audio/ words/ img/`）
-- [x] 7.5 实现 `_download/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
+- [x] 7.5 实现 `content-service/serve/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
 - [x] 7.6 内置 `catalog.json`（学期目录：id / 标题 / 大小 / 版本，不含任何媒体与词表）
-- [ ] 7.7 管线入版本库 + 学期包异地备份：`_download/build_resources.js`、`serve.js`、`jx_audio_manifest.json`、`words_raw.json` 纳入 git（调整 `.gitignore`，媒体不进 git，只留 `curriculum.json` 与脚本），`packs/*.zip` 备份到云盘或移动硬盘
+- [ ] 7.7 管线入版本库 + 学期包异地备份：`content-service/build/build_resources.py`、`content-service/serve/serve.js`、`jx_audio_manifest.json`、`words_raw.json` 纳入 git（调整 `.gitignore`，媒体不进 git，只留 `curriculum.json` 与脚本），`packs/*.zip` 备份到云盘或移动硬盘
 - [x] 7.8 补录二上核心句型并生成音频：6 单元 × 2-3 条（约 18 条），写入 `sentences`（`en` / `zh` / `pattern` / `chunks` / `audio`），音频用 TTS 生成到 `sentences/{unit}/{id}.mp3`
 
 > 后续内容任务（不阻塞首版）：档位 B「课文对话全文」约 300-400 句，需转录 129 条课文原声并按句切时间点（3-6 小时，用于逐句高亮跟读）；档位 C「Read a story」6 篇故事。两者都只涉及内容补录与 JSON 扩展，不改架构。
@@ -111,10 +111,12 @@
 ## 10. 内容侧（家里电脑）
 
 - [ ] 10.1 建立 `media/` 目录结构与命名规则（`media.json` + `files/songs/<id>.mp4` + `files/picture/<id>.mp4`），从素材目录挑出儿歌 82 首与绘本 164 段并重命名为稳定 id；验证：脚本输出条目数 = 246，且每行与源文件一一对应（无重复 id、无空标题）**[素材]**
-- [x] 10.2 写 `scripts/build-media-manifest.mjs` 产出 `media.json`（字段：`id` / `title` / `kind`(song|picture) / `part` / `durationSec` / `bytes` / `sha256` / `relPath` / `streamable`）；验证：跑一次产出 246 条，`id` 全部以 `m:` 开头、唯一，且体积合计 ≈ 6.30 GB（±1%）**[素材]**
-- [x] 10.3 写 `scripts/check-faststart.mjs`（读文件头前 1 MB 查找 `moov` box，判定 `streamable`）；验证：对至少 3 个样本文件的判定结果与「拖到中段能否秒开」的真机表现一致 **[素材]**
-- [ ] 10.4 Node 静态服务增加 `/media/*` 路由与 Range 支持；验证：`curl -H "Range: bytes=0-1023"` 返回 `206` 且 `Content-Range` / `Content-Length` 正确，`curl -I` 返回 `Accept-Ranges: bytes` **[家里电脑]**
-- [ ] 10.5 打包脚本加路径守卫：目标目录落在仓库内时非零退出并提示改用仓库外目录；验证：`node scripts/build-media-manifest.mjs --out ./media` 退出码 ≠ 0，`git status` 无新增 mp4
+- [x] 10.2 写 `content-service/build/build-media-manifest.mjs` 产出 `media.json`（字段：`id` / `title` / `kind`(song|picture) / `part` / `durationSec` / `bytes` / `sha256` / `relPath` / `streamable`）；验证：跑一次产出 246 条，`id` 全部以 `m:` 开头、唯一，且体积合计 ≈ 6.30 GB（±1%）**[素材]**
+- [x] 10.3 写 `content-service/build/check-faststart.mjs`（读文件头前 1 MB 查找 `moov` box，判定 `streamable`）；验证：对至少 3 个样本文件的判定结果与「拖到中段能否秒开」的真机表现一致 **[素材]**
+- [x] 10.4 静态服务增加 `/media/*` 路由与 Range 支持；验证：`curl -H "Range: bytes=0-1023"` 返回 `206` 且 `Content-Range` / `Content-Length` 正确，`curl -I` 返回 `Accept-Ranges: bytes` **[家里电脑]**
+  - 2026-10-29：`serve.py` 与 `serve.js` 均支持 `/media.json`、`/media/files/*`、Range/206 与 416；已用 curl 验证（见 content-service/README）
+- [x] 10.5 打包脚本加路径守卫：目标目录落在仓库内时非零退出并提示改用仓库外目录；验证：`node content-service/build/build-media-manifest.mjs --out ./media` 退出码 ≠ 0，`git status` 无新增 mp4
+  - 2026-10-29：守卫改为只放行 `content-service/media/` 与仓库外路径；实测 `--out ./media/media.json` 退出码 3
 - [ ] 10.6 写内容侧 runbook（`docs/media-runbook.md`，仓库内只写流程不写本机绝对路径）：加一批新素材的完整步骤 + Range/faststart 自检命令；验证：按文档从空目录走一遍能产出可用 `media.json`
 - [ ] 10.7 给 82 首儿歌各标注 2–3 个可跟读句（文本 + 起止秒），写入 `media.json` 的 `lines[]`，避开 `la la la`、拟声词与说唱段；验证：82 首全部 2–3 句，人工试读抽样 10 首一次性通过率 ≥ 70%，不达标的句子重标 **[素材]**
 - [ ] 10.8 产出素材验收清单 `docs/media-acceptance.md` 并完成 10 条抽样（水印/片头广告、爆音与音量一致性、是否以英文为主、时长、首尾完整性）；验证：10 条记录齐全，不合格项从 `media.json` 移除并写明原因 **[素材]**
@@ -184,9 +186,12 @@
 
 ## 16. 合规与仓库卫生
 
-- [ ] 16.1 `.gitignore` 覆盖媒体素材与打包产物（`media/`、`*.mp4`、`_download/`），并确认构建产物不含媒体；验证：`git status` 干净；`unzip -l` 或 `du` 检查 App 包体，安装体积较接入前增幅 < 1 MB
-- [ ] 16.2 打包脚本仓库守卫回归；验证：`node scripts/build-media-manifest.mjs --out <仓库内路径>` 非零退出（对应 spec「打包脚本拒绝写入仓库」）
-- [ ] 16.3 README 增加「本地素材接入」章节，只写目录用途与流程，不写本机绝对路径；验证：`grep -i "G:\\\\"` 无命中
+- [x] 16.1 `.gitignore` 覆盖媒体素材与打包产物（`content-service/packs/`、`content-service/media/`、`*.mp4`），并确认构建产物不含媒体；验证：`git status` 干净；`unzip -l` 或 `du` 检查 App 包体，安装体积较接入前增幅 < 1 MB
+  - 2026-10-29：`content-service/packs`、`content-service/media` 已忽略；模拟器 App 包 9.7 MB，无 mp4/mov/wav
+- [x] 16.2 打包脚本仓库守卫回归；验证：`node content-service/build/build-media-manifest.mjs --out <仓库内路径>` 非零退出（对应 spec「打包脚本拒绝写入仓库」）
+  - 2026-10-29：仓库内 `./media/media.json` 实测退出码 3
+- [x] 16.3 README 增加「本地素材接入」章节，只写目录用途与流程，不写本机绝对路径；验证：`grep -i "G:\\\\"` 无命中
+  - 2026-10-29：README 与 content-service/README 均不含本机绝对路径
 - [ ] 16.4 隐私确认：播放与跟读只在本机处理，无外网上报；验证：断掉外网（保留局域网）后完整走一遍串流 + 跟读 + 发星，功能不受影响
 
 ## 17. 集成验证（媒体库）

@@ -426,15 +426,15 @@
 
 | 素材 | 音源 | 数量 | 原始文件 |
 |---|---|---|---|
-| 课文原声 | 51jiaoxi（vga 接口，128kbps mp3 已验证） | 129 | `_download/jx_audio/{docId}_{seq}.mp3` |
-| 单词发音+配图 | suyang123（`words_raw.json` 清单） | 33 词 × 2 | `_download/words/3003364/{wordId}.mp3/.png` |
+| 课文原声 | 51jiaoxi（vga 接口，128kbps mp3 已验证） | 129 | `_download/jx_audio/{docId}_{seq}.mp3`（历史暂存路径） |
+| 单词发音+配图 | suyang123（`words_raw.json` 清单） | 33 词 × 2 | `_download/words/3003364/{wordId}.mp3/.png`（历史暂存路径） |
 
 格式决定：
 - **不转码、不重采样**：源文件本身就是 mp3（课文为已验证的 128kbps，单词为原生 mp3），AVAudioPlayer 直接解码；命名维持 JSON 章节已定的 `audio/{docId}_{seq}.mp3` 与 `words/{unit}/{wordId}.mp3`
 - 单词配图与发音同源成对落盘，进 `img/u{unit}/{wordId}.png`
 - 不生成慢速副本（运行时变速已定）
 
-构建脚本 `_download/build_resources.js`（Node，沿用本目录现有脚本风格）：
+构建脚本 `content-service/build/build_resources.py`（Python 标准库；Node 版不再单独维护）：
 1. 读取 `jx_audio_manifest.json` 与 `app/Resources/Curriculum/grade2.json`
 2. 复制 129 个课文 mp3 → `app/Resources/Curriculum/audio/`
 3. 复制 33 组单词 mp3/png → `app/Resources/Curriculum/words/{unit}/` 与 `img/u{unit}/`
@@ -601,8 +601,8 @@ iPad App (ipa 约 10MB, 零内容本体)
 
 ### 服务端 runbook
 
-- `_download/build_resources.js`：把某学期资源 + `curriculum.json` 打成 `packs/<id>.zip`（包内结构 `g2s1/{curriculum.json,audio,words,img}`）
-- `_download/serve.js`：静态服务 + 扫描 `packs/` 生成 `manifest.json`（size + sha256）
+- `content-service/build/build_resources.py`：把某学期资源 + `curriculum.json` 打成 `packs/<id>.zip`（包内结构 `g2s1/{curriculum.json,audio,words,img}`）
+- `content-service/serve/serve.py` / `serve.js`：静态服务 + 扫描 `packs/` 生成 `manifest.json`，并提供媒体清单与 Range
 - 启动：`node serve.js`；Windows 用 `serve.bat` + 计划任务开机自启，防火墙只放行专用网络
 - **学期包必须异地备份**（云盘或移动硬盘）：原始素材来自第三方站点，可能已无法重爬
 - `packs/` 保留最近 2 个版本（`g2s1.zip` + `g2s1-v2.zip`），供 manifest 的 `previous` 回退使用

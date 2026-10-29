@@ -40,8 +40,8 @@ target membership：
 swift app/tools/MakeIcon.swift app/Assets.xcassets/AppIcon.appiconset/AppIcon.png
 ```
 
-**App 里不再打包课文内容**（design Decision 3「零内置」）：学期包由 `_download/build_resources.py`
-产出 `packs/g2s1.zip`，iPad 在家长模式 → 内容管理里下载，装到
+**App 里不再打包课文内容**（design Decision 3「零内置」）：学期包由 `content-service/build/build_resources.py`
+产出 `content-service/packs/g2s1.zip`，iPad 在家长模式 → 内容管理里下载，装到
 `Application Support/Curriculum/<semester>/`，再由 `ResourceLocator` 按相对路径取音频和图片。
 
 `app/Resources/Curriculum/` 只作为**打包源**留在仓库里（SPM 备用路径还会带上它，真机不受影响），
@@ -71,12 +71,12 @@ swift app/tools/MakeIcon.swift app/Assets.xcassets/AppIcon.appiconset/AppIcon.pn
 ## 3. 内容从哪来
 
 ```bash
-python3 _download/build_resources.py     # 打学期包 → _download/packs/g2s1.zip + meta
-python3 _download/serve.py               # 起内容服务（或 node _download/serve.js）
+python3 content-service/build/build_resources.py     # 打包 → content-service/packs/g2s1.zip + meta
+python3 content-service/serve/serve.py               # 起内容服务（或 node content-service/serve/serve.js）
 ```
 
 iPad 上：家长模式（右上角 🔒）→ 内容管理 → 填 `<host>.local:8080` → 连接 → 下载。
-细节见 `_download/README.md`。
+细节见 `content-service/README.md`。
 
 ## 4. 已经踩过的坑
 
