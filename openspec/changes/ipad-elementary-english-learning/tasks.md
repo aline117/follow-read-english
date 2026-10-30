@@ -215,6 +215,17 @@
 - [ ] 17.4 与既有功能的隔离验证：媒体播完后 `ItemProgress` / `ReviewSchedule` 无新增，课本正确率统计不变（对应 spec「看完绘本不产生学习进度」）
 - [ ] 17.5 评价口径走查：家长端与孩子端所有媒体信息只含事实（时长 / 通过率 / 一次通过率 / 复读次数 / 星星），无分数、等级、颜色分级与孩子间排名；验证：对照 spec「跟读评价口径」逐条勾选并留走查记录 **[真机]**
 
+## 18. 备份与恢复（2026-10-31 补充，见 design「备份与恢复」一节）
+
+- [ ] 18.1 备份打包：逐表导出 8 张学习状态表 + 家长配置 + `media-state` / `media-duration`，`backupFormatVersion: 1`，含 `exportedAt` / 行数 / `sha256`（不含 Keychain、课程内容、媒体缓存）
+- [ ] 18.2 导出/导入：家长面板「导出备份」走分享面板；「导入备份」校验版本与结构，二次确认后整包覆盖，失败拒绝且不做部分写入
+- [ ] 18.3 服务端备份路由：serve.py / serve.js 加 `PUT /backup/...`（校验 `X-Backup-Sha256`、原子落盘、路径白名单防穿越）、`GET /backup/index.json`、`GET /backup/file/...`；每设备保留 30 份滚动删除；`backups/` 进 `.gitignore` 与异地备份清单
+- [ ] 18.4 App 端自动备份：连接内容服务后每 24h 自动上传一次（整包 hash 未变跳过，失败静默写诊断日志）；内容管理页「备份」卡片显示上次备份时间与「立即备份」
+- [ ] 18.5 恢复流程：「从家里电脑恢复」拉 index → 选份 → sha256 校验 → 二次确认 → 整包覆盖（`Profile.id` 沿用备份值）；恢复后提示 PIN 需重设、提示重下已安装学期
+- [ ] 18.6 单元测试：打包/解析往返一致；版本不符、结构缺失、损坏 JSON 拒绝导入；覆盖恢复幂等（重复恢复结果一致）
+- [ ] 18.7 文案与 runbook：设置页与合规清单改为"卸载前请先备份"；runbook 补「引导式访问」建议
+- [ ] 18.8 集成验证 **[真机][家里电脑]**：备份 → 卸载重装 → 恢复 → 学习进度 / 星星 / 徽章 / 观看记录完整，PIN 重设后家长面板可用
+
 ## Workflow follow-up
 
 - 待用户确认后归档本变更（`openspec archive ipad-elementary-english-learning`），归档前需先跑 `openspec validate ipad-elementary-english-learning --strict`。
