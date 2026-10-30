@@ -4,8 +4,8 @@ import UIKit
 
 /// 单词学习 · 「认·说」合练（把原型的 B3 听 + B4 说 + B5 认并成一个循环）。
 ///
-/// 每个词的流程：看大图认词 → 听原音（默认慢速）→ 点麦克风跟读 →
-/// 和原音对比达标 → 自动进入下一个词；不达标就留在本词再读一次。
+/// 每个词的流程：看大图认词 → **由孩子点「听一遍」**听原音（默认慢速）→ 点麦克风跟读 →
+/// 和原音对比（可反复听「原音 / 我的录音」）→ 达标后点「下一个」继续；不达标就留在本词再读一次。
 /// 一直走到「主动结束」或「本单元每个词都达标」。
 struct WordLearningView: View {
     let profile: Profile
@@ -38,7 +38,8 @@ struct WordLearningView: View {
     @State private var showSummary = false
     @State private var sessionID = UUID()
     @State private var session: LearningSession?
-    @State private var advanceTask: Task<Void, Never>?
+    /// 本次会话里已经听过原音的词：按钮文案顺手从「听一遍」变「再听一遍」
+    @State private var playedWords: Set<String> = []
 
     private let player = AudioPlayer.shared
     private let explicitStart: Int?
@@ -80,6 +81,7 @@ struct WordLearningView: View {
                                     onRateChange: { playbackRate = $0 },
                                     onAssessment: { handle($0) },
                                     onSkip: { skipCurrentWord() },
+                                    onNext: { advance() },
                                     skipAfterFailures: settings?.skipAfterFailures ?? 3)
                         .frame(width: 430)
                         .id(word.id)
@@ -93,7 +95,6 @@ struct WordLearningView: View {
         .toolbar(.hidden, for: .navigationBar)
         .task { prepareIfNeeded() }
         .onDisappear {
-            advanceTask?.cancel()
             player.stop()
             endSession()
         }
@@ -198,7 +199,8 @@ struct WordLearningView: View {
                 Button {
                     if isPlayingReference { player.stop() } else { playReference() }
                 } label: {
-                    KidButtonLabel(title: isPlayingReference ? "停止" : "再听一遍（\(Self.rateLabel(playbackRate))）",
+                    KidButtonLabel(title: isPlayingReference ? "停止" : (hasHeardCurrent ? "再听一遍（\(Self.rateLabel(playbackRate))）"
+                                                                                : "听一遍（\(Self.rateLabel(playbackRate))）"),
                                    systemImage: isPlayingReference ? "stop.fill" : "play.fill",
                                    compact: true)
                 }
@@ -254,7 +256,7 @@ struct WordLearningView: View {
 
     private var statusLine: String {
         let passed = unit.words.filter { passedThisSession.contains($0.itemCode) }.count
-        return "本次达标 \(passed) / \(unit.words.count) 个词 · 达标后自动进入下一个"
+        return "本次达标 \(passed) / \(unit.words.count) 个词 · 读懂达标后点「下一个」继续"
     }
 
     // MARK: - 结算
@@ -342,19 +344,14 @@ struct WordLearningView: View {
         }
 
         startSession()
-        playReference()
+        // 进页面不自动朗读：由孩子点「听一遍」（或点图片）再播，节奏交给孩子
     }
 
     private func handle(_ assessment: PronunciationAssessment) {
         guard let word else { return }
         if assessment.isPassed {
+            // 停在结果卡：孩子可以反复对比「原音 / 我的录音」，点「下一个」再继续
             markPassed(word)
-            advanceTask?.cancel()
-            advanceTask = Task {
-                try? await Task.sleep(nanoseconds: 1_400_000_000)
-                guard !Task.isCancelled else { return }
-                advance()
-            }
         } else {
             markFailed(word)
         }
@@ -368,7 +365,6 @@ struct WordLearningView: View {
                                     unitCode: unit.id, kind: "speak", passed: false, at: Date()))
         save()
         skippedThisSession.insert(word.itemCode)
-        advanceTask?.cancel()
         advance()
     }
 
@@ -379,9 +375,8 @@ struct WordLearningView: View {
             return
         }
         if let next = pendingIndices.first(where: { $0 > index }) ?? pendingIndices.first {
-            index = next
             player.stop()
-            playReference()
+            index = next
         } else {
             showSummary = true
         }
@@ -422,6 +417,13 @@ struct WordLearningView: View {
             return
         }
         player.play(url: audioURL, rate: playbackRate)
+        if let word { playedWords.insert(word.itemCode) }
+    }
+
+    /// 当前这个词是否已经听过原音（决定按钮写「听一遍」还是「再听一遍」）
+    private var hasHeardCurrent: Bool {
+        guard let word else { return false }
+        return playedWords.contains(word.itemCode)
     }
 
     private var isPlayingReference: Bool {

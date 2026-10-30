@@ -20,6 +20,8 @@ struct FollowReadPanel: View {
     var onAssessment: (PronunciationAssessment) -> Void = { _ in }
     /// 连续失败 / 没有麦克风时允许先练下一个
     var onSkip: () -> Void = {}
+    /// 达标后点「下一个」：由上层决定下一步。给了就停在结果卡（可反复对比），不再自动跳
+    var onNext: (() -> Void)? = nil
     /// 连续失败几次才出现「先跳过」，读 `LearningSettings.skipAfterFailures`（0 = 关闭，必须读对才能过）
     var skipAfterFailures: Int = 3
 
@@ -62,7 +64,10 @@ struct FollowReadPanel: View {
             stage
                 .frame(height: 300)
                 .frame(maxWidth: .infinity)
-            controls
+            // 结果卡自带「听原音 / 听我的录音」，这时底部按钮收起，避免两套按钮抢地方
+            if phase != .result {
+                controls
+            }
             footer
         }
         .overlay(alignment: .center) {
@@ -202,7 +207,7 @@ struct FollowReadPanel: View {
             }
             .accessibilityLabel("开始跟读录音")
 
-            Text("听会了？点麦克风读一遍")
+            Text("先点「听原音」听一遍，觉得会了再点麦克风")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Theme.ink)
 
@@ -278,14 +283,26 @@ struct FollowReadPanel: View {
                         .lineLimit(2)
                 }
 
+                compareRow(assessment)
+
                 if assessment.isPassed {
-                    Text("准备下一个词…")
-                        .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundStyle(Theme.greenInk)
-                        .padding(.horizontal, 11)
-                        .padding(.vertical, 5)
-                        .background(Theme.greenSoft)
-                        .clipShape(Capsule())
+                    if let onNext {
+                        Button {
+                            onNext()
+                        } label: {
+                            KidButtonLabel(title: "下一个", systemImage: "arrow.right", compact: true)
+                        }
+                        .buttonStyle(KidButtonStyle())
+                        .padding(.top, 2)
+                    } else {
+                        Text("准备下一个…")
+                            .font(.system(size: 12.5, weight: .semibold))
+                            .foregroundStyle(Theme.greenInk)
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 5)
+                            .background(Theme.greenSoft)
+                            .clipShape(Capsule())
+                    }
                 } else {
                     HStack(spacing: 8) {
                         if let suggested = assessment.suggestedRate {
@@ -330,6 +347,31 @@ struct FollowReadPanel: View {
             .background(assessment.isPassed ? Theme.greenSoft : Theme.orangeSoft)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
+    }
+
+    /// 结果卡上的对比条：原音 / 我的录音，都可以反复听（练耳朵就靠这一步）
+    private func compareRow(_ assessment: PronunciationAssessment) -> some View {
+        HStack(spacing: 8) {
+            Button {
+                playReference()
+            } label: {
+                KidButtonLabel(title: "听原音", systemImage: "speaker.wave.2.fill",
+                               style: .ghost, compact: true)
+            }
+            .buttonStyle(KidButtonStyle())
+            .disabled(referenceURL == nil)
+            .opacity(referenceURL == nil ? 0.5 : 1)
+
+            Button {
+                player.toggle(url: assessment.recordingURL)
+            } label: {
+                KidButtonLabel(title: player.isPlaying(assessment.recordingURL) ? "停止我的录音" : "听我的录音",
+                               systemImage: player.isPlaying(assessment.recordingURL) ? "stop.fill" : "play.fill",
+                               style: .blue, compact: true)
+            }
+            .buttonStyle(KidButtonStyle())
+        }
+        .padding(.top, 2)
     }
 
     private var deniedStage: some View {
@@ -393,7 +435,7 @@ struct FollowReadPanel: View {
     private var footer: some View {
         Group {
             if phase == .idle {
-                Text("听就在这一屏：可反复听、换配速，读完自动对比原音")
+                Text("听完再读；读完可反复对比「原音 / 我的录音」")
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.faint)
                     .multilineTextAlignment(.center)
