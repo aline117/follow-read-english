@@ -21,6 +21,7 @@ App「听和看」：入口出现 → 串流播放 → 跟读发星 → 家长�
 
 约定：
 
+- 逐项串流见上面 ①～④；素材成批导入 + 生成清单可以一条命令跑完（见 §8）。
 - `media/` 与 `packs/` 都不进 git（`.gitignore` 已覆盖），要单独备份。
 - `media.json` 由脚本生成，**不要手改**；要改标题/id 用 `media/ids.json` 覆盖。
 - 素材只放本机；仓库里不出现任何绝对路径。
@@ -125,3 +126,48 @@ curl -H 'Range: bytes=99999999999-' -i http://<host>:8080/media/files/songs/<id>
 - 清单坏了：把上一次的 `media/media.json` 复制回来（建议每次生成前先 `cp media.json media.json.bak-<version>`）。
 - 服务端想退回旧清单：`media.json` 里把 `mediaSchemaVersion` 保持不高于 App 上限即可；App 不删本地缓存。
 - 素材被替换：`--version` 加一后重新生成，App 会按新清单重新拉；旧缓存由 LRU 自然淘汰。
+
+## 8. 一条命令生成媒体包（素材 → media/files + media.json）
+
+§2～§3 是手工流程（放素材 → 体检 → remux → 生成清单）。素材成批来自某个课程包时，
+用 `build-media-pack.py` 一次跑完，它按 design Decision 7 只产出**清单 + 原始文件**，不打包 zip：
+
+```bash
+python3 content-service/build/build-media-pack.py \
+  --songs   "/素材盘/…/赠品英文儿歌" \
+  --picture "/素材盘/…/6.绘本口语跟读6部164节" \
+  --version 1
+```
+
+产出（默认落在 `content-service/media/`，与 §2～§3 的目录约定完全一致）：
+
+```
+media/media.json                     # mediaSchemaVersion / contentVersion / 逐项 sha256 / streamable
+media/files/songs/<slug>.mp4         # 儿歌
+media/files/picture/b1/<slug>.mp4    # 绘本（每部一个 b1…b6 子目录）
+```
+
+要点：
+
+- 递归识别「赠课1 / 赠课2」这类子目录：儿歌铺平（`part` 恒为 0），绘本按子目录分部（`b1…b6`）
+- 文件名转 slug（`1.At the Market.mp4` → `files/picture/b1/1-at-the-market.mp4`），`title` 保留原名
+- id：儿歌 `m:song-<slug>`、绘本 `m:pb-b1-<slug>`；要自定义就加 `--ids ids.json`
+- 复制时就地算 `sha256` 与 faststart（不用再跑一遍 `build-media-manifest.mjs`）；
+  已在位的同名同大小文件跳过复制，`--dry-run` 只列计划
+- 副本落在 `media/files/`（6.3 GB），源素材可以留在素材盘当原始备份
+- 日志会报「不能秒开 N 项」：这批雪梨素材 moov 基本都在文件尾，串流会走「先下后播」；
+  要秒开就先按 §3 ② 用 `remux-faststart.mjs` 重排，再指定重排后的目录跑本脚本
+
+自检：
+
+```bash
+# 清单能拉到，条目数对得上
+curl -s http://<host>:8080/media.json | python -c "import json,sys;m=json.load(sys.stdin);print(len(m['items']),m['mediaSchemaVersion'],m['contentVersion'])"
+
+# 单项可播：200 + Range 206 + 越界 416
+curl -sI http://<host>:8080/media/files/songs/baby-shark.mp4 | head -5
+curl -H 'Range: bytes=0-1023' -i http://<host>:8080/media/files/songs/baby-shark.mp4 | head -5
+```
+
+- 打完后把 `media.json` 和 `media/files/` 一起备份（清单与文件必须成对，单独一份没用）
+- 换素材：改完素材再跑一次（`--version` 加一），App 按新清单重拉，旧缓存由 LRU 淘汰

@@ -13,13 +13,14 @@ content-service/
 │   └── serve.bat       # Windows 启动（默认 Node，--runtime 切换）
 ├── build/
 │   ├── build_resources.py            # 学期包 → packs/*.zip + meta
+│   ├── build-media-pack.py           # 媒体包（儿歌+绘本）→ media/media.json + media/files/
 │   ├── build-media-manifest.mjs      # 媒体目录 → media/media.json
 │   ├── check-faststart.mjs           # 判断 mp4 能否秒开
 │   └── remux-faststart.mjs           # 可选：moov 后置的视频重排
 ├── packs/              # 学期包 zip + meta（不进 git，需备份）
-├── media/
+├── media/              # 媒体包：media.json + files/（不进 git，需备份）
 │   ├── media.json      # 媒体清单（App 通过 /media.json 拉取）
-│   └── files/          # 儿歌 / 绘本 mp4（不进 git，需备份）
+│   └── files/          # 儿歌 / 绘本 mp4
 └── README.md
 ```
 
@@ -89,12 +90,42 @@ python3 build/build_resources.py                 # 产出 packs/g2s1.zip + g2s1.
 python3 build/build_resources.py --version 2     # 改内容后出 g2s1-v2.zip，供 previous 回退
 ```
 
-- 源目录：`../app/Resources/Curriculum/`（`grade2.json` + `audio/ words/ img/`）
+- 源目录：`../app/Resources/Curriculum/`（`grade2.json` + `audio/ words/ img/ sentences/`）
 - 脚本会先校验 JSON 引用的每个资产都在，缺一个就非 0 退出并列清单
 - `packs/` 至少保留最近 2 个版本，manifest 的 `previous` 才有东西可回退
 - **学期包必须异地备份**（云盘或移动硬盘）：原始素材来自第三方站点，可能已无法重爬
 
-## 4. 生成媒体清单
+## 4. 生成媒体包（儿歌 + 绘本）
+
+媒体包**不含 zip**：按 design Decision 7 就是「清单 + 原始文件」，iPad 先拉 `media.json`，播哪条下哪条。
+素材从任意素材目录导入（源素材不进仓库）：
+
+```bash
+python3 build/build-media-pack.py \
+  --songs   "/path/to/赠品英文儿歌" \
+  --picture "/path/to/6.绘本口语跟读6部164节" \
+  --version 1
+```
+
+产出（默认落在 `content-service/media/`）：
+
+```
+media/media.json                        # 清单：mediaSchemaVersion / contentVersion / 逐项 sha256
+media/files/songs/<slug>.mp4            # 儿歌
+media/files/picture/b1/<slug>.mp4       # 绘本（每部一个 b1…b6 子目录）
+```
+
+- 脚本做三件事：递归识别「赠课1 / 赠课2」这类子目录、把文件名规范化成 url 安全 slug
+  （`1.At the Market.mp4` → `files/picture/b1/1-at-the-market.mp4`，`title` 保留原名）、
+  复制时顺带算逐项 `sha256` 与 `streamable`
+- id 用 `m:` 命名空间：儿歌 `m:song-<slug>`、绘本 `m:pb-b1-<slug>`；要换 id 用 `--ids ids.json`
+- 已经在位的同名同大小文件会跳过复制；`--dry-run` 只列计划，不落盘
+- 想改成手工流程也行：按命名规范把素材放进 `media/files/`，再跑 `build-media-manifest.mjs`
+
+> 「不能秒开 N 项」是 faststart 体检结果：`streamable: false` 的项串流时走「先下后播」。
+> 想秒开就先 `remux-faststart.mjs` 重排（无损，`-c copy`）再导入。
+
+## 5. 生成媒体清单
 
 媒体素材更新频率低，但清单必须和文件一致。完整流程（挑选、命名、自检、回滚）见
 [`docs/media-runbook.md`](../docs/media-runbook.md)，这里只列最小命令：
@@ -126,7 +157,7 @@ media/ids.json                   可选：{ "<相对路径>": "m:自定义id" }
 可跟读句写在 `media.json` 的 `lines[]`（`text` + `startSec` + `endSec`）；
 没标注时 App 的跟读入口会显示「待标注」。
 
-## 5. manifest 协议
+## 6. manifest 协议
 
 ```json
 {
@@ -146,7 +177,7 @@ media/ids.json                   可选：{ "<相对路径>": "m:自定义id" }
 
 App 下载后按 `sha256` 校验，失败可回退 `previous`；媒体按项校验，单项坏只影响该项。
 
-## 6. App 里下载
+## 7. App 里下载
 
 家长模式 → 内容管理：
 
@@ -155,7 +186,7 @@ App 下载后按 `sha256` 校验，失败可回退 `previous`；媒体按项校�
 3. 列表里选学期 → 下载 → 进度 → 校验 sha256 → 解压 → 安装完成
 4. 之后断网也能学；只有「下载新学期」需要局域网
 
-## 7. 常见问题
+## 8. 常见问题
 
 | 现象 | 原因 |
 |---|---|
@@ -166,17 +197,16 @@ App 下载后按 `sha256` 校验，失败可回退 `previous`；媒体按项校�
 | 媒体能播但不能拖 | 服务端没返回 206/Range；确认用的是本目录新版 `serve.py` / `serve.js` |
 | 想删掉重下 | 家长模式 → 内容管理 → 删除该学期；学习进度按 `itemCode` 保留，重下即恢复 |
 
-## 8. 备份
+## 9. 备份
 
 必须异地备份：
 
-- `packs/*.zip` + `*.meta.json`
-- `media/media.json`
-- `media/files/`（6.3 GB，可按需压缩/分盘）
+- `packs/*.zip` + `*.meta.json`（学期包）
+- `media/media.json` + `media/files/`（媒体包，6.3 GB，可按需压缩/分盘）
 
 原始素材来源已不稳定，丢了可能无法重爬。
 
-## 9. 注意
+## 10. 注意
 
 - 不要把 `packs/`、`media/` 提交进 git；根目录 `.gitignore` 已忽略
 - 不要做端口映射到公网；这是纯家庭局域网服务

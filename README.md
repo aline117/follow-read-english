@@ -12,10 +12,10 @@
 
 | 阶段 | 状态 |
 |---|---|
-| 需求与设计 | ✅ 完成（proposal / design / 5 份 spec / 109 项任务） |
+| 需求与设计 | ✅ 完成（proposal / design / 5 份 spec / 110 项任务） |
 | 交互原型 | ✅ 33 屏可点击原型（见 [prototype/](openspec/changes/ipad-elementary-english-learning/prototype/index.html)） |
 | 内容素材 | ✅ 二年级上（沪教版）6 单元 / 33 词 / 18 句型 / 129 条课文原声 |
-| 代码实现 | 🟢 **71 / 109 任务**：学期包下载/校验、学单词（听·认·说 + 三档配速 + 纠错建议）、听音选图、句型、复习、星星/徽章、家长面板、媒体库清单/缓存/下载/播放/列表（含逐项下载进度与「内容损坏」重下）、媒体跟读、家长媒体设置与观看明细已实现（待真机与素材验证）；跟读的评测异常已按设计区分（超时不记为读错）；适配约定（锁定字号 / 减弱动态效果 / 44pt 点击区）与内容侧媒体 runbook 已完成；单元测试已覆盖 4 个纯逻辑模块；真机验证、手测与集成验证待做 |
+| 代码实现 | 🟢 **72 / 110 任务**：学期包下载/校验、学单词（听·认·说 + 三档配速 + 纠错建议）、听音选图、句型、复习、星星/徽章、家长面板、媒体库清单/缓存/下载/播放/列表（含逐项下载进度与「内容损坏」重下）、媒体跟读、家长媒体设置与观看明细已实现（待真机与素材验证）；跟读的评测异常已按设计区分（超时不记为读错）；适配约定（锁定字号 / 减弱动态效果 / 44pt 点击区）与内容侧媒体 runbook 已完成；单元测试已覆盖 4 个纯逻辑模块；真机验证、手测与集成验证待做 |
 | 构建 | ✅ `xcodebuild`（iPad Simulator / iOS 18）通过，无 error |
 
 > ⚠️ **App 内不带课文内容**，首次安装后要先在家里 Wi-Fi 下下载（`content-service/serve/serve.py`）。现在可走通「建档 → 下载二年级上 → 学单词/游戏/句型/复习 → 星星与结算 → 家长报告/奖励/设置」；媒体库播放与列表已接好，真机串流/素材验证、9.2 手测与集成验证仍未完成。
@@ -23,7 +23,7 @@
 进度可用 OpenSpec 查看：
 
 ```bash
-openspec list                     # 71/109 tasks
+openspec list                     # 72/110 tasks
 openspec status --change ipad-elementary-english-learning --json
 ```
 
@@ -102,7 +102,7 @@ iPad 主包（约 10MB）                     家里的电脑（同一 Wi-Fi）
 │   └── tools/MakeIcon.swift    # 图标生成脚本
 │
 ├── content-service/            # 独立的内容服务（学期包与媒体数据不进 git）
-│   ├── build/                  # 打学期包 / 媒体清单 / faststart 体检
+│   ├── build/                  # 打学期包 / 导入媒体包 / 媒体清单 / faststart 体检
 │   ├── serve/                  # 家园局域网服务（serve.py / serve.js / serve.bat）
 │   └── README.md               # 部署 / 打包 / manifest 协议 / 排错
 │
@@ -114,7 +114,7 @@ iPad 主包（约 10MB）                     家里的电脑（同一 Wi-Fi）
 │   └── changes/ipad-elementary-english-learning/
 │       ├── proposal.md
 │       ├── design.md           # 决策、参数表、奖励体系、健壮性、合规
-│       ├── tasks.md            # 109 项任务
+│       ├── tasks.md            # 110 项任务
 │       ├── specs/              # curriculum-sync / learning-cycle / parent-panel / reward-system / media-library
 │       └── prototype/          # 33 屏可点击原型（index.html 为入口）
 │
@@ -168,9 +168,18 @@ xcodebuild -scheme EnglishLearning \
 ### 内容从哪来（App 内零内容）
 
 ```bash
-python3 content-service/build/build_resources.py     # 打包 → content-service/packs/g2s1.zip
+python3 content-service/build/build_resources.py     # 学期包 → content-service/packs/g2s1.zip
+python3 content-service/build/build-media-pack.py \  # 媒体包 → content-service/media/{media.json,files/}
+  --songs <素材盘>/赠品英文儿歌 --picture <素材盘>/6.绘本口语跟读6部164节
 ./content-service/serve/serve.sh                    # 起服务（默认 Node；--runtime python 可切）
 ```
+
+两类内容分包下发，都不进 git（需异地备份）：
+
+- **学期包** `packs/g2s1.zip`：课本内容（`curriculum.json` + 音频/配图），给「内容管理」下载学期用
+- **媒体包** `media/media.json` + `media/files/`：儿歌 + 绘本，只发清单、播哪条下哪条，没有 zip
+
+细节见 [content-service/README.md](content-service/README.md)。
 
 iPad 上：右上角 🔒 → 内容管理 → 填 `<host>.local:8080` → 连接 → 下载「二年级上」。
 下载一次后**断网也能学**（音频、图片都在本机 `Application Support/Curriculum/g2s1/`）。

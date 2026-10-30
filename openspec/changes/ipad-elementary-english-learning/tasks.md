@@ -88,6 +88,9 @@
   - 2026-10-29：逐项核对 `git ls-files`，上述文件全部 tracked（`.app` 包内只有 `catalog.json`，内容本体不进包）。`jx_audio_manifest.json` / `words_raw.json` 是当年一次性抓取清单，磁盘上已不存在，且重打包不依赖它们（`build_resources.py` 只读 `grade2.json` + 资源目录），故不再补入。学期包备份拆到 7.9
 - [x] 7.8 补录二上核心句型并生成音频：6 单元 × 2-3 条（约 18 条），写入 `sentences`（`en` / `zh` / `pattern` / `chunks` / `audio`），音频用 TTS 生成到 `sentences/{unit}/{id}.mp3`
 - [ ] 7.9 学期包异地备份：`content-service/packs/*.zip` 备份到云盘或移动硬盘（前置：备份介质与家里电脑；仓库内只留脚本与课程 JSON）
+- [x] 7.10 生成**媒体包**并落库：`content-service/build/build-media-pack.py` 把儿歌 + 绘本素材导入 `media/`（按 Decision 7「只发清单、逐项下载、不打包 zip」）——递归识别「赠课1/赠课2」子目录、文件名转 url 安全 slug、复制时顺带算逐项 `sha256` 与 `streamable`，产出 `media/media.json` + `media/files/{songs,picture/b1…b6}/*.mp4`（与 `build-media-manifest.mjs` 的目录/字段约定一致）
+  - 2026-10-30：雪梨素材（`赠品英文儿歌` 82 项 + `6.绘本口语跟读6部164节` 164 项）已导入：246 项 / 6.30 GiB，`media.json` 约 90 KB；`/media.json` 200、`/media/files/...` 200 + Range 206 + 越界 416、`/manifest.json` 仍只列学期包 `g2s1`。246 项 `streamable` 全为 `false`（moov 在文件尾），串流走「先下后播」，要秒开需先 `remux-faststart.mjs`
+  - 规格里「媒体包清单声明 `schemaVersion`」在实现里就是 `mediaSchemaVersion`（App `MediaManifest` 只解后者、闸门也用它），两边以 `mediaSchemaVersion` 为准
 
 > 后续内容任务（不阻塞首版）：档位 B「课文对话全文」约 300-400 句，需转录 129 条课文原声并按句切时间点（3-6 小时，用于逐句高亮跟读）；档位 C「Read a story」6 篇故事。两者都只涉及内容补录与 JSON 扩展，不改架构。
 
