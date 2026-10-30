@@ -26,6 +26,11 @@ __pycache__/
 content-service/packs/
 content-service/media/
 
+# 当年一次性抓取的原始素材（课文原声 / 词库 / 抓取脚本与 HTML 快照）：
+# 素材来源不稳定，只留本机与异地备份，不进仓库。重打包不依赖它
+# （build_resources.py 只读 app/Resources/Curriculum/）
+_download/
+
 # 媒体素材与产物（听和看）：只在家里电脑 / iPad 上存在，不进仓库
 # 用 /media/ 只匹配仓库根，避免误伤 app/Sources/**/Media/ 目录（Windows 上大小写不敏感）
 /media/
