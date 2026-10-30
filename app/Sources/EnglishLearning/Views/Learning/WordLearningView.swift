@@ -28,8 +28,8 @@ struct WordLearningView: View {
     @State private var passedThisSession: Set<String> = []
     @State private var skippedThisSession: Set<String> = []
     @State private var starsThisSession = 0
-    /// 本次学单词的配速（0.5 / 0.75 / 1），后续词沿用；离开学习页即重置
-    @State private var playbackRate: Double = 0.75
+    /// 当前这个词的配速：默认**原速**；慢速只作为听不清时的工具，切下一个词就回到原速
+    @State private var playbackRate: Double = 1
     /// 本次是否拿到了「单元完成 +5」奖励（只影响结算文案）
     @State private var unitRewardGranted = false
     /// 今天的新词配额用完（tasks 4.6：一次会话 5-8 分钟，不把整单元一次灌完）
@@ -376,6 +376,7 @@ struct WordLearningView: View {
         }
         if let next = pendingIndices.first(where: { $0 > index }) ?? pendingIndices.first {
             player.stop()
+            playbackRate = 1   // 每个新词都从原速开始：慢速只影响当前词，不跨词记忆
             index = next
         } else {
             showSummary = true

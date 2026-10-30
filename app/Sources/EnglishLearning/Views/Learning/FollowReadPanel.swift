@@ -144,7 +144,7 @@ struct FollowReadPanel: View {
     private static let rates: [Double] = [0.5, 0.75, 1]
 
     private static func sanitizedRate(_ value: Double) -> Double {
-        rates.min { abs($0 - value) < abs($1 - value) } ?? 0.75
+        rates.min { abs($0 - value) < abs($1 - value) } ?? 1
     }
 
     private static func rateLabel(_ value: Double) -> String {

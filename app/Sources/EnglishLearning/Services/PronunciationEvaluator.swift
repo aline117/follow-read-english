@@ -51,9 +51,9 @@ struct PronunciationAssessment {
     var advice: String {
         if isPassed {
             if let recognizedText, !recognizedText.isEmpty {
-                return "听到你说「\(recognizedText)」，下一个词继续加油"
+                return "听到你说「\(recognizedText)」，接着往下练吧"
             }
-            return "读得又清楚又响亮，继续下一个词吧"
+            return "读得又清楚又响亮，接着往下练吧"
         }
         switch issue {
         case .tooQuiet: return "靠近 iPad 大声读；先 0.75x 听一遍再读"

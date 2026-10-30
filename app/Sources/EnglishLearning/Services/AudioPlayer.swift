@@ -25,7 +25,7 @@ final class AudioPlayer {
     /// 被系统打断（来电/闹钟）暂停过：用于判断能否 resume
     private var pausedByInterruption = false
 
-    /// 三档配速（design「单词跟读」）：新学默认 0.75x，复习默认原速
+    /// 三档配速（design「单词跟读」）：默认原速；慢速（0.75x / 0.5x）只作听不清时的工具，默认不降速
     static let halfRate: Double = 0.5
     static let slowRate: Double = 0.75
     static let normalRate: Double = 1

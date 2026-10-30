@@ -35,9 +35,10 @@
 
 ## 4. 核心学习循环
 
-- [x] 4.1 实现"听"模块：音频播放器 + 图片/文字展示（**新学默认 0.75x、复习默认原速**；0.5x / 0.75x / 原速三档，`AVAudioEngine` + `AVAudioUnitTimePitch` 变速不变调）
+- [x] 4.1 实现"听"模块：音频播放器 + 图片/文字展示（**默认原速**；0.5x / 0.75x 为按需慢速；`AVAudioEngine` + `AVAudioUnitTimePitch` 变速不变调）
   - 2026-10-28：已改为 0.5x / 0.75x / 原速三档；本次「学单词」内记住最近一次选择，后续词沿用（`WordLearningView.playbackRate`），复习与退出后重置
   - 2026-10-30：改为**进入页面不自动朗读**——由孩子点「听一遍」（或点图片）才播放，按钮首次写「听一遍」、听过本词后变「再听一遍」，节奏交给孩子
+  - 2026-10-30：默认配速从 0.75x 改为**原速**，并**取消跨词记忆**——配速只影响当前词，切下一个词回到原速（`advance()` 里重置 `playbackRate = 1`）；句型默认也同步改为原速（`SentenceLearningView.initialRate = 1`），复习本来就是原速
 - [x] 4.2 实现"说"模块：录音功能 + 语音评测
   - 2026-10-28：单词「认·说」合练完成：`AudioRecorder` + `PronunciationEvaluator`（设备端识别 + 相似度 + 音量/时长兜底）+ `FollowReadPanel`（三档配速、录音、对比、原因 + 建议配速 + 差异位置 + 三步纠错、先跳过）；达标后停在结果卡（见 2026-10-30），全部达标进入后续环节
   - 2026-10-29：已对齐设计——`PronunciationAssessment` 新增 `isInfrastructureFailure`，识别超时 / 识别器报错归为基础设施异常；`FollowReadPanel` 与 `MediaFollowReadView` 遇到时只提示「刚才没听清，再读一次」，**不写 `Attempt`、不计入失败次数、不弹结果卡**；`unavailable`（无设备端识别）仍按音量/时长兜底，属正常路径

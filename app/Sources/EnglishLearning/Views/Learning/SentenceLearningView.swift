@@ -158,9 +158,10 @@ struct SentenceLearningView: View {
                     FollowReadPanel(word: sentence.en,
                                     referenceURL: audioURL(of: sentence),
                                     isPaused: showSummary,
-                                    initialRate: 0.75,
+                                    initialRate: 1,
                                     onAssessment: { handleAssessment($0, sentence: sentence) },
                                     onSkip: { advanceStep(from: .speak, sentence: sentence) },
+                                    onNext: { advanceStep(from: .speak, sentence: sentence) },
                                     skipAfterFailures: settings?.skipAfterFailures ?? 3)
                 case .match:
                     matchPanel(sentence)
@@ -269,10 +270,15 @@ struct SentenceLearningView: View {
 
     // MARK: - 说
 
+    /// 句型跟读的评测结果
+    /// - 达标：记进度与发星，但**停在结果卡**让孩子看评价、对比「原音 / 我的录音」，点「下一个」再进入「认」
+    /// - 未达标：结果卡给出原因与差异，同时落一条失败 `Attempt`（家长报告与薄弱项要用）
     private func handleAssessment(_ assessment: PronunciationAssessment, sentence: Sentence) {
-        guard assessment.isPassed else { return }
-        recordSpeakPass(sentence)
-        advanceStep(from: .speak, sentence: sentence)
+        if assessment.isPassed {
+            recordSpeakPass(sentence)
+        } else {
+            recordSpeakFail(sentence)
+        }
     }
 
     // MARK: - 认（词块排序）
@@ -436,7 +442,7 @@ struct SentenceLearningView: View {
 
     private func autoPlayOrSilentAdvance(_ sentence: Sentence) {
         if audioURL(of: sentence) != nil {
-            play(sentence, rate: 0.75)   // 新学默认慢一点
+            play(sentence, rate: 1)   // 默认原速，听不清再手动切慢速
         } else {
             // 缺音频：静音 3 秒后放行（tasks 4.9 降级），并记一条诊断
             DiagnosticsLog.assertAsset(nil, path: sentence.audio, context: "SentenceLearningView.listen")
@@ -562,6 +568,26 @@ struct SentenceLearningView: View {
                 existing: allReviews.first { $0.profileID == profile.id && $0.itemCode == code },
                 in: modelContext, now: now
             )
+        }
+        try? modelContext.save()
+    }
+
+    /// 未达标：落一条失败 `Attempt`，并把 `timesSeen` 记上（不写 `firstPassedAt`、不发星）
+    private func recordSpeakFail(_ sentence: Sentence) {
+        let now = Date()
+        let code = itemCode(of: sentence)
+        modelContext.insert(Attempt(profileID: profile.id, sessionID: sessionID,
+                                    itemCode: code, itemKind: .sentence,
+                                    unitCode: unit.id, kind: "speak", passed: false, at: now))
+        if let progress = allProgress.first(where: { $0.profileID == profile.id && $0.itemCode == code }) {
+            progress.timesSeen += 1
+            progress.lastSeenAt = now
+        } else {
+            let progress = ItemProgress(profileID: profile.id, itemCode: code, itemKind: .sentence,
+                                        unitCode: unit.id, volumeCode: pack.id)
+            progress.timesSeen = 1
+            progress.lastSeenAt = now
+            modelContext.insert(progress)
         }
         try? modelContext.save()
     }
