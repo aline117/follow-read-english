@@ -121,15 +121,16 @@
 - [项目性质] → 个人项目，首版免费，暂不考虑商业合规要求
 - [儿童隐私合规] → 语音数据仅本地处理，不上传服务器
 - [家长参与度不确定] → 设计简洁的家长面板，降低使用门槛
-- [内容源单点] → App 内零内容本体，家里电脑是唯一来源；`packs/*.zip` 与 `build_resources.js` / `jx_audio_manifest.json` 必须异地备份并纳入版本库，原始素材依赖第三方站点、可能无法重爬
+- [内容源单点] → App 内零内容本体，家里电脑是唯一来源；`packs/*.zip`（学期包）与 `media/{media.json,files/}`（媒体包）都必须异地备份，管线脚本（`build_resources.py` / `build-media-pack.py` / `build-media-manifest.mjs` / `check-faststart.mjs` / `remux-faststart.mjs` / `serve.py` / `serve.js`）纳入版本库，原始素材依赖第三方站点、可能无法重爬
 - [首次使用门槛] → 家长需先在家启动内容服务才能下到第一个学期；用空状态页 + runbook + 引导文案把门槛降到最低，并把学期包做成一次下载长期可用
 - [孩子自行退出 App] → 学习中按 Home / 手势即可离开，App 层面无法阻止；runbook 建议家长开启「引导式访问」（设置 → 辅助功能 → 引导式访问）把 iPad 锁在本 App 内，三连击即进出
 
 ## Migration Plan
 
-1. 新增学期内容：`build_resources.js` 打成 `packs/<id>.zip` → 放进家里电脑的 `packs/` → App 端拉 manifest 后按需下载，**不需要重新构建 App**
-2. 用户数据本地存储，覆盖安装保留容器，无需迁移
-3. 后续若上架 App Store，可把家园局域网分发替换为 ODR 或对象存储；切换点只在 `ResourceLocator` 与下载服务，内容包结构不变
+1. 新增学期内容：`build_resources.py` 打成 `packs/<id>.zip` → 放进家里电脑的 `packs/` → App 端拉 manifest 后按需下载，**不需要重新构建 App**
+2. 新增媒体内容：`build-media-pack.py` 导入 `media/`（或只换清单时跑 `build-media-manifest.mjs`）→ App 拉 `/media.json` 后逐项下载，同样**不需要重新构建 App**
+3. 用户数据本地存储，覆盖安装保留容器，无需迁移
+4. 后续若上架 App Store，可把家园局域网分发替换为 ODR 或对象存储；切换点只在 `ResourceLocator` 与下载服务，内容包结构不变
 
 ## 已确认决策
 
@@ -441,7 +442,7 @@
 - 不生成慢速副本（运行时变速已定）
 
 构建脚本 `content-service/build/build_resources.py`（Python 标准库；Node 版不再单独维护）：
-1. 读取 `jx_audio_manifest.json` 与 `app/Resources/Curriculum/grade2.json`
+1. 读 `app/Resources/Curriculum/grade2.json`（当年抓取清单 `jx_audio_manifest.json` 已不入库，脚本不依赖它）
 2. 复制 129 个课文 mp3 → `app/Resources/Curriculum/audio/`
 3. 复制 33 组单词 mp3/png → `app/Resources/Curriculum/words/{unit}/` 与 `img/u{unit}/`
 4. 校验：grade2.json 引用的每个资产文件目标位置存在且字节 > 0，二上 33 词 / 129 课文无缺失；任一缺失脚本以非 0 退出码报清单
@@ -554,14 +555,14 @@ iPad App (ipa 约 10MB, 零内容本体)
 └── Application Support/Curriculum/
     ├── g2s1/                          下载解压后落这里, 设 isExcludedFromBackup
     │   ├── curriculum.json            该学期词表(Volume/Unit/UnitWord/Listening)
-    │   ├── audio/  words/  img/
+    │   ├── audio/  words/  img/  sentences/
     └── .tmp/                          解压中的临时目录, 校验通过后原子 rename
 
 家里的电脑 (同一 Wi-Fi)
-├── serve.js                           Node 静态服务 + 扫描 packs/ 生成 manifest
-└── packs/
-    ├── g2s1.zip  g2s2.zip  ...
-    └── manifest.json
+├── serve/{serve.js|serve.py}          只读静态服务：manifest.json / media.json / Range
+├── build/                             学期包、媒体包、媒体清单、faststart 体检与 remux
+├── packs/                             学期包：g2s1.zip + g2s1.meta.json（至少留 2 版）
+└── media/                             媒体包：media.json + files/{songs,picture/b<n>}/（不打包）
 ```
 
 - 服务地址：`http://<host>.local:8080`（用 Bonjour 主机名，避免 DHCP 换 IP 导致失效），设置页允许手动改成内网 IP
@@ -651,13 +652,38 @@ iPad App (ipa 约 10MB, 零内容本体)
 
 ### 服务端 runbook
 
-- `content-service/build/build_resources.py`：把某学期资源 + `curriculum.json` 打成 `packs/<id>.zip`（包内结构 `g2s1/{curriculum.json,audio,words,img}`）
-- `content-service/serve/serve.py` / `serve.js`：静态服务 + 扫描 `packs/` 生成 `manifest.json`，并提供媒体清单与 Range
-- 启动：`node serve.js`；Windows 用 `serve.bat` + 计划任务开机自启，防火墙只放行专用网络
-- **学期包必须异地备份**（云盘或移动硬盘）：原始素材来自第三方站点，可能已无法重爬
+- `content-service/build/build_resources.py`：把某学期资源 + `curriculum.json` 打成 `packs/<id>.zip`（包内结构 `g2s1/{curriculum.json,audio,words,img,sentences}`）
+- `content-service/build/build-media-pack.py`：把儿歌/绘本素材导入 `media/files/` 并写出 `media/media.json`（Decision 7：只发清单、不打包）
+- `content-service/build/{check-faststart.mjs,remux-faststart.mjs}`：mp4 能否秒开的体检，以及把 `moov` 移到文件头的无损重排
+- `content-service/serve/serve.py` / `serve.js`：静态服务 + 扫描 `packs/` 生成 `manifest.json`，并提供 `/media.json`、`/media/files/*`（Range）
+- 启动：`node serve.js`（或 `serve.py`）；Windows 用 `serve.bat` + 计划任务开机自启，防火墙只放行专用网络
+- **学期包与媒体包都必须异地备份**（云盘或移动硬盘）：原始素材来自第三方站点，可能已无法重爬；媒体包要求 `media.json` 与 `files/` **成对**备份（清单与文件错位等于全部「内容损坏」）
 - `packs/` 保留最近 2 个版本（`g2s1.zip` + `g2s1-v2.zip`），供 manifest 的 `previous` 回退使用
 
-**内容是否进 git：** 学期包（约 50MB/学期）**不进 git**，媒体只存在于 `packs/` 与异地备份。git 里只保留 `curriculum.json`（文本、可 diff、便于审阅）与管线脚本（`build_resources.js` / `serve.js` / `jx_audio_manifest.json`）。理由：避免两份内容源，也避免 LFS 配额被学期包历史吃掉。
+**内容是否进 git：** 学期包（约 41MB/学期）与媒体包（约 6.3GB）**都不进 git**，只存在于家里电脑与异地备份。git 里只保留 `curriculum.json`（文本、可 diff、便于审阅）与管线脚本（`build_resources.py` / `build-media-pack.py` / `build-media-manifest.mjs` / `check-faststart.mjs` / `remux-faststart.mjs` / `serve.py` / `serve.js`）。理由：避免两份内容源，也避免 LFS 配额被包历史吃掉。
+
+### 内容管线（学期包 / 媒体包）
+
+两条产线的产物、脚本与版本字段（操作细节见 `content-service/README.md` 与 `docs/media-runbook.md`，这里只定口径）：
+
+| | 学期包 | 媒体包 |
+|---|---|---|
+| 内容 | 课本：`curriculum.json` + `audio/ words/ img/ sentences/` | 儿歌 82 首 + 绘本 164 段（原始 mp4） |
+| 生成 | `build_resources.py`（读 `app/Resources/Curriculum/`） | `build-media-pack.py`（读任意素材目录，导入 + 出清单） |
+| 产物 | `packs/<id>.zip` + `<id>.meta.json`（约 41MB） | `media/media.json` + `media/files/...`（约 6.3GB，**无 zip**） |
+| 下发 | 整包下载 → sha256 → ZIPFoundation 解压 → 原子 rename | 只发清单，逐项按需下载 / 串流（Decision 7） |
+| 版本字段 | `schemaVersion`（结构）+ `contentVersion`（内容） | `mediaSchemaVersion`（结构）+ `contentVersion`（内容） |
+| 校验粒度 | 整包 `sha256` + JSON 引用资产齐全 | 逐项 `sha256` + `streamable` |
+| 预处理 | 脚本内校验资产引用，缺一即非零退出 | `check-faststart.mjs` 体检；不达标先 `remux-faststart.mjs` 重排 |
+| 备份 | `packs/*.zip` + meta，至少留 2 版 | `media.json` 与 `media/files/` 成对备份 |
+| git | 不进仓库（`.gitignore` 覆盖） | 同左 |
+
+约定：
+
+- 产物目录只许落在 `content-service/packs|media/` 或仓库外；脚本对仓库内其它路径直接非零退出（素材与产物都不进 git）
+- 媒体素材**默认先 remux 再导入**：`moov` 在文件尾的项 App 只能「先下后播」（Decision 9）。首批 246 项已全部 remux，`streamable` 均为 `true`
+- 内容改了 `contentVersion + 1`；只有 JSON / 清单结构变了才动 `schemaVersion` / `mediaSchemaVersion`
+- 媒体包没有「整包回退」语义：换素材就 `contentVersion + 1`，App 按新清单重拉，旧缓存由 LRU 淘汰
 
 ### 适配约定（多任务与无障碍）
 
@@ -1128,7 +1154,7 @@ openspec/changes/ipad-elementary-english-learning/prototype/
 
 #### Decision 7: 媒体包「只发清单，逐项下载」，不打包 zip
 
-**选择：** 家里电脑上建 `media/` 目录：`media.json`（约 60 KB）+ `files/...`（原始 mp4 平铺/按分部建子目录）。iPad 只先拿 `media.json`，播哪条下哪条。
+**选择：** 家里电脑上建 `media/` 目录：`media.json`（约 90 KB / 246 项）+ `files/...`（原始 mp4 按分部建子目录）。iPad 只先拿 `media.json`，播哪条下哪条。
 
 **理由：**
 - 6.3 GB 打成整包 zip，下载 + 解压峰值需要 **12.6 GB** 临时空间，且任一项坏掉都要重下整包
@@ -1163,7 +1189,7 @@ openspec/changes/ipad-elementary-english-learning/prototype/
 
 **降级路径：** `streamable: false` 的项在清单里保留，App 对这类项改为「先下后播」（点开后显示下载进度，完成后自动播放），并在缓存优先策略里提升其权重。
 
-**后续（不在本次）：** 若 faststart 不达标的项过多，再引入 ffmpeg `-c copy -movflags +faststart` 批量 remux（无损、每项几秒）。当前无 ffmpeg，先靠检查结果决定是否值得装。
+**后续（已落地，2026-10-30）：** 首批体检结果 **246/246 不达标**（`moov` 全在文件尾）。`remux-faststart.mjs` 已实现（ffmpeg `-c copy -movflags +faststart`，无损、逐项几秒），246 项全部重排后重新导入，`streamable` 均为 `true`（体积仅增加约 4 KB，`contentVersion` 记为 2）。以后加新素材也是「先 remux、再导入」，见「内容管线」。
 
 **备选：** 不做检查，靠播放体验发现问题（孩子遇到"点了没反应"会直接放弃，且家长无法归因）。
 
@@ -1284,6 +1310,39 @@ openspec/changes/ipad-elementary-english-learning/prototype/
 
 **备选：** ① 不记录（问题不可归因，等于永远在猜）；② 上报服务端（与"不联网、不上传"的隐私底线冲突）；③ 打系统 `os_log` 就够（家长看不到，还得连 Mac 抓日志）。
 
+### 媒体清单（`media.json`）与命名规则
+
+清单由 `build-media-pack.py`（或手工流程 + `build-media-manifest.mjs`）生成，**不要手改**；App 端 `MediaManifest` / `MediaAsset` 只解下面这些字段，多出的字段忽略。
+
+顶层：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `mediaSchemaVersion` | Int | 清单结构版本，当前 1。高于 App 支持上限 → 整包置灰「需要更新 App」、不启用、**不删**本地缓存（结构闸门就是它，不再另设 `schemaVersion`） |
+| `contentVersion` | Int | 内容版本：加/换/删素材就 +1 |
+| `generatedAt` | String | 生成时间（仅诊断） |
+| `items[]` | Array | 媒体项，见下表 |
+
+`items[]` 每项：
+
+| 字段 | 说明 |
+|---|---|
+| `id` | 业务码，`m:` 命名空间：儿歌 `m:song-<slug>`、绘本 `m:pb-b<部>-<slug>`（如 `m:pb-b1-1-at-the-market`） |
+| `title` | 展示标题（原文件名去掉排序用的数字前缀，如 `19.On the... School` → `On the... School`） |
+| `kind` | `song` / `picture` |
+| `part` | 绘本第 N 部（首批 1–6）；儿歌恒 `0` |
+| `durationSec` | `0` 或缺省 = 未知；App 首次播放后回填（Decision 16），家长端显示「未看过」而不是 `0:00` |
+| `bytes` / `sha256` | 逐项校验；单条不符只把该条标「内容损坏」，其余照常可播 |
+| `relPath` | 相对 `media/` 的路径，如 `files/picture/b1/1-at-the-market.mp4`；App 拼成 `http://<host>/media/<relPath>` |
+| `streamable` | `moov` 是否在文件头；`false` 走「先下后播」（Decision 9） |
+| `lines[]` | 可跟读句（`text` + `startSec` + `endSec`）；空数组 = 待标注，App 显示「这段还没有可跟读的句子」 |
+
+文件与 id 的对应规则（**文件名就是 id 来源**）：
+
+- 文件名转 slug：非 ascii 字母数字一律折成 `-`，连续分隔符合并，`01abc` → `01-abc`；同一目录内 slug 撞车才加 `-2`、`-3`
+- 绘本按子目录分「部」，`part` 取子目录名末尾数字（`雪梨老师读绘本3` → `b3` / `part: 3`）；儿歌忽略子目录层级，`part` 恒 0
+- **改名 = 换 id**：旧缓存与观看记录（`media-state.json` / `media-cache.json` 按 `itemID` 索引）不会跟过去。要改标题就只改 `title`，别动文件名
+
 ### 参数表
 
 | 参数 | 默认值 | 家长可调范围 | 状态 |
@@ -1303,7 +1362,7 @@ openspec/changes/ipad-elementary-english-learning/prototype/
 | 评价指标 | 通过率 / 一次通过率 / 复读次数 | 不开放 | 已定 |
 | 时长回填 | 开（首次播放写入） | 不开放 | 已定 |
 | 诊断日志上限 | 500 条（环形，可清空） | 不开放 | 已定 |
-| 首批接入范围 | 儿歌 82 + 绘本 164 | 不开放 | 已定 |
+| 首批接入范围 | 儿歌 82 + 绘本 164（共 246 项 / 6.30 GB） | 不开放 | 已落库（`streamable` 全 `true`） |
 | 是否提供「画中画 / AirPlay」 | 不提供 | 不开放 | 已定 |
 
 ### Risks / Trade-offs
@@ -1332,5 +1391,5 @@ openspec/changes/ipad-elementary-english-learning/prototype/
 
 ### Open Questions
 
-- 绘本 164 段是否在 UI 上按「第 1–6 部」分组、还是按难度排序？（不影响数据模型，后续调 UI）
+- 绘本 164 段在 UI 上按「第 1–6 部」分组、还是按难度排序？**数据层已定**：清单的 `part` 就是部号（1–6），App 直接按 `part` 分组即可；若要按难度，得另加字段，暂不做。
 - 儿歌 82 首里有一部分（如 `Ten in the Bed` 107 MB、`Dinosaurs T-Rex Number Song` 133 MB）明显偏长/偏大，是否在首批就剔除几首？建议先全部接入，用家长端观看明细的实际数据决定，而不是现在猜。

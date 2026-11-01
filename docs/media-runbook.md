@@ -153,10 +153,11 @@ media/files/picture/b1/<slug>.mp4    # 绘本（每部一个 b1…b6 子目录�
 - 文件名转 slug（`1.At the Market.mp4` → `files/picture/b1/1-at-the-market.mp4`），`title` 保留原名
 - id：儿歌 `m:song-<slug>`、绘本 `m:pb-b1-<slug>`；要自定义就加 `--ids ids.json`
 - 复制时就地算 `sha256` 与 faststart（不用再跑一遍 `build-media-manifest.mjs`）；
-  已在位的同名同大小文件跳过复制，`--dry-run` 只列计划
+  已在位的同名同大小文件跳过复制，`--force` 强制重拷，`--dry-run` 只列计划
 - 副本落在 `media/files/`（6.3 GB），源素材可以留在素材盘当原始备份
 - 日志会报「不能秒开 N 项」：这批雪梨素材 moov 基本都在文件尾，串流会走「先下后播」；
-  要秒开就先按 §3 ② 用 `remux-faststart.mjs` 重排，再指定重排后的目录跑本脚本
+  标准做法是先按 §3 ② 用 `remux-faststart.mjs` 重排，再用重排后的目录 `--force` 导入
+  （首批 246 项已这样处理，`streamable` 全 `true`，`contentVersion: 2`）
 
 自检：
 

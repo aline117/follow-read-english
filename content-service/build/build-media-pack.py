@@ -180,6 +180,7 @@ def main() -> int:
                         help="媒体包目录，默认 content-service/media")
     parser.add_argument("--version", type=int, default=1, help="内容版本（内容变了 +1）")
     parser.add_argument("--ids", default="", help="可选 ids.json：{ \"<相对路径>\": \"m:自定义id\" }")
+    parser.add_argument("--force", action="store_true", help="即使目标文件已在位也重新复制")
     parser.add_argument("--dry-run", action="store_true", help="只列计划，不复制、不写清单")
     args = parser.parse_args()
 
@@ -268,7 +269,7 @@ def main() -> int:
         target = os.path.join(media_dir, entry["relPath"].replace("/", os.sep))
         size = os.path.getsize(source)
 
-        if os.path.isfile(target) and os.path.getsize(target) == size:
+        if not args.force and os.path.isfile(target) and os.path.getsize(target) == size:
             digest = sha256_of(target)  # 已经在位就不重复拷 6 GB
             reused += 1
         else:

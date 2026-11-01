@@ -14,7 +14,7 @@
 
 ### 媒体库（听和看）· 原独立变更 `add-media-library`，已合并进来
 
-- 新增**媒体内容包**：与学期包并列，复用清单 / `contentVersion` / `schemaVersion` / 逐项 `sha256` / 幂等状态机，但**不打包 zip、不整体下载**，改为「`media.json` 清单 + 逐项按需下载」；内容为儿歌 82 首 + 绘本跟读 164 段，共 **246 项 / 约 6.30 GB**
+- 新增**媒体内容包**：与学期包并列，复用清单 / `contentVersion` / `mediaSchemaVersion`（结构闸门）/ 逐项 `sha256` / 幂等状态机，但**不打包 zip、不整体下载**，改为「`media.json` 清单 + 逐项按需下载」；内容为儿歌 82 首 + 绘本跟读 164 段，共 **246 项 / 约 6.30 GB**
 - 新增**双模播放**：局域网**串流**（边下边播，不占存储）+ **后台预取落盘**（播完通常已下完，之后完全离线）；不做 HLS、不转码
 - 孩子端「听和看」入口（挂在课程列表底部，不新增第三个 Tab）：儿歌与绘本两个分区；**绘本按句跟读、儿歌抽 2–3 句跟读**，复用「说」环节的录音与评分
 - 媒体**不发"看就有"的星**：只有跟读达标才发星；观看本身不发星、不进复习调度、不写 `ItemProgress`
@@ -51,10 +51,10 @@
 |---|---|---|---|---|
 | 儿歌 | 82 首 | 3.47 GB | 17–133 MB/首 | 串流 + 后台预取；清单逐项下载 |
 | 绘本跟读 | 164 段 | 2.83 GB | 12–19 MB/段 | 同上 |
-| 合计 | 246 项 | **约 6.30 GB** | — | 清单 `media.json` 约 60 KB |
+| 合计 | 246 项 | **约 6.30 GB** | — | 清单 `media.json` 约 90 KB |
 
 - App 安装体积不变（只内置清单）；iPad 缓存默认上限 2 GB（LRU），其余走串流
-- 新增内容管线（家里电脑）：`media/` 目录、`content-service/build/build-media-manifest.mjs`、`content-service/build/check-faststart.mjs`、Node `/media/*` 路由 + Range
+- 新增内容管线（家里电脑）：`media/` 目录（`media.json` + `files/{songs,picture/b<n>}`）、`content-service/build/build-media-pack.py`（导入素材 + 出清单）、`build-media-manifest.mjs`、`check-faststart.mjs` / `remux-faststart.mjs`（体检与无损重排）、服务端 `/media.json` + `/media/files/*`（Range）
 - 一次性人工成本：儿歌跟读句标注 82 首 × 2–3 句 ≈ 2 小时；素材抽样验收 10 条 ≈ 1 小时
 - 版权：付费课程素材，仅自家设备自用；`media/` 与打包产物不入仓库、不上传、不分发
 

@@ -8,7 +8,7 @@
 
 ### Requirement: 媒体包清单与版本校验
 
-媒体内容以独立的内容包下发，包内清单 MUST 声明 `schemaVersion`、`contentVersion`、`mediaSchemaVersion` 与每个媒体项的 `sha256`。任一必需字段缺失或清单无法解码时，该媒体包 MUST 整体不启用。
+媒体内容以独立的内容包下发，包内清单 MUST 声明结构版本 `mediaSchemaVersion`、内容版本 `contentVersion` 与每个媒体项的 `sha256`（结构闸门就是 `mediaSchemaVersion`，不再另设 `schemaVersion`）。任一必需字段缺失或清单无法解码时，该媒体包 MUST 整体不启用。
 
 #### Scenario: 校验通过的媒体包启用
 

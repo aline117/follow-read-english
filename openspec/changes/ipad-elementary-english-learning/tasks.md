@@ -82,7 +82,8 @@
 - [x] 7.1 收集 2 年级沪教版课本单词数据（JSON 格式）
 - [x] 7.2 从网络资源获取单词发音音频
 - [x] 7.3 从网络资源获取单词配图
-- [ ] 7.4 把二上资源迁出 App：`app/Resources/Curriculum/` → 学期包 `packs/g2s1.zip`（内含 `curriculum.json` + `audio/ words/ img/`）
+- [x] 7.4 把二上资源迁出 App：`app/Resources/Curriculum/` → 学期包 `packs/g2s1.zip`（内含 `curriculum.json` + `audio/ words/ img/ sentences/`）
+  - 2026-10-30：`build_resources.py` 产出 `packs/g2s1.zip`（41.4 MiB / 214 个文件，`sha256 = 04f54822…570c37`）+ `g2s1.meta.json`；App 侧已不再打包 `Resources/Curriculum/`（`catalog.json` + 下载安装是唯一入口）
 - [x] 7.5 实现 `content-service/serve/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
 - [x] 7.6 内置 `catalog.json`（学期目录：id / 标题 / 大小 / 版本，不含任何媒体与词表）
 - [x] 7.7 管线入版本库：`content-service/build/*`（`build_resources.py`、`build-media-manifest.mjs`、`check-faststart.mjs`、`remux-faststart.mjs`）、`content-service/serve/*`、课程 JSON（`app/Resources/Curriculum/grade2.json`）与素材（mp3/png/wav 走 LFS 指针）均已入库
@@ -90,8 +91,10 @@
 - [x] 7.8 补录二上核心句型并生成音频：6 单元 × 2-3 条（约 18 条），写入 `sentences`（`en` / `zh` / `pattern` / `chunks` / `audio`），音频用 TTS 生成到 `sentences/{unit}/{id}.mp3`
 - [ ] 7.9 学期包异地备份：`content-service/packs/*.zip` 备份到云盘或移动硬盘（前置：备份介质与家里电脑；仓库内只留脚本与课程 JSON）
 - [x] 7.10 生成**媒体包**并落库：`content-service/build/build-media-pack.py` 把儿歌 + 绘本素材导入 `media/`（按 Decision 7「只发清单、逐项下载、不打包 zip」）——递归识别「赠课1/赠课2」子目录、文件名转 url 安全 slug、复制时顺带算逐项 `sha256` 与 `streamable`，产出 `media/media.json` + `media/files/{songs,picture/b1…b6}/*.mp4`（与 `build-media-manifest.mjs` 的目录/字段约定一致）
-  - 2026-10-30：雪梨素材（`赠品英文儿歌` 82 项 + `6.绘本口语跟读6部164节` 164 项）已导入：246 项 / 6.30 GiB，`media.json` 约 90 KB；`/media.json` 200、`/media/files/...` 200 + Range 206 + 越界 416、`/manifest.json` 仍只列学期包 `g2s1`。246 项 `streamable` 全为 `false`（moov 在文件尾），串流走「先下后播」，要秒开需先 `remux-faststart.mjs`
-  - 规格里「媒体包清单声明 `schemaVersion`」在实现里就是 `mediaSchemaVersion`（App `MediaManifest` 只解后者、闸门也用它），两边以 `mediaSchemaVersion` 为准
+  - 2026-10-30：雪梨素材（`赠品英文儿歌` 82 项 + `6.绘本口语跟读6部164节` 164 项）已导入：246 项 / 6.30 GiB，`media.json` 约 90 KB；`/media.json` 200、`/media/files/...` 200 + Range 206 + 越界 416、`/manifest.json` 仍只列学期包 `g2s1`
+  - 2026-10-30：首批体检 246/246 `moov` 在文件尾 → 全部 `remux-faststart.mjs` 重排后以 `--force` 重新导入（`contentVersion: 2`），`streamable` 现为 246/246 `true`，逐项 `sha256` 已更新、`id` 未变（缓存与观看记录不受影响）
+  - 规格里「媒体包清单声明 `schemaVersion`」在实现里就是 `mediaSchemaVersion`（App `MediaManifest` 只解后者、闸门也用它），已把 proposal / spec 措辞统一到 `mediaSchemaVersion`
+- [ ] 7.11 媒体包异地备份：`content-service/media/media.json` 与 `media/files/` **成对**备份到云盘或移动硬盘（6.3 GB；清单与文件错位等于全部「内容损坏」）**[家里电脑]**
 
 > 后续内容任务（不阻塞首版）：档位 B「课文对话全文」约 300-400 句，需转录 129 条课文原声并按句切时间点（3-6 小时，用于逐句高亮跟读）；档位 C「Read a story」6 篇故事。两者都只涉及内容补录与 JSON 扩展，不改架构。
 
@@ -120,10 +123,11 @@
 
 ## 10. 内容侧（家里电脑）
 
-- [ ] 10.1 建立 `media/` 目录结构与命名规则（`media.json` + `files/songs/<id>.mp4` + `files/picture/<id>.mp4`），从素材目录挑出儿歌 82 首与绘本 164 段并重命名为稳定 id；验证：脚本输出条目数 = 246，且每行与源文件一一对应（无重复 id、无空标题）**[素材]**
+- [x] 10.1 建立 `media/` 目录结构与命名规则（`media.json` + `files/songs/<id>.mp4` + `files/picture/b<部>/<id>.mp4`），从素材目录挑出儿歌 82 首与绘本 164 段并重命名为稳定 id；验证：脚本输出条目数 = 246，且每行与源文件一一对应（无重复 id、无空标题）**[素材]**
+  - 2026-10-30：由 `build-media-pack.py` 一条命令完成（`--dry-run` 逐行核对 246 条源 → 目标，`id` 无重复、`title` 无空）；绘本按子目录分「部」（`b1…b6`），与 design Decision 7 的「按分部建子目录」一致
 - [x] 10.2 写 `content-service/build/build-media-manifest.mjs` 产出 `media.json`（字段：`id` / `title` / `kind`(song|picture) / `part` / `durationSec` / `bytes` / `sha256` / `relPath` / `streamable`）；验证：跑一次产出 246 条，`id` 全部以 `m:` 开头、唯一，且体积合计 ≈ 6.30 GB（±1%）**[素材]**
 - [x] 10.3 写 `content-service/build/check-faststart.mjs`（读文件头前 1 MB 查找 `moov` box，判定 `streamable`）；验证：对至少 3 个样本文件的判定结果与「拖到中段能否秒开」的真机表现一致 **[素材]**
-- [x] 10.4 静态服务增加 `/media/*` 路由与 Range 支持；验证：`curl -H "Range: bytes=0-1023"` 返回 `206` 且 `Content-Range` / `Content-Length` 正确，`curl -I` 返回 `Accept-Ranges: bytes` **[家里电脑]**
+- [x] 10.4 静态服务提供 `/media.json` 与 `/media/files/*` 并支持 Range；验证：`curl -H "Range: bytes=0-1023"` 返回 `206` 且 `Content-Range` / `Content-Length` 正确，`curl -I` 返回 `Accept-Ranges: bytes` **[家里电脑]**
   - 2026-10-29：`serve.py` 与 `serve.js` 均支持 `/media.json`、`/media/files/*`、Range/206 与 416；已用 curl 验证（见 content-service/README）
 - [x] 10.5 打包脚本加路径守卫：目标目录落在仓库内时非零退出并提示改用仓库外目录；验证：`node content-service/build/build-media-manifest.mjs --out ./media` 退出码 ≠ 0，`git status` 无新增 mp4
   - 2026-10-29：守卫改为只放行 `content-service/media/` 与仓库外路径；实测 `--out ./media/media.json` 退出码 3
@@ -131,6 +135,8 @@
   - 2026-10-29：文档已写入 `docs/media-runbook.md`（含素材命名、faststart 体检/remux、清单生成、Range/416 自检、App 侧验收、排错表、回滚）。已用一段合成的 2 秒测试片从空目录按文档走通：`check-faststart`（moov 后置 → 退出码 2）→ `remux-faststart` → 复检通过 → `build-media-manifest` 产出字段齐全的 `media.json`（`m:` id / sha256 / relPath / streamable）；`--out` 指向仓库内非 `content-service/media/` 的位置实测退出码 3。真实 82 首儿歌 / 164 段绘本的批量走查仍属 10.1/10.7/10.8
 - [ ] 10.7 给 82 首儿歌各标注 2–3 个可跟读句（文本 + 起止秒），写入 `media.json` 的 `lines[]`，避开 `la la la`、拟声词与说唱段；验证：82 首全部 2–3 句，人工试读抽样 10 首一次性通过率 ≥ 70%，不达标的句子重标 **[素材]**
 - [ ] 10.8 产出素材验收清单 `docs/media-acceptance.md` 并完成 10 条抽样（水印/片头广告、爆音与音量一致性、是否以英文为主、时长、首尾完整性）；验证：10 条记录齐全，不合格项从 `media.json` 移除并写明原因 **[素材]**
+- [x] 10.9 首批 246 项 remux 成 faststart 后重新导入（决定「串流能否秒开」，见 Decision 9）；验证：`check-faststart.mjs` 复检 246/246 通过 + `media.json` 的 `streamable` 全为 `true` **[素材]**
+  - 2026-10-30：ffmpeg `-c copy -movflags +faststart` 批量重排（songs 82 + picture 164），失败 0、跳过 0，`moov@32`；体积合计只增约 4 KB；`--force` 重新导入后 `contentVersion: 2`、`id` 未变（缓存与观看记录不受影响）、逐项 `sha256` 已更新。ffmpeg 不在 PATH 时用 `--ffmpeg` 指路
 
 ## 11. 清单与状态层（App）
 

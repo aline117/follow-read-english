@@ -119,11 +119,13 @@ media/files/picture/b1/<slug>.mp4       # 绘本（每部一个 b1…b6 子目�
   （`1.At the Market.mp4` → `files/picture/b1/1-at-the-market.mp4`，`title` 保留原名）、
   复制时顺带算逐项 `sha256` 与 `streamable`
 - id 用 `m:` 命名空间：儿歌 `m:song-<slug>`、绘本 `m:pb-b1-<slug>`；要换 id 用 `--ids ids.json`
-- 已经在位的同名同大小文件会跳过复制；`--dry-run` 只列计划，不落盘
+- 已经在位的同名同大小文件会跳过复制；换过素材（比如 remux 后）用 `--force` 强制重拷；
+  `--dry-run` 只列计划，不落盘
 - 想改成手工流程也行：按命名规范把素材放进 `media/files/`，再跑 `build-media-manifest.mjs`
 
 > 「不能秒开 N 项」是 faststart 体检结果：`streamable: false` 的项串流时走「先下后播」。
-> 想秒开就先 `remux-faststart.mjs` 重排（无损，`-c copy`）再导入。
+> 修法是先 `remux-faststart.mjs` 重排（无损，`-c copy`）再用 `--force` 重新导入。
+> 首批 246 项已全部重排（`streamable` 全 `true`，`contentVersion: 2`）。
 
 ## 5. 生成媒体清单
 
