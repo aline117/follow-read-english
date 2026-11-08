@@ -516,6 +516,7 @@ PIN 与恢复码都是"会被忘掉"的东西，**恢复路径必须比凭据本
   - 家长配置：`RedemptionRule` / `LearningSettings`；**Keychain 不备份**（PIN 与恢复码不导出，恢复后需重新设置）
   - 设备级媒体状态：`media-state.json` / `media-duration.json` 一并打包（"看过什么、跟读通过率"也是家长关心的数据）
 - **不含**课程内容与媒体缓存（可从 content-service 重新下载，备份里只记已安装学期 id 清单用于恢复后提示重下）
+- **不含**派生数据：`report/daily-snapshots.jsonl` 与 `report/metrics.json`（2026-11-07 补充）——两者都能由 `Attempt` 明细幂等回填，恢复后按需重建；放进备份只会让备份格式跟着报表字段一起腐烂
 - 整包附带 `exportedAt` / 设备名 / 各表行数 + `sha256`，供恢复前校验
 - **恢复 = 整包覆盖，不做合并**：先清空对应表再写入；`Profile.id` 沿用备份内的 UUID（避免同 id 冲突或孤儿数据）；媒体观看状态 JSON 同样原子替换
 
@@ -819,7 +820,8 @@ enum AccuracyRule {
 **数据：**
 
 - 新增按日快照（Profile 级，`Application Support/report/daily-snapshots.jsonl`，按 `profileID` 分组，写时原子替换）：
-  - 字段：`profileID` / `date` / 当日正确率（`countedKinds`）/ 当日学习时长 / 新学词数 / 新学句型数 / 复习完成数（到期复习清空数）/ 当日发星数
+  - 字段：`profileID` / `date` / 当日正确率（`countedKinds`）/ 当日学习时长 / 新学词数 / 新学句型数 / 复习完成数 / 当日发星数
+- **复习完成数的口径（2026-11-07 修正）：** 必须由 `Attempt(kind=review, 当日, passed, 按 itemCode 去重)` 聚合得出，**不能读 `ReviewSchedule` 的当前状态**——该表只存调度现状、不存历史，隔几天才打开报告做「按需回填」时无法还原"当天清空了几条到期复习"，会算成 0 或重复计数
 - **口径全部复用「指标口径与数据字典」**，同一套 `AccuracyRule`，不与现有指标打架
 - 生成时机：当日结束后台补算，或报告查看时按需回填（幂等，同一天只写一条）
 - 保留 **90 天**，超期归档/清理；不足 3 分钟的日子记 0 学习（与"本周学习天数不足 3 分钟不计"一致）
@@ -848,7 +850,8 @@ enum AccuracyRule {
 **数据来源（对现有 `Attempt` 的最小增补）：**
 
 - `Attempt` 增加可选字段 `recognitionMode: String?`：`device`（设备端识别）/ `fallback`（音量 + 时长兜底）。**只在评测跑完才写**（含通过 / 未通过）；不参与 `countedKinds` 正确率口径，只是附带的解释字段。
-- 评测基础设施异常（识别超时 / 音频不可读 / 录音被打断）**不写 `Attempt`**（既有规则），其发生次数单独记设备级计数（写入 `diagnostics.jsonl`，字段 `event=recognition_error`），供"识别异常次数"展示。
+- 评测基础设施异常（识别超时 / 音频不可读 / 录音被打断）**不写 `Attempt`**（既有规则），其发生次数单独记设备级计数，供"识别异常次数"展示
+- **计数不靠日志反算（2026-11-07 修正）：** `diagnostics.jsonl` 是环形日志（滚动即丢历史），不能用来算「当周识别异常次数」。改为按日计数器 `Application Support/report/metrics.json`（`date → recognitionErrorCount`，保留 90 天，原子替换）；日志只用于排查单次失败。学习侧 `diagnostics.jsonl` 与媒体侧一致，按**环形 500 条**处理
 
 **呈现（家长报告）：**
 
@@ -856,7 +859,7 @@ enum AccuracyRule {
 |---|---|---|
 | 设备端识别占比 | 当日 / 当周 `Attempt(recognitionMode=device)` 数 ÷ 有 recognitionMode 的总数 | `Attempt` |
 | 降级（兜底）占比 | 同上，`recognitionMode=fallback` | `Attempt` |
-| 识别异常次数 | 当日 / 当周 `diagnostics.jsonl` 中 `event=recognition_error` 计数 | `diagnostics.jsonl` |
+| 识别异常次数 | 当日 / 当周 `report/metrics.json` 的 `recognitionErrorCount` 求和 | `metrics.json`（按日计数，非日志反算） |
 
 - 当降级占比高（如 > 50%）时，报告附一句说明："当前为音量 + 时长兜底判定，达标仅供参考"，并提示家长检查"本机是否已启用语音识别 / 麦克风权限"。
 - 呈现粒度：日 / 周；不引入新的权限请求，不改变任何评测或发星口径。
@@ -864,7 +867,7 @@ enum AccuracyRule {
 **验收：**
 - [ ] 长期无设备端识别时，家长端能明确看到"降级占比"而非虚假的 100% 达标率
 - [ ] `recognitionMode` 不参与 `countedKinds` 正确率计算，历史口径不变
-- [ ] 评测基础设施异常仍不写 `Attempt`，只累计诊断日志
+- [ ] 评测基础设施异常仍不写 `Attempt`，只累计 `metrics.json` 的按日计数（日志仅用于排查单次失败）
 
 ### 2. 明细数据反哺内容体检
 

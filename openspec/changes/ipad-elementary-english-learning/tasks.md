@@ -224,37 +224,57 @@
 ## 18. 备份与恢复（2026-10-31 补充，见 design「备份与恢复」一节）
 
 - [ ] 18.1 备份打包：逐表导出 8 张学习状态表 + 家长配置 + `media-state` / `media-duration`，`backupFormatVersion: 1`，含 `exportedAt` / 行数 / `sha256`（不含 Keychain、课程内容、媒体缓存）
+  - 2026-11-07：代码已落地 `Models/BackupModels.swift`（11 张表 DTO + `BackupFile`/`BackupPayload` + 容错解码）与 `Services/BackupService.swift`（`makeBackup` / `canonical digest` / `validate`）；**未在 macOS 编译验证**
 - [ ] 18.2 导出/导入：家长面板「导出备份」走分享面板；「导入备份」校验版本与结构，二次确认后整包覆盖，失败拒绝且不做部分写入
-- [ ] 18.3 服务端备份路由：serve.py / serve.js 加 `PUT /backup/...`（校验 `X-Backup-Sha256`、原子落盘、路径白名单防穿越）、`GET /backup/index.json`、`GET /backup/file/...`；每设备保留 30 份滚动删除；`backups/` 进 `.gitignore` 与异地备份清单
+  - 2026-11-07：`ParentSettingsView` 的「数据」区改为「备份与恢复」——导出走 `ShareLink`，导入走 `fileImporter` + 二次确认（显示备份时间 / 孩子数 / 明细数），恢复为整包覆盖（`context.rollback()` 保证不留半删状态）；旧的部分字段导出手写 JSON 已移除；`MediaStateStore` 增加 `replaceState/replaceDurations` 供恢复后整包替换。**未在 macOS 编译验证**，真机走查待做
+  - 2026-11-07：`Tests/EnglishLearningTests/BackupServiceTests.swift` 覆盖往返恢复、校验和不符、版本过高、空备份四种情况（已进测试 target，尚未运行）
+- [x] 18.3 服务端备份路由：serve.py / serve.js 加 `PUT /backup/...`（校验 `X-Backup-Sha256`、原子落盘、路径白名单防穿越）、`GET /backup/index.json`、`GET /backup/file/...`；每设备保留 30 份滚动删除；`backups/` 进 `.gitignore` 与异地备份清单
+  - 2026-11-07：两版都实现并**实测通过**（Node 22 / Python 3.13，各起服务打真请求）：正常上传 200、校验和不符 400 且不落盘、非 JSON 400、非法 deviceID/文件名 400、路径穿越被规范化后挡下、下载 200/404、`index.json` 的 PUT 405、内容侧 PUT 405；连传 35 份后目录恰好留 30 份且无 `.tmp` 残留。`backups/` 已进 `.gitignore` 与 README 异地备份清单
 - [ ] 18.4 App 端自动备份：连接内容服务后每 24h 自动上传一次（整包 hash 未变跳过，失败静默写诊断日志）；内容管理页「备份」卡片显示上次备份时间与「立即备份」
+  - 2026-11-07：`Services/BackupRemoteService.swift`（`deviceID` 持久化、`X-Backup-Sha256` 上传、索引/下载、24h 节流、摘要未变跳过、失败只写 `diagnostics`）+ `Views/Content/BackupSection.swift`（备份卡片）；自动触发挂在 `RootView` 的 `.task` 与 `scenePhase == .active`。**未在 macOS 编译验证**
 - [ ] 18.5 恢复流程：「从家里电脑恢复」拉 index → 选份 → sha256 校验 → 二次确认 → 整包覆盖（`Profile.id` 沿用备份值）；恢复后提示 PIN 需重设、提示重下已安装学期
+  - 2026-11-07：`RemoteBackupPicker`（列表 + 二次确认弹窗写明时间/大小/不可撤销）→ 下载后先比 `sha256` 再 `BackupService.decode`，校验失败一律不碰数据库；恢复完成弹窗按备份里的 `installedSemesters` 与本机比对，列出缺失学期，并在 `ParentAuth.hasPin == false` 时提示重设。**未在 macOS 编译验证**
 - [ ] 18.6 单元测试：打包/解析往返一致；版本不符、结构缺失、损坏 JSON 拒绝导入；覆盖恢复幂等（重复恢复结果一致）
-- [ ] 18.7 文案与 runbook：设置页与合规清单改为"卸载前请先备份"；runbook 补「引导式访问」建议
+  - 2026-11-07：`BackupServiceTests` 新增「连续恢复两次结果一致」「服务端索引带毫秒的 ISO8601 能解析、`backupTime` 优先取文件名时间戳」两条；连同原有的往返/篡改/版本/空备份共 8 条。**尚未运行**（本机无 Swift 工具链）
+- [x] 18.7 文案与 runbook：设置页与合规清单改为"卸载前请先备份"；runbook 补「引导式访问」建议
+  - 2026-11-07：设置页改为「卸载 App 前请先备份 / 没备份就会清空记录」，footer 补自动备份说明；新增 `docs/parent-runbook.md`（引导式访问、两条备份通道、三种恢复入口、换机标准顺序、排错表）；content-service README 增「学习备份」章节与自检 curl
 - [ ] 18.8 集成验证 **[真机][家里电脑]**：备份 → 卸载重装 → 恢复 → 学习进度 / 星星 / 徽章 / 观看记录完整，PIN 重设后家长面板可用
 
 ## 19. 评测可信度、内容体检、趋势与体验补充（2026-10-31 补充，见 design「评测可信度与内容体检」「家长趋势报表」「奖励与防沉迷参数·作用域」「家长档案与通知」「内容分发·内容更新知情」「适配约定」）
 
 ### 评测可信度
 - [ ] 19.1.1 `Attempt` 增加可选字段 `recognitionMode`（`device` / `fallback`），只在评测跑完才写；验证：单测断言识别异常不写 `Attempt`、降级评测写 `fallback` 且不参与 `countedKinds`
-- [ ] 19.1.2 识别异常计数写入 `diagnostics.jsonl`（`event=recognition_error`）；验证：手工制造识别超时后家长端"识别异常次数" +1
+  - 2026-11-07：`Attempt.recognitionMode: String?`（存 rawValue，老数据 nil）+ `RecognitionMode` 枚举与 `Attempt.recognitionModeValue`；`PronunciationAssessment.recognitionMode` 由 `usedSpeechRecognition` 推出；单词 / 句型 / 复习三处写入点全部带上，跳过与 `match` 不带。`recognitionMode` **不参与** `AccuracyRule.countedKinds` 判断。**未在 macOS 编译验证**
+- [ ] 19.1.2 识别异常按日计数写入 `report/metrics.json`（`date → recognitionErrorCount`，保留 90 天、原子替换；**不从 `diagnostics.jsonl` 反算**，日志只留环形 500 条供排查）；验证：手工制造识别超时后家长端"识别异常次数" +1，清空日志不影响计数
+  - 2026-11-07：`Services/MetricsStore.swift`：`report/metrics.json`（`schemaVersion` + `days`），串行队列 + 原子写、按 90 天裁剪；`FollowReadPanel` 与 `MediaFollowReadView` 的异常分支各调一次 `recordRecognitionError()`。**未编译未跑**
 - [ ] 19.1.3 家长报告新增「评测模式」指标：设备端识别占比 / 降级占比 / 识别异常次数（日 / 周），降级占比 > 50% 时附提示"音量 + 时长兜底，达标仅供参考"；验证：造降级与识别两批数据后占比与文案正确
+  - 2026-11-07：`ReportView.trustSection`：设备端 / 兜底两个占比 + 今日与近 7 天识别异常次数；兜底占比 > 50% 出橙色提示并给出排查方向（权限 / 听写资源 / 环境噪音）。**未编译**
 
 ### 内容体检
 - [ ] 19.2.1 「诊断与日志 / 内容管理」加「可疑条目」视图：词 / 句达标率（`countedKinds`）、媒体跟读句一次通过率（`media-state.json`）；样本 < 5 不展示、达标率 < 50% 标「可疑」，附样本数 / 达标率 / 最近评测模式
+  - 2026-11-07：`Views/Parent/SuspiciousItemsView.swift`，入口在家长首页「可疑条目」；学习条目按 `countedKinds` 聚合，媒体按 `MediaStateStore` 的 `passedLines` / `firstTryPassed`；阈值写成嵌套 `Rule`（5 / 50% / 50%）。`MediaStateStore.ItemState` 新增 `devicePassCount` / `fallbackPassCount`（可选，老数据 nil）。**未编译**
 - [ ] 19.2.2 可疑条目按"评测降级占比"区分归因（先归因可信度而非素材），支持一键导出 JSON；验证：构造降级模式下学差的条目，断言归因为「评测可信度」而非「素材问题」，导出文件字段齐全
+  - 2026-11-07：归因规则：该条目兜底占比 ≥ 50% → 「可能是评测兜底」（先修评测），否则「可能是素材问题」；导出 JSON 含 `rules` / `itemCode` / `sample` / `passRate` / `fallbackShare` / `lastRecognitionMode` / `attribution`，不含孩子姓名，并写 `content_check_exported` 审计。**未编译**
 - [ ] 19.2.3 全部只读展示 + 导出，无自动改阈值 / 重标 / 替换逻辑；验证：走查确认无可变参数入口
+  - 2026-11-07：页面上没有任何写操作：阈值是 `Rule` 里的常量，无 Toggle / 无「重标」按钮 / 不调用内容服务写接口。**待走查确认**
 
 ### 家长趋势报表
-- [ ] 19.3.1 按日快照 `daily-snapshots.jsonl`（Profile 级，字段：日期 / 正确率 / 时长 / 新学词句 / 复习完成 / 发星），口径复用 `AccuracyRule`，同一天幂等只写一条，保留 90 天；验证：单测跨 2 天幂等 + 超 90 天清理
+- [ ] 19.3.1 按日快照 `daily-snapshots.jsonl`（Profile 级，字段：日期 / 正确率 / 时长 / 新学词句 / 复习完成 / 发星），口径复用 `AccuracyRule`，**复习完成数由 `Attempt(kind=review, 当日, passed, itemCode 去重)` 聚合、不读 `ReviewSchedule` 现状态**，同一天幂等只写一条，保留 90 天；验证：单测跨 2 天幂等 + 隔 3 天回填仍能还原当日复习完成数 + 超 90 天清理
+  - 2026-11-07：`Services/DailySnapshotStore.swift`：按窗口重算后与已有行合并（同一天只留一条）、90 天裁剪、原子写；复习完成数确实从 `Attempt` 去重聚合。`Tests/.../DailySnapshotStoreTests.swift` 三条用例对应三项验证（幂等 / 隔 3 天回填 / 超期清理）。**未编译未跑**
 - [ ] 19.3.2 家长报告「学习趋势」：近 30 天正确率 / 时长 / 新学条目折线，复习完成日以点标记；验证：造 30 天快照后逐点核对
+  - 2026-11-07：`ReportView.trendSection`：分段控件切正确率 / 时长 / 新学，手写 `TrendChart`（无第三方依赖）；缺数据的日期不出点，复习完成日的点用蓝色；进报告页时先 `backfill` 再画。**未编译**
 
 ### 预算隔离与习惯提醒
 - [ ] 19.4.1 确认发星上限 / 余额上限 500 / 20 分钟预算按 Profile 聚合（`StarLedger` 按 `profileID`），媒体缓存仍设备级共享；验证：两 Profile 各自发星互不影响、缓存共享
+  - 2026-11-07：代码侧核对：`StarService.grant` 与预算判断都带 `profileID`，`MediaCacheStore` / `ParentAuth` / `DiagnosticsLog` 均为设备级、无 profile 维度。**真机双档案走查待做**
 - [ ] 19.4.2 每日学习提醒：家长可设时段（默认 19:00，可关），到点本地通知；完成反馈通知（可关）——默认关闭，共用一次通知授权；验证：开启后到点收到、关闭后无打扰、文案不含学习数据明细
+  - 2026-11-07：`ReminderSettings`（UserDefaults，设备级，默认关闭 / 19:00）+ `LocalNotifications.scheduleDailyReminder`（`UNCalendarNotificationTrigger` 每日重复）/ `cancel` / `dailyTaskCompleted`；设置页新增「提醒」分区（开关 + 时间 + 完成提示）；首页 `onChange(dailyMinutesReached)` 触发一次「今天学完啦」（每天最多一条，文案不含明细）。**未编译未真机验证**
 
 ### 内容更新知情
 - [ ] 19.5.1 `manifest.json` 的 pack 增加可选 `changelog`，服务端写入；验证：缺失时家长端显示"内容已更新，无说明"
+  - 2026-11-07：`serve.js` / `serve.py` 从 `*.meta.json` 透出 `changelog`，**两版已用夹具实测**（有值透出、缺省不出现该字段）；`ManifestPack.changelog: String?` + `changelogText` 兜底文案。App 侧解码未编译
 - [ ] 19.5.2 家长端内容管理：远端 `contentVersion > installedVersion` 显示「有新版本」卡片（摘要 + 一键更新 + 回退上一版本）；验证：造高版本 manifest 后卡片出现，回退路径可用
+  - 2026-11-07：`ContentManagementView.updateSection`：卡片列出 v旧 → v新 + `changelogText`，「更新」走 `installer.install`、「回退上一版」走 `rollback`，`requiresAppUpdate` 时按钮置灰并提示。**未编译**
 
 ### 无障碍打磨
 - [ ] 19.6.1 VoiceOver 朗读顺序：学习页"图片 → 单词 → 中文"，跟读结果卡先读结论再读建议；验证：并入 9.2 手测清单

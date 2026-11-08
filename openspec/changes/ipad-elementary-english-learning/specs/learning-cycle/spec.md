@@ -209,3 +209,35 @@
 - **WHEN** 孩子当日学习超过 20 分钟
 - **THEN** 系统提示"今天学完了，明天再来"
 - **AND** 不再获得新星星奖励
+
+### Requirement: 评测模式记录
+
+系统 SHALL 在每条评测产生的 `Attempt` 上记录本次判定所用的模式，供家长端呈现可信度。
+
+#### Scenario: 记录识别模式
+
+- **WHEN** 一次跟读评测跑完（无论通过与否）
+- **THEN** 写入 `Attempt` 的可选字段 `recognitionMode`，值为 `device`（设备端语音识别）或 `fallback`（音量 + 时长兜底）
+- **AND** 该字段不参与正确率口径计算，历史数据缺该字段时按未记录处理
+
+#### Scenario: 评测异常不写明细
+
+- **WHEN** 识别超时、音频不可读或录音被中断
+- **THEN** 不写 `Attempt`，仅累计 `report/metrics.json` 的 `recognitionErrorCount`
+- **AND** 界面提示重试，不把异常记成读错
+
+### Requirement: 学习界面无障碍
+
+系统 SHALL 让学习界面在 VoiceOver、减弱动态效果与色弱条件下仍可用。
+
+#### Scenario: VoiceOver 朗读顺序
+
+- **WHEN** 开启 VoiceOver 并进入学习页
+- **THEN** 朗读顺序为"图片 → 单词 → 中文"
+- **AND** 跟读结果卡先读结论（"读得很像"）再读建议
+
+#### Scenario: 动画与状态表达
+
+- **WHEN** 开启「减弱动态效果」或孩子点击跳过
+- **THEN** 撒花 / 星星动画降级为淡入淡出或被跳过，不阻塞进入下一步
+- **AND** 达标与失败状态同时用图标 + 文字表达，不只依赖颜色

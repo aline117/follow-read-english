@@ -81,3 +81,9 @@
 
 - **WHEN** 孩子星星超过 500
 - **THEN** 系统提示兑换，不再获得新星星
+
+#### Scenario: 配额按孩子隔离
+
+- **WHEN** 同一台 iPad 上有多个孩子 Profile
+- **THEN** 每日发星上限、星星余额上限 500 与每日学习时长预算按 `profileID` 各自聚合（`StarLedger` 按 profile 求和）
+- **AND** 一个孩子的额度用完不影响另一个孩子
