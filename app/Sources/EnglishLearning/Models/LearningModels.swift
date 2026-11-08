@@ -88,9 +88,13 @@ final class Attempt {
     var kind: String
     var passed: Bool
     var at: Date
+    /// 判定依据（design「评测可信度」）：`device` = 设备端语音识别，`fallback` = 音量 + 时长兜底。
+    /// 老数据为 nil，报表里按"未记录"处理，不参与占比分母之外的推断
+    var recognitionMode: String?
 
     init(profileID: UUID, sessionID: UUID, itemCode: String, itemKind: ItemKind,
-         unitCode: String, kind: String, passed: Bool, at: Date = Date()) {
+         unitCode: String, kind: String, passed: Bool, at: Date = Date(),
+         recognitionMode: RecognitionMode? = nil) {
         self.id = UUID()
         self.profileID = profileID
         self.sessionID = sessionID
@@ -100,6 +104,28 @@ final class Attempt {
         self.kind = kind
         self.passed = passed
         self.at = at
+        self.recognitionMode = recognitionMode?.rawValue
+    }
+}
+
+/// 跟读判定依据。`device` 走设备端识别，`fallback` 只在没有识别能力时兜底——
+/// 后者判「达标」的说服力弱，家长报告里要能看见占比。
+enum RecognitionMode: String, Codable, CaseIterable {
+    case device
+    case fallback
+
+    var displayName: String {
+        switch self {
+        case .device: return "设备端识别"
+        case .fallback: return "音量 + 时长兜底"
+        }
+    }
+}
+
+extension Attempt {
+    /// 存的是 rawValue；老数据 / 非跟读明细为 nil
+    var recognitionModeValue: RecognitionMode? {
+        recognitionMode.flatMap(RecognitionMode.init(rawValue:))
     }
 }
 

@@ -73,6 +73,15 @@
 		FFFFFFFFFFFFFFFFFFFF0003 /* MediaPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0003 /* MediaPlayerService.swift */; };
 		FFFFFFFFFFFFFFFFFFFF0004 /* MediaLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0004 /* MediaLibraryView.swift */; };
 		FFFFFFFFFFFFFFFFFFFF0005 /* MediaPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEEEEEEEEEEEEEE0005 /* MediaPlayerView.swift */; };
+		E1E1E1E1E1E1E1E1E1E10002 /* BackupModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10001 /* BackupModels.swift */; };
+		E1E1E1E1E1E1E1E1E1E10004 /* BackupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10003 /* BackupService.swift */; };
+		E1E1E1E1E1E1E1E1E1E10009 /* BackupRemoteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10010 /* BackupRemoteService.swift */; };
+		E1E1E1E1E1E1E1E1E1E10011 /* BackupSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10012 /* BackupSection.swift */; };
+		E1E1E1E1E1E1E1E1E1E10015 /* SuspiciousItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10016 /* SuspiciousItemsView.swift */; };
+		E1E1E1E1E1E1E1E1E1E10013 /* MetricsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10014 /* MetricsStore.swift */; };
+		E1E1E1E1E1E1E1E1E1E10017 /* DailySnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10018 /* DailySnapshotStore.swift */; };
+		E1E1E1E1E1E1E1E1E1E10019 /* DailySnapshotStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10020 /* DailySnapshotStoreTests.swift */; };
+		E1E1E1E1E1E1E1E1E1E10006 /* BackupServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10005 /* BackupServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -154,6 +163,15 @@
 		EEEEEEEEEEEEEEEEEEEE0003 /* MediaPlayerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPlayerService.swift; sourceTree = "<group>"; };
 		EEEEEEEEEEEEEEEEEEEE0004 /* MediaLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaLibraryView.swift; sourceTree = "<group>"; };
 		EEEEEEEEEEEEEEEEEEEE0005 /* MediaPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPlayerView.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10001 /* BackupModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupModels.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10003 /* BackupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupService.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10010 /* BackupRemoteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupRemoteService.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10012 /* BackupSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSection.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10016 /* SuspiciousItemsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuspiciousItemsView.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10014 /* MetricsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsStore.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10018 /* DailySnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySnapshotStore.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10020 /* DailySnapshotStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySnapshotStoreTests.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10005 /* BackupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -234,6 +252,7 @@
 				AAAAAAAAAAAAAAAAAAAAAA26 /* RewardModels.swift */,
 				AAAAAAAAAAAAAAAAAAAAAA50 /* ContentPackModels.swift */,
 				BBBBBBBBBBBBBBBBBB0001 /* MediaModels.swift */,
+				E1E1E1E1E1E1E1E1E1E10001 /* BackupModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -264,6 +283,10 @@
 				EEEEEEEEEEEEEEEEEEEE0001 /* MediaSettingsStore.swift */,
 				EEEEEEEEEEEEEEEEEEEE0002 /* MediaLibrary.swift */,
 				EEEEEEEEEEEEEEEEEEEE0003 /* MediaPlayerService.swift */,
+				E1E1E1E1E1E1E1E1E1E10003 /* BackupService.swift */,
+				E1E1E1E1E1E1E1E1E1E10010 /* BackupRemoteService.swift */,
+				E1E1E1E1E1E1E1E1E1E10014 /* MetricsStore.swift */,
+				E1E1E1E1E1E1E1E1E1E10018 /* DailySnapshotStore.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -290,6 +313,7 @@
 				BBBBBBBBBBBBBBBBBB0018 /* ParentGateView.swift */,
 				BBBBBBBBBBBBBBBBBB0019 /* PracticeSettingsView.swift */,
 				BBBBBBBBBBBBBBBBBB0020 /* ReportView.swift */,
+				E1E1E1E1E1E1E1E1E1E10016 /* SuspiciousItemsView.swift */,
 				BBBBBBBBBBBBBBBBBB0021 /* RewardAdminViews.swift */,
 			);
 			path = Parent;
@@ -325,6 +349,7 @@
 			isa = PBXGroup;
 			children = (
 				AAAAAAAAAAAAAAAAAAAAAA59 /* ContentManagementView.swift */,
+				E1E1E1E1E1E1E1E1E1E10012 /* BackupSection.swift */,
 			);
 			path = Content;
 			sourceTree = "<group>";
@@ -336,6 +361,8 @@
 				AAAAAAAAAAAAAAAAAAAAB011 /* ReviewSchedulerTests.swift */,
 				AAAAAAAAAAAAAAAAAAAAB012 /* StarServiceTests.swift */,
 				AAAAAAAAAAAAAAAAAAAAB013 /* AccuracyRuleTests.swift */,
+				E1E1E1E1E1E1E1E1E1E10005 /* BackupServiceTests.swift */,
+				E1E1E1E1E1E1E1E1E1E10020 /* DailySnapshotStoreTests.swift */,
 			);
 			path = Tests/EnglishLearningTests;
 			sourceTree = "<group>";
@@ -519,6 +546,13 @@
 				ACACACACACACACACAC0002 /* MediaWatchDetailView.swift in Sources */,
 				AEAEAEAEAEAEAEAEAE0001 /* MediaFollowReadView.swift in Sources */,
 				BABABABABABABABABA0001 /* MediaDiagnosticsView.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10002 /* BackupModels.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10004 /* BackupService.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10009 /* BackupRemoteService.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10011 /* BackupSection.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10015 /* SuspiciousItemsView.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10013 /* MetricsStore.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10017 /* DailySnapshotStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -530,6 +564,8 @@
 				AAAAAAAAAAAAAAAAAAAAB021 /* ReviewSchedulerTests.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAAB022 /* StarServiceTests.swift in Sources */,
 				AAAAAAAAAAAAAAAAAAAAB023 /* AccuracyRuleTests.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10006 /* BackupServiceTests.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10019 /* DailySnapshotStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

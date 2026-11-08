@@ -358,13 +358,14 @@ struct MediaFollowReadView: View {
             assessment = result
             // 基础设施异常（识别超时 / 识别器报错）：只提示重试，不算读错、不写 Attempt
             if result.isInfrastructureFailure {
+                MetricsStore.recordRecognitionError()
                 phase = .idle
                 errorMessage = "刚才没听清，再读一次"
                 return
             }
             phase = .result
             if result.isPassed {
-                recordPass(line)
+                recordPass(line, mode: result.recognitionMode)
                 burst = true
                 advanceTask?.cancel()
                 advanceTask = Task {
@@ -380,10 +381,11 @@ struct MediaFollowReadView: View {
         }
     }
 
-    private func recordPass(_ line: MediaLine) {
+    private func recordPass(_ line: MediaLine, mode: RecognitionMode) {
         let firstTry = failures == 0
         MediaStateStore.shared.recordLinePassed(item.id, line: line.index,
-                                                firstTry: firstTry, profileID: profile.id)
+                                                firstTry: firstTry, mode: mode,
+                                                profileID: profile.id)
         // MediaAsset.id 已带 `m:` 前缀，别再重复加一层
         let key = item.kind == .picture
             ? "\(item.id)#s\(line.index)"

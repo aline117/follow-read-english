@@ -34,6 +34,11 @@ struct PronunciationAssessment {
     /// 调用方据此只提示重试，且不得写 `Attempt`（design「评测基础设施异常 ≠ 读错」）
     var isInfrastructureFailure = false
 
+    /// 判定依据：这次结论是靠设备端识别还是靠音量 + 时长兜底（tasks 19.1.1）
+    var recognitionMode: RecognitionMode {
+        usedSpeechRecognition ? .device : .fallback
+    }
+
     /// `play with lanterns` 这类短语也适用
     var headline: String {
         if isPassed { return "和原音很像！" }

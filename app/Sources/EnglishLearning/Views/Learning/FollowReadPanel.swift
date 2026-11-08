@@ -521,6 +521,8 @@ struct FollowReadPanel: View {
             guard assessmentID == id else { return }
             // 基础设施异常（识别超时 / 识别器报错）：只提示重试，不算读错、不写 Attempt
             if result.isInfrastructureFailure {
+                // 计数进 report/metrics.json（不看 diagnostics 环形日志，那会丢历史）
+                MetricsStore.recordRecognitionError()
                 assessment = nil
                 phase = .idle
                 errorMessage = "刚才没听清，再读一次"

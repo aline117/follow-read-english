@@ -25,6 +25,8 @@ __pycache__/
 # 内容服务的数据目录：脚本进 git，学期包/媒体数据不进
 content-service/packs/
 content-service/media/
+# App 上传的学习备份（含孩子姓名与学习记录，只留本机 + 异地备份）
+content-service/backups/
 
 # 当年一次性抓取的原始素材（课文原声 / 词库 / 抓取脚本与 HTML 快照）：
 # 素材来源不稳定，只留本机与异地备份，不进仓库。重打包不依赖它

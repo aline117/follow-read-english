@@ -11,6 +11,11 @@ struct ReportView: View {
     @Query private var ledger: [StarLedger]
 
     @State private var curriculum: Curriculum?
+    @State private var snapshots: [DailySnapshotStore.Snapshot] = []
+    @State private var trendMetric: TrendMetric = .accuracy
+    @State private var errorToday = 0
+    @State private var errorWeek = 0
+    @Environment(\.modelContext) private var modelContext
 
     private let library = ContentLibrary.shared
 
@@ -18,6 +23,8 @@ struct ReportView: View {
         ScrollView {
             VStack(spacing: 16) {
                 summaryRow
+                trustSection
+                trendSection
                 weekChart
                 weakSection
                 recentSection
@@ -28,7 +35,12 @@ struct ReportView: View {
         .background(Theme.bg.ignoresSafeArea())
         .navigationTitle("学习报告")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear(perform: load)
+        .onAppear {
+            load()
+            snapshots = DailySnapshotStore.backfill(profileID: profile.id, context: modelContext)
+            errorToday = MetricsStore.recognitionErrorCount()
+            errorWeek = MetricsStore.recentRecognitionErrorCount()
+        }
     }
 
     // MARK: - 概览
@@ -52,6 +64,152 @@ struct ReportView: View {
         .background(bg)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
+
+    // MARK: - 评测可信度
+
+    /// 正确率的分母里，多少是「设备端真听了一遍」、多少是「音量 + 时长兜底」。
+    /// 兜底占比高的时候，达标率只能当参考——这条得让家长看见（design「评测可信度」）。
+    private var trustSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("评测模式").font(.system(size: 15, weight: .heavy))
+                Spacer()
+                Text("全部跟读记录").font(.system(size: 11.5)).foregroundStyle(Theme.faint)
+            }
+
+            if modeTotal == 0 {
+                Text("还没有跟读明细")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.muted)
+            } else {
+                HStack(spacing: 12) {
+                    stat("设备端识别", "\(percent(deviceCount))", Theme.greenSoft, Theme.greenInk)
+                    stat("兜底判定", "\(percent(fallbackCount))", Theme.chipBg, Theme.ink)
+                    stat("识别异常", "\(errorToday) 次", Theme.blueSoft, Theme.blueInk)
+                }
+
+                Text("识别异常：今天 \(errorToday) 次 · 近 7 天 \(errorWeek) 次")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(Theme.faint)
+
+                if isFallbackHeavy {
+                    Text("兜底占比超过一半，达标只按「音量 + 时长」判的，只能当参考。建议检查：麦克风权限、设备端听写资源是否已下载、环境是否太吵。")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.orangeDark)
+                        .padding(.top, 2)
+                }
+            }
+        }
+        .kidCard()
+    }
+
+    private var countedModes: [RecognitionMode?] {
+        countedAttempts.map(\.recognitionModeValue)
+    }
+
+    private var deviceCount: Int { countedModes.filter { $0 == .device }.count }
+    private var fallbackCount: Int { countedModes.filter { $0 == .fallback }.count }
+    private var modeTotal: Int { deviceCount + fallbackCount }
+
+    private var isFallbackHeavy: Bool {
+        guard modeTotal > 0 else { return false }
+        return Double(fallbackCount) / Double(modeTotal) > 0.5
+    }
+
+    private func percent(_ count: Int) -> String {
+        guard modeTotal > 0 else { return "—" }
+        return "\(Int((Double(count) / Double(modeTotal) * 100).rounded()))%"
+    }
+
+    // MARK: - 学习趋势（近 30 天）
+
+    private enum TrendMetric: String, CaseIterable, Identifiable {
+        case accuracy = "正确率"
+        case minutes = "时长"
+        case newItems = "新学"
+
+        var id: String { rawValue }
+
+        var unit: String {
+            switch self {
+            case .accuracy: return "%"
+            case .minutes: return " 分钟"
+            case .newItems: return " 个"
+            }
+        }
+    }
+
+    /// 只画折线、不做排名——这是家长看"最近稳不稳"，不是给孩子比高下
+    private var trendSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("学习趋势").font(.system(size: 15, weight: .heavy))
+                Spacer()
+                Text("近 30 天").font(.system(size: 11.5)).foregroundStyle(Theme.faint)
+            }
+
+            Picker("指标", selection: $trendMetric) {
+                ForEach(TrendMetric.allCases) { metric in
+                    Text(metric.rawValue).tag(metric)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            if trendPoints.isEmpty {
+                Text("还没攒够数据，学几天就有曲线了")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.muted)
+            } else {
+                TrendChart(points: trendPoints, tint: Theme.orange)
+                    .frame(height: 110)
+
+                HStack {
+                    Text(trendSummary)
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(Theme.muted)
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Circle().fill(Theme.blueInk).frame(width: 5, height: 5)
+                        Text("复习完成日").font(.system(size: 11)).foregroundStyle(Theme.faint)
+                    }
+                }
+            }
+        }
+        .kidCard()
+    }
+
+    private var trendPoints: [TrendPoint] {
+        snapshots.suffix(30).compactMap { snapshot in
+            let value: Double?
+            switch trendMetric {
+            case .accuracy: value = snapshot.accuracy.map { $0 * 100 }
+            case .minutes: value = Double(snapshot.minutes)
+            case .newItems: value = Double(snapshot.newWords + snapshot.newSentences)
+            }
+            guard let value, let date = Self.dayFormatter.date(from: snapshot.date) else { return nil }
+            return TrendPoint(id: snapshot.date, date: date, value: value,
+                              hasReview: snapshot.reviewsCompleted > 0)
+        }
+    }
+
+    private var trendSummary: String {
+        guard let last = trendPoints.last else { return "" }
+        let average = trendPoints.reduce(0) { $0 + $1.value } / Double(trendPoints.count)
+        let reviewDays = trendPoints.filter(\.hasReview).count
+        return "最近一天 \(fmt(last.value))\(trendMetric.unit) · 平均 \(fmt(average))\(trendMetric.unit) · 复习 \(reviewDays) 天"
+    }
+
+    private func fmt(_ value: Double) -> String {
+        "\(Int(value.rounded()))"
+    }
+
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .current
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 
     // MARK: - 近 7 天
 
@@ -261,5 +419,66 @@ struct ReportView: View {
     private func load() {
         guard let pack = library.installed.first else { return }
         curriculum = try? library.curriculum(for: pack)
+    }
+}
+
+// MARK: - 折线图
+
+/// 一天一个点（`value` 已按指标换算成百分比 / 分钟 / 个数）。
+fileprivate struct TrendPoint: Identifiable {
+    let id: String
+    let date: Date
+    let value: Double
+    let hasReview: Bool
+}
+
+/// 手写折线：只有一条线 + 若干圆点，不值得为此引入 Charts。
+/// 缺数据的日期直接不出点，线只连有数据的日子（不要用 0 填，那会画出"没学"的假低谷）。
+fileprivate struct TrendChart: View {
+    let points: [TrendPoint]
+    let tint: Color
+
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            let maxValue = max(points.map(\.value).max() ?? 1, 1)
+            let step = points.count > 1 ? width / CGFloat(points.count - 1) : 0
+
+            func position(_ index: Int, _ value: Double) -> CGPoint {
+                let x = points.count > 1 ? CGFloat(index) * step : width / 2
+                let ratio = CGFloat(value / maxValue)
+                return CGPoint(x: x, y: height - ratio * (height - 10) - 5)
+            }
+
+            ZStack(alignment: .topLeading) {
+                // 三条参考线，方便看趋势而不是看绝对值
+                ForEach(0..<3, id: \.self) { row in
+                    Rectangle()
+                        .fill(Theme.track)
+                        .frame(height: 1)
+                        .offset(y: (height - 10) * CGFloat(row) / 2 + 5)
+                }
+
+                Path { path in
+                    for (index, point) in points.enumerated() {
+                        let position = position(index, point.value)
+                        if index == 0 {
+                            path.move(to: position)
+                        } else {
+                            path.addLine(to: position)
+                        }
+                    }
+                }
+                .stroke(tint, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+
+                ForEach(Array(points.enumerated()), id: \.element.id) { index, point in
+                    Circle()
+                        .fill(point.hasReview ? Theme.blueInk : tint)
+                        .frame(width: point.hasReview ? 6 : 4, height: point.hasReview ? 6 : 4)
+                        .position(position(index, point.value))
+                }
+            }
+        }
     }
 }

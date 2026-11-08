@@ -18,8 +18,10 @@ struct ContentManagementView: View {
                 progressSection(progress)
             }
 
+            updateSection
             downloadSection
             installedSection
+            BackupSection()
         }
         .navigationTitle("内容管理")
         .navigationBarTitleDisplayMode(.inline)
@@ -117,6 +119,76 @@ struct ContentManagementView: View {
                 .foregroundStyle(.secondary)
             }
             .padding(.vertical, 2)
+        }
+    }
+
+    // MARK: - 有新版本
+
+    /// 远端比本机新 → 一张卡片说清楚"多了什么"（`changelog` 缺省也给一句兜底文案）
+    private struct Upgrade {
+        let remote: ManifestPack
+        let installed: InstalledPack
+    }
+
+    private var upgrades: [Upgrade] {
+        installer.packs.compactMap { pack in
+            guard let installed = library.installed.first(where: { $0.id == pack.id }),
+                  pack.contentVersion > installed.contentVersion else { return nil }
+            return Upgrade(remote: pack, installed: installed)
+        }
+    }
+
+    @ViewBuilder
+    private var updateSection: some View {
+        if !upgrades.isEmpty {
+            Section {
+                ForEach(upgrades, id: \.remote.id) { upgrade in
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.down.circle.fill")
+                                .foregroundStyle(Theme.orange)
+                            Text(upgrade.remote.title)
+                                .font(.body.weight(.semibold))
+                            Text("v\(upgrade.installed.contentVersion) → v\(upgrade.remote.contentVersion)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                        }
+
+                        Text(upgrade.remote.changelogText)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        HStack(spacing: 10) {
+                            Button("更新") {
+                                Task { await installer.install(upgrade.remote) }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(installer.isBusy || upgrade.remote.requiresAppUpdate)
+
+                            if upgrade.remote.previous != nil {
+                                Button("回退上一版") {
+                                    Task { await installer.rollback(upgrade.remote) }
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(installer.isBusy)
+                            }
+
+                            if upgrade.remote.requiresAppUpdate {
+                                Text("需要更新 App")
+                                    .font(.caption)
+                                    .foregroundStyle(.red)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .padding(.vertical, 3)
+                }
+            } header: {
+                Text("有新版本")
+            } footer: {
+                Text("更新只换课文与音频，学习进度按条目码保留；装完不满意可以回退到上一版。")
+            }
         }
     }
 

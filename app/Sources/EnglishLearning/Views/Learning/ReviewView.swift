@@ -318,7 +318,8 @@ struct ReviewView: View {
         modelContext.insert(Attempt(profileID: profile.id, sessionID: sessionID,
                                     itemCode: schedule.itemCode, itemKind: schedule.kind,
                                     unitCode: unitCode(for: schedule.itemCode),
-                                    kind: "review", passed: assessment.isPassed, at: now))
+                                    kind: "review", passed: assessment.isPassed, at: now,
+                                    recognitionMode: assessment.recognitionMode))
 
         if assessment.isPassed {
             ReviewScheduler.advance(schedule, now: now)

@@ -52,6 +52,12 @@ final class ContentInstaller {
     var baseURL: URL? { URL(string: baseURLString) }
     var isBusy: Bool { progress != nil || phase == .probing }
 
+    /// 上次连接成功后存的地址（自动备份在后台用它，不必等家长打开内容管理页）
+    static var storedBaseURL: URL? {
+        let raw = UserDefaults.standard.string(forKey: baseURLKey) ?? defaultBaseURL
+        return URL(string: raw)
+    }
+
     // MARK: - 探测 manifest
 
     func probe() async {

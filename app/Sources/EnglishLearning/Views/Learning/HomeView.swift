@@ -59,6 +59,11 @@ struct HomeView: View {
             // 进首页时补算一次徽章（单元/整册这类需要内容的条件在这里判定，tasks 5.2）
             _ = BadgeEngine.evaluate(profileID: profile.id, curriculum: curriculum, in: modelContext)
         }
+        .onChange(of: dailyMinutesReached) { _, reached in
+            // 今日 20 分钟用满：发一次"学完了"的反馈（默认关闭，每天最多一条）
+            guard reached, ReminderSettings.shouldSendCompletionNotice() else { return }
+            Task { await LocalNotifications.dailyTaskCompleted() }
+        }
         .navigationDestination(item: $learningUnitID) { id in
             if let pack = library.installed.first,
                let unit = units.first(where: { $0.id == id }) {

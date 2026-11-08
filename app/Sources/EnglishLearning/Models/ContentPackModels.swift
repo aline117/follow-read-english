@@ -58,8 +58,15 @@ struct ManifestPack: Decodable, Identifiable {
     let sha256: String
     let url: String
     let previous: Previous?
+    /// 内容更新说明（可缺省）。缺省时家长端显示"内容已更新，无说明"
+    let changelog: String?
 
     var requiresAppUpdate: Bool { schemaVersion > ContentSchema.supported }
+
+    var changelogText: String {
+        let text = changelog?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return text.isEmpty ? "内容已更新，无说明" : text
+    }
 
     /// 主包 → 可供安装的远端描述
     func remote(baseURL: URL) -> RemotePack {

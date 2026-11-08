@@ -8,6 +8,8 @@ struct RootView: View {
     @AppStorage("selectedProfileID") private var selectedProfileIDRaw: String = ""
     @Query(sort: \Profile.createdAt) private var profiles: [Profile]
     @State private var isParentModePresented = false
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -50,6 +52,20 @@ struct RootView: View {
         }
         .onAppear { selectedProfileIDRaw = profile.id.uuidString }
         .task { await LocalNotifications.requestAuthorizationIfNeeded() }
+        // 家园在线备份：连过内容服务后每 24 小时最多传一次，失败静默（tasks 18.4）
+        .task { await autoBackupIfDue() }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            Task { await autoBackupIfDue() }
+        }
+    }
+
+    private func autoBackupIfDue() async {
+        guard !profiles.isEmpty else { return }
+        await BackupRemoteService.shared.autoBackupIfDue(
+            context: modelContext,
+            baseURL: ContentInstaller.storedBaseURL
+        )
     }
 
     @ToolbarContentBuilder

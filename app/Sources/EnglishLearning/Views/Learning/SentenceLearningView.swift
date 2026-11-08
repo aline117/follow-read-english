@@ -275,9 +275,9 @@ struct SentenceLearningView: View {
     /// - 未达标：结果卡给出原因与差异，同时落一条失败 `Attempt`（家长报告与薄弱项要用）
     private func handleAssessment(_ assessment: PronunciationAssessment, sentence: Sentence) {
         if assessment.isPassed {
-            recordSpeakPass(sentence)
+            recordSpeakPass(sentence, mode: assessment.recognitionMode)
         } else {
-            recordSpeakFail(sentence)
+            recordSpeakFail(sentence, mode: assessment.recognitionMode)
         }
     }
 
@@ -533,12 +533,13 @@ struct SentenceLearningView: View {
 
     // MARK: - 进度写入
 
-    private func recordSpeakPass(_ sentence: Sentence) {
+    private func recordSpeakPass(_ sentence: Sentence, mode: RecognitionMode) {
         let now = Date()
         let code = itemCode(of: sentence)
         modelContext.insert(Attempt(profileID: profile.id, sessionID: sessionID,
                                     itemCode: code, itemKind: .sentence,
-                                    unitCode: unit.id, kind: "speak", passed: true, at: now))
+                                    unitCode: unit.id, kind: "speak", passed: true, at: now,
+                                    recognitionMode: mode))
 
         let existing = allProgress.first { $0.profileID == profile.id && $0.itemCode == code }
         let target: ItemProgress
@@ -573,12 +574,13 @@ struct SentenceLearningView: View {
     }
 
     /// 未达标：落一条失败 `Attempt`，并把 `timesSeen` 记上（不写 `firstPassedAt`、不发星）
-    private func recordSpeakFail(_ sentence: Sentence) {
+    private func recordSpeakFail(_ sentence: Sentence, mode: RecognitionMode) {
         let now = Date()
         let code = itemCode(of: sentence)
         modelContext.insert(Attempt(profileID: profile.id, sessionID: sessionID,
                                     itemCode: code, itemKind: .sentence,
-                                    unitCode: unit.id, kind: "speak", passed: false, at: now))
+                                    unitCode: unit.id, kind: "speak", passed: false, at: now,
+                                    recognitionMode: mode))
         if let progress = allProgress.first(where: { $0.profileID == profile.id && $0.itemCode == code }) {
             progress.timesSeen += 1
             progress.lastSeenAt = now

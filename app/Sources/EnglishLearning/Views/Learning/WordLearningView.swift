@@ -351,9 +351,9 @@ struct WordLearningView: View {
         guard let word else { return }
         if assessment.isPassed {
             // 停在结果卡：孩子可以反复对比「原音 / 我的录音」，点「下一个」再继续
-            markPassed(word)
+            markPassed(word, mode: assessment.recognitionMode)
         } else {
-            markFailed(word)
+            markFailed(word, mode: assessment.recognitionMode)
         }
     }
 
@@ -438,7 +438,7 @@ struct WordLearningView: View {
 
     // MARK: - 进度写入
 
-    private func markPassed(_ word: UnitWord) {
+    private func markPassed(_ word: UnitWord, mode: RecognitionMode) {
         let now = Date()
         let progress = allProgress.first { $0.profileID == profile.id && $0.itemCode == word.itemCode }
         let target: ItemProgress
@@ -461,7 +461,8 @@ struct WordLearningView: View {
 
         modelContext.insert(Attempt(profileID: profile.id, sessionID: sessionID,
                                     itemCode: word.itemCode, itemKind: .word,
-                                    unitCode: unit.id, kind: "speak", passed: true, at: now))
+                                    unitCode: unit.id, kind: "speak", passed: true, at: now,
+                                    recognitionMode: mode))
 
         if isFirstPass {
             newItemsThisSession += 1
@@ -513,7 +514,7 @@ struct WordLearningView: View {
         save()
     }
 
-    private func markFailed(_ word: UnitWord) {
+    private func markFailed(_ word: UnitWord, mode: RecognitionMode) {
         let now = Date()
         if let progress = allProgress.first(where: { $0.profileID == profile.id && $0.itemCode == word.itemCode }) {
             progress.timesSeen += 1
@@ -528,7 +529,8 @@ struct WordLearningView: View {
 
         modelContext.insert(Attempt(profileID: profile.id, sessionID: sessionID,
                                     itemCode: word.itemCode, itemKind: .word,
-                                    unitCode: unit.id, kind: "speak", passed: false, at: now))
+                                    unitCode: unit.id, kind: "speak", passed: false, at: now,
+                                    recognitionMode: mode))
         save()
     }
 

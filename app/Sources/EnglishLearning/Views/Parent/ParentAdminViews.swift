@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - 孩子与档案（tasks 6.5）
 
@@ -205,23 +206,41 @@ struct ParentSettingsView: View {
     @State private var auditLines: [String] = []
     @State private var diagnostics: [DiagnosticsLog.Entry] = []
     @State private var showResetConfirm = false
+    @State private var showImporter = false
+    @State private var pendingBackup: BackupFile?
+    @State private var showRestoreConfirm = false
+    @State private var resultMessage: String?
+    @State private var showResult = false
 
     var body: some View {
         List {
             Section {
-                LabeledContent("卸载 App 会清空全部学习记录", value: "请定期导出备份")
+                LabeledContent("卸载 App 前请先备份", value: "没备份就会清空记录")
                     .font(.system(size: 13.5))
-                Button("导出学习记录（JSON）") { exportJSON() }
+
+                Button {
+                    exportBackup()
+                } label: {
+                    Label("导出备份（全部孩子）", systemImage: "square.and.arrow.up")
+                }
                 if let exportURL {
                     ShareLink(item: exportURL) {
-                        Label("分享导出的文件", systemImage: "square.and.arrow.up")
+                        Label("分享备份文件", systemImage: "doc.badge.arrow.up")
                     }
                 }
+
+                Button {
+                    showImporter = true
+                } label: {
+                    Label("从文件导入备份", systemImage: "square.and.arrow.down")
+                }
             } header: {
-                Text("数据")
+                Text("备份与恢复")
             } footer: {
-                Text("导出内容只在这台设备上生成，不会上传。")
+                Text("备份含全部孩子的进度、星星、徽章与家长配置；不含 PIN / 恢复码（恢复后需重新设置），也不含课文与媒体（重新下载即可）。导入会覆盖当前全部数据。家里电脑开着内容服务时，「内容管理」页还会每 24 小时自动备份一次。")
             }
+
+            ReminderSection()
 
             Section {
                 Toggle("大额兑换需要二次确认", isOn: $largeRedemptionNeedsConfirm)
@@ -278,6 +297,33 @@ struct ParentSettingsView: View {
             }
             Button("取消", role: .cancel) {}
         }
+        .fileImporter(isPresented: $showImporter,
+                      allowedContentTypes: [.json],
+                      allowsMultipleSelection: false) { result in
+            handleImport(result)
+        }
+        .confirmationDialog("覆盖恢复会替换当前全部数据",
+                            isPresented: $showRestoreConfirm,
+                            titleVisibility: .visible) {
+            Button("覆盖恢复", role: .destructive) { performRestore() }
+            Button("取消", role: .cancel) { pendingBackup = nil }
+        } message: {
+            Text(restoreSummary)
+        }
+        .alert("备份", isPresented: $showResult) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text(resultMessage ?? "")
+        }
+    }
+
+    private var restoreSummary: String {
+        guard let backup = pendingBackup else { return "" }
+        let date = backup.exportedAt.formatted(date: .numeric, time: .shortened)
+        let kids = backup.counts["profiles"] ?? 0
+        let attempts = backup.counts["attempts"] ?? 0
+        let stars = backup.counts["starLedger"] ?? 0
+        return "备份时间 \(date)，\(kids) 个孩子、\(attempts) 条学习明细、\(stars) 条星星流水。当前数据将被替换。"
     }
 
     private var requireDailyTaskBeforeRedemptionBinding: Binding<Bool> {
@@ -290,43 +336,100 @@ struct ParentSettingsView: View {
         diagnostics = DiagnosticsLog.entries().suffix(20).reversed()
     }
 
-    /// 导出：学习状态 + 家长配置，够还原"做过什么"
-    private func exportJSON() {
-        let pid = profile.id
-        var payload: [String: Any] = [:]
-        payload["profile"] = ["name": profile.name, "grade": profile.grade,
-                              "id": profile.id.uuidString]
-        payload["exportedAt"] = ISO8601DateFormatter().string(from: Date())
-
-        let progress = (try? modelContext.fetch(
-            FetchDescriptor<ItemProgress>(predicate: #Predicate { $0.profileID == pid }))) ?? []
-        payload["progress"] = progress.map {
-            ["itemCode": $0.itemCode, "timesSeen": $0.timesSeen,
-             "timesPassed": $0.timesPassed, "masteryLevel": $0.masteryLevel]
+    /// 导出：11 张表 + 媒体观看状态，够在另一台 iPad 上完整还原
+    private func exportBackup() {
+        do {
+            let file = try BackupService.makeBackup(context: modelContext)
+            let data = try BackupService.encode(file)
+            exportURL = try BackupService.writeTemporaryFile(data)
+            DiagnosticsLog.log("backup_exported", ["bytes": "\(data.count)"])
+        } catch {
+            resultMessage = "导出失败：\(error.localizedDescription)"
+            showResult = true
         }
+    }
 
-        let attempts = (try? modelContext.fetch(
-            FetchDescriptor<Attempt>(predicate: #Predicate { $0.profileID == pid }))) ?? []
-        payload["attempts"] = attempts.map {
-            ["itemCode": $0.itemCode, "kind": $0.kind, "passed": $0.passed,
-             "at": ISO8601DateFormatter().string(from: $0.at)]
+    private func handleImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .failure(let error):
+            resultMessage = "读取文件失败：\(error.localizedDescription)"
+            showResult = true
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let data = try Data(contentsOf: url)
+                pendingBackup = try BackupService.decode(data)
+                showRestoreConfirm = true
+            } catch {
+                resultMessage = "无法导入：\(error.localizedDescription)"
+                showResult = true
+            }
         }
+    }
 
-        let stars = (try? modelContext.fetch(
-            FetchDescriptor<StarLedger>(predicate: #Predicate { $0.profileID == pid }))) ?? []
-        payload["stars"] = stars.map {
-            ["amount": $0.amount, "reason": $0.reason,
-             "at": ISO8601DateFormatter().string(from: $0.at)]
-        }
+    private func performRestore() {
+        guard let backup = pendingBackup else { return }
+        pendingBackup = nil
+        do {
+            let counts = try BackupService.restore(backup, into: modelContext)
+            exportURL = nil
+            ParentAuth.audit("backup_restored")
+            resultMessage = """
+            已恢复 \(counts["profiles"] ?? 0) 个孩子、\(counts["attempts"] ?? 0) 条学习明细、\(counts["starLedger"] ?? 0) 条星星流水。
 
-        guard let data = try? JSONSerialization.data(withJSONObject: payload,
-                                                     options: [.prettyPrinted, .sortedKeys]) else {
-            return
+            PIN 与恢复码不在备份内，请重新设置家长凭据；课文内容请到「内容管理」重新下载。
+            """
+            showResult = true
+        } catch {
+            resultMessage = "恢复失败：\(error.localizedDescription)"
+            showResult = true
         }
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("学习记录-\(profile.name).json")
-        try? data.write(to: url)
-        exportURL = url
-        DiagnosticsLog.log("export_completed", ["bytes": "\(data.count)"])
+    }
+}
+
+// MARK: - 提醒
+
+/// 习惯提醒（tasks 19.4.2）：默认关闭，开了才排通知；完成反馈与每日提醒共用一次授权。
+private struct ReminderSection: View {
+    @State private var dailyEnabled = ReminderSettings.isDailyEnabled
+    @State private var completionEnabled = ReminderSettings.isCompletionEnabled
+    @State private var remindAt: Date = {
+        Calendar.current.date(bySettingHour: ReminderSettings.hour,
+                              minute: ReminderSettings.minute,
+                              second: 0, of: Date()) ?? Date()
+    }()
+
+    var body: some View {
+        Section {
+            Toggle("每日学习提醒", isOn: $dailyEnabled)
+            if dailyEnabled {
+                DatePicker("提醒时间", selection: $remindAt, displayedComponents: .hourAndMinute)
+            }
+            Toggle("学完给个提示", isOn: $completionEnabled)
+        } header: {
+            Text("提醒")
+        } footer: {
+            Text("默认关闭。提醒只在这台 iPad 上本地发出，不含任何学习数据；和兑换审核的通知共用一次系统授权。")
+        }
+        .onChange(of: dailyEnabled) { _, value in
+            ReminderSettings.isDailyEnabled = value
+            applyTime()
+            Task { await ReminderSettings.apply() }
+        }
+        .onChange(of: completionEnabled) { _, value in
+            ReminderSettings.isCompletionEnabled = value
+        }
+        .onChange(of: remindAt) { _, _ in
+            applyTime()
+            Task { await ReminderSettings.apply() }
+        }
+    }
+
+    private func applyTime() {
+        let components = Calendar.current.dateComponents([.hour, .minute], from: remindAt)
+        ReminderSettings.hour = components.hour ?? 19
+        ReminderSettings.minute = components.minute ?? 0
     }
 }

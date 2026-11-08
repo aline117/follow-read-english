@@ -46,6 +46,12 @@ struct ParentHomeView: View {
                     } label: {
                         Label("内容管理", systemImage: "square.and.arrow.down")
                     }
+
+                    NavigationLink {
+                        SuspiciousItemsView(profile: profile)
+                    } label: {
+                        Label("可疑条目", systemImage: "stethoscope")
+                    }
                 }
 
                 Section("听和看") {

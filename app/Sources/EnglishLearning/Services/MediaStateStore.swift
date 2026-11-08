@@ -17,6 +17,10 @@ final class MediaStateStore {
         /// 复读次数（同一句重读累加）
         var retryCount: Int = 0
         var lastWatchedAt: Date?
+        /// 跟读判定的依据计数（2026-11 补，老数据为 nil = 未记录）。
+        /// 内容体检用它区分「孩子读不好」和「评测在兜底」——归因不同，处理方式完全不同
+        var devicePassCount: Int?
+        var fallbackPassCount: Int?
     }
 
     private struct Payload: Codable {
@@ -123,12 +127,17 @@ final class MediaStateStore {
     }
 
     /// 跟读通过一句（首次通过才计入一次通过率）
-    func recordLinePassed(_ itemID: String, line: Int, firstTry: Bool, profileID: UUID) {
+    func recordLinePassed(_ itemID: String, line: Int, firstTry: Bool,
+                          mode: RecognitionMode, profileID: UUID) {
         mutate { payload in
             var states = payload.profiles[self.key(profileID)] ?? [:]
             var state = states[itemID] ?? ItemState()
             if !state.passedLines.contains(line) { state.passedLines.append(line) }
             if firstTry, !state.firstTryPassed.contains(line) { state.firstTryPassed.append(line) }
+            switch mode {
+            case .device: state.devicePassCount = (state.devicePassCount ?? 0) + 1
+            case .fallback: state.fallbackPassCount = (state.fallbackPassCount ?? 0) + 1
+            }
             states[itemID] = state
             payload.profiles[self.key(profileID)] = states
         }
@@ -149,6 +158,35 @@ final class MediaStateStore {
         mutate { payload in
             payload.profiles[self.key(profileID)] = nil
             payload.daily[self.key(profileID)] = nil
+        }
+    }
+
+    // MARK: - 备份恢复（tasks 18.5）
+
+    /// 整包替换观看状态：文件与内存缓存一起换，传 nil 表示清空
+    func replaceState(withJSON json: String?) {
+        queue.sync {
+            loaded = true
+            guard let json, let data = json.data(using: .utf8),
+                  let decoded = Self.decode(Payload.self, from: data) else {
+                payload = Payload()
+                try? FileManager.default.removeItem(at: Self.stateURL)
+                return
+            }
+            payload = decoded
+            save()
+        }
+    }
+
+    /// 整包替换时长回填表（`itemID → 秒`），传 nil 表示清空
+    func replaceDurations(withJSON json: String?) {
+        queue.sync {
+            guard let json, let data = json.data(using: .utf8),
+                  let map = try? JSONDecoder().decode([String: Double].self, from: data) else {
+                try? FileManager.default.removeItem(at: Self.durationURL)
+                return
+            }
+            Self.writeDictionary(map, to: Self.durationURL)
         }
     }
 
@@ -224,6 +262,10 @@ final class MediaStateStore {
 
     private static func read<T: Decodable>(_ type: T.Type, from url: URL) -> T? {
         guard let data = try? Data(contentsOf: url) else { return nil }
+        return decode(type, from: data)
+    }
+
+    private static func decode<T: Decodable>(_ type: T.Type, from data: Data) -> T? {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         return try? decoder.decode(type, from: data)

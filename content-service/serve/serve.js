@@ -4,12 +4,15 @@
  *
  * - 学期包：扫描 `packs/*.meta.json` 生成 `/manifest.json`，提供 `/packs/*.zip`
  * - 媒体库：提供 `/media.json` 与 `/media/files/*`（支持 HTTP Range）
- * - 只读、只绑内网、不做端口映射
+ * - 学习备份：`PUT /backup/<deviceID>/<name>.json` 上传、`GET /backup/index.json` 索引、
+ *   `GET /backup/file/<deviceID>/<name>` 下载（每设备滚动保留 30 份）
+ * - 只绑内网、不做端口映射（备份写入只发生在局域网内）
  *
  * 目录约定（content-service 根目录）：
  *   packs/            学期包 zip + meta
  *   media/media.json  媒体清单
  *   media/files/...   儿歌 / 绘本 mp4
+ *   backups/<deviceID>/*.json   App 上传的学习备份（不进 git）
  *
  * 用法：
  *   node content-service/serve/serve.js
@@ -26,6 +29,12 @@ const os = require('node:os');
 
 const SERVICE_ROOT = path.dirname(__dirname);
 const CONTENT_SCHEMA_VERSION = 2; // 与 App 内 ContentSchema.supported 对齐
+
+const BACKUP_KEEP_PER_DEVICE = 30;
+const BACKUP_MAX_BYTES = 64 * 1024 * 1024; // 学习备份正常 <2 MB，64 MB 只是防呆上限
+// 路径参数白名单：deviceID 与文件名都不含 `/`、`.`（扩展名单独拼接）
+const SEGMENT_RE = /^[A-Za-z0-9-]{1,64}$/;
+const BACKUP_NAME_RE = /^[A-Za-z0-9-]{1,64}$/;
 
 const MIME = {
   '.json': 'application/json; charset=utf-8',
@@ -103,6 +112,7 @@ async function buildManifest(packsDir) {
       sha256: await sha256Of(primary.zipPath),
       url: '/packs/' + path.basename(primary.zipPath),
     };
+    if (primary.meta.changelog) entry.changelog = String(primary.meta.changelog);
     if (versions.length > 1) {
       const previous = versions[1];
       entry.previous = {
@@ -139,7 +149,8 @@ function indexHtml(manifest, media) {
     "<!doctype html><meta charset='utf-8'><title>内容服务</title>" +
     '<h1>家园内容服务已启动</h1>' +
     "<p><a href='/manifest.json'>/manifest.json</a> · " +
-    `<a href='/media.json'>/media.json</a>（媒体 ${media} 项）</p>` +
+    `<a href='/media.json'>/media.json</a>（媒体 ${media} 项）` +
+    "<p><a href='/backup/index.json'>/backup/index.json</a>（学习备份索引）</p>" +
     "<table border='1' cellpadding='6' style='border-collapse:collapse'>" +
     '<tr><th>id</th><th>title</th><th>版本</th><th>大小</th><th>包</th></tr>' +
     rows +
@@ -217,11 +228,213 @@ function sendFile(req, res, target, contentType) {
     .pipe(res);
 }
 
+// —— 学习备份 ——
+
+function backupsRoot(root) {
+  return path.join(root, 'backups');
+}
+
+function deviceDirOf(root, deviceID) {
+  if (!SEGMENT_RE.test(deviceID)) return null;
+  const dir = path.join(backupsRoot(root), deviceID);
+  const rootReal = fs.existsSync(backupsRoot(root))
+    ? fs.realpathSync(backupsRoot(root))
+    : backupsRoot(root);
+  const resolved = path.resolve(dir);
+  if (resolved !== path.join(rootReal, deviceID)) return null;
+  return resolved;
+}
+
+function backupFileName(name) {
+  const base = name.endsWith('.json') ? name.slice(0, -'.json'.length) : name;
+  if (!BACKUP_NAME_RE.test(base)) return null;
+  return base + '.json';
+}
+
+function readBody(req, limit) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let size = 0;
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > limit) {
+        reject(Object.assign(new Error('payload too large'), { status: 413 }));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('error', reject);
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+  });
+}
+
+async function listBackups(root) {
+  const dir = backupsRoot(root);
+  if (!fs.existsSync(dir)) return [];
+  const devices = (await fsp.readdir(dir, { withFileTypes: true }))
+    .filter((entry) => entry.isDirectory() && SEGMENT_RE.test(entry.name))
+    .map((entry) => entry.name)
+    .sort();
+
+  const out = [];
+  for (const deviceID of devices) {
+    const deviceDir = path.join(dir, deviceID);
+    const names = (await fsp.readdir(deviceDir))
+      .filter((name) => name.endsWith('.json') && backupFileName(name) === name)
+      .sort()
+      .reverse(); // 文件名以时间戳开头，倒序即最新在前
+    for (const name of names) {
+      const file = path.join(deviceDir, name);
+      const stat = await fsp.stat(file);
+      if (!stat.isFile()) continue;
+      out.push({
+        deviceID,
+        name,
+        bytes: stat.size,
+        modifiedAt: new Date(stat.mtimeMs).toISOString(),
+        sha256: await sha256Of(file),
+      });
+    }
+  }
+  return out;
+}
+
+/** 超出保留份数时按文件名（时间戳）删最旧；返回删掉的文件名 */
+async function pruneBackups(deviceDir) {
+  const names = (await fsp.readdir(deviceDir))
+    .filter((name) => name.endsWith('.json') && backupFileName(name) === name)
+    .sort()
+    .reverse();
+  const removed = [];
+  for (const name of names.slice(BACKUP_KEEP_PER_DEVICE)) {
+    await fsp.unlink(path.join(deviceDir, name)).catch(() => {});
+    shaCache.delete(path.join(deviceDir, name));
+    removed.push(name);
+  }
+  return removed;
+}
+
+async function saveBackup(root, deviceID, name, body, declaredSha) {
+  const deviceDir = deviceDirOf(root, deviceID);
+  const fileName = backupFileName(name);
+  if (!deviceDir || !fileName) {
+    throw Object.assign(new Error('bad path'), { status: 400 });
+  }
+
+  const actual = crypto.createHash('sha256').update(body).digest('hex');
+  const declared = String(declaredSha || '').trim().toLowerCase();
+  // 校验和不符说明传输中出了问题，宁可让 App 重传也不要落一份坏备份
+  if (declared && declared !== actual) {
+    throw Object.assign(new Error('sha256 mismatch'), {
+      status: 400,
+      detail: { declared, actual },
+    });
+  }
+
+  try {
+    JSON.parse(body.toString('utf8'));
+  } catch {
+    throw Object.assign(new Error('body is not valid JSON'), { status: 400 });
+  }
+
+  await fsp.mkdir(deviceDir, { recursive: true });
+  // 临时文件放同目录，rename 才是原子的（跨盘 rename 会退化成拷贝）
+  const temp = path.join(deviceDir, `.${fileName}.${process.pid}-${Date.now()}.tmp`);
+  await fsp.writeFile(temp, body);
+  await fsp.rename(temp, path.join(deviceDir, fileName));
+  shaCache.delete(path.join(deviceDir, fileName));
+
+  const removed = await pruneBackups(deviceDir);
+  return { deviceID, name: fileName, bytes: body.length, sha256: actual, removed };
+}
+
+async function handleBackup(req, res, root, pathname) {
+  if (pathname === '/backup/index.json') {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      sendJson(res, 405, { error: 'method not allowed' });
+      return;
+    }
+    const items = await listBackups(root);
+    sendJson(res, 200, {
+      backupFormatVersion: 1,
+      keepPerDevice: BACKUP_KEEP_PER_DEVICE,
+      items,
+    });
+    return;
+  }
+
+  if (pathname.startsWith('/backup/file/')) {
+    const rest = pathname.slice('/backup/file/'.length).split('/');
+    if (rest.length !== 2) {
+      sendJson(res, 400, { error: 'bad path' });
+      return;
+    }
+    const [deviceID, rawName] = rest;
+    const deviceDir = deviceDirOf(root, deviceID);
+    const fileName = backupFileName(rawName);
+    if (!deviceDir || !fileName) {
+      sendJson(res, 400, { error: 'bad path' });
+      return;
+    }
+    const target = path.join(deviceDir, fileName);
+    if (!fs.existsSync(target) || !fs.statSync(target).isFile()) {
+      sendJson(res, 404, { error: 'not found' });
+      return;
+    }
+    sendFile(req, res, target, 'application/json; charset=utf-8');
+    return;
+  }
+
+  // PUT /backup/<deviceID>/<name>.json
+  if (pathname.startsWith('/backup/')) {
+    if (req.method !== 'PUT') {
+      sendJson(res, 405, { error: 'method not allowed' });
+      return;
+    }
+    const rest = pathname.slice('/backup/'.length).split('/');
+    if (rest.length !== 2) {
+      sendJson(res, 400, { error: 'bad path' });
+      return;
+    }
+    const [deviceID, name] = rest;
+    let body;
+    try {
+      body = await readBody(req, BACKUP_MAX_BYTES);
+    } catch (error) {
+      sendJson(res, error.status || 400, { error: String(error.message || error) });
+      return;
+    }
+    try {
+      const result = await saveBackup(root, deviceID, name, body, req.headers['x-backup-sha256']);
+      sendJson(res, 200, { ok: true, ...result });
+    } catch (error) {
+      sendJson(res, error.status || 500, { error: String(error.message || error), ...(error.detail || {}) });
+    }
+    return;
+  }
+
+  sendJson(res, 404, { error: 'not found' });
+}
+
 async function handle(req, res, root) {
   const packsDir = path.join(root, 'packs');
   const mediaDir = path.join(root, 'media');
   const url = new URL(req.url, 'http://localhost');
   const pathname = decodeURIComponent(url.pathname);
+
+  // 备份三件套（PUT 上传 / index / 下载）：独立处理，写完即返回
+  if (pathname === '/backup' || pathname === '/backup/' || pathname.startsWith('/backup/')) {
+    await handleBackup(req, res, root, pathname);
+    return;
+  }
+
+  // 内容分发是只读语义，其余路径一律只允许读
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.writeHead(405, { Allow: 'GET, HEAD' });
+    res.end();
+    return;
+  }
 
   if (pathname === '/' || pathname === '/index.html') {
     const manifest = await buildManifest(packsDir);
@@ -295,6 +508,7 @@ function main() {
     console.log(`内容服务已启动：${args.root}`);
     console.log(`  学期包：${packsDir}`);
     console.log(`  媒体库：${path.join(args.root, 'media')}`);
+    console.log(`  学习备份：${path.join(args.root, 'backups')}（每设备保留 ${BACKUP_KEEP_PER_DEVICE} 份）`);
     console.log(`  http://127.0.0.1:${args.port}`);
     console.log(`  http://${os.hostname().split('.')[0]}.local:${args.port}`);
     console.log('Ctrl+C 停止；App 里填上面的地址（推荐 <host>.local）');
