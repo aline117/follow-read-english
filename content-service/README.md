@@ -239,6 +239,31 @@ curl http://127.0.0.1:8080/backup/index.json
 
 原始素材来源已不稳定，丢了可能无法重爬。
 
+### 用脚本生成可校验的归档（tasks 7.9 / 7.11）
+
+直接拷目录有三个坑：传到一半断了不知道哪几个是半截文件；`media.json` 与 `files/` 错位会被 App 当成
+「内容损坏」（比没备份更糟，因为你会以为已经备好了）；半年后翻出来不记得对应哪个内容版本。
+所以用脚本产出自描述归档：
+
+```bash
+# 学期包 + 媒体（6.3 GB，断点续传：已拷过且大小一致的文件会跳过）
+python content-service/build/archive-for-backup.py --out E:/backup/english-20261108
+
+# 只备学期包（41 MB，秒级）
+python content-service/build/archive-for-backup.py --out E:/backup/packs-only --no-media
+
+# 校验：逐个文件比 sha256，并核对 media.json 与文件成对
+python content-service/build/archive-for-backup.py --verify E:/backup/english-20261108
+```
+
+归档里除了原目录结构，还会多两个文件：
+
+- `MANIFEST.json` —— 每个文件的 sha256 / 字节数，加上 `mediaSchemaVersion`、`contentVersion`、生成时间（换机时能确认版本对得上）
+- `CHECKSUMS.sha256` —— 标准 `sha256sum` 格式，任何工具都能独立核（Windows 可 `certutil -hashfile`）
+
+退出码：`0` 通过；`1` 校验有问题（逐条列出）；`3` 归档不完整（清单里有文件不在磁盘上，这份备份不能用）。
+清单缺项时脚本不会假装成功——宁可报错，也别让人以为已经备好了。
+
 ## 11. 注意
 
 - 不要把 `packs/`、`media/` 提交进 git；根目录 `.gitignore` 已忽略
