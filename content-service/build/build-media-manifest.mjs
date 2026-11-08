@@ -12,7 +12,8 @@
 // 说明：
 // - durationSec 默认写 0（App 首次播放会回填实测时长，见 services/MediaStateStore）
 // - streamable 由同目录的 check-faststart.mjs 判定
-// - lines 留空，等 10.7 标注儿歌可跟读句后再补
+// - lines 默认空；重扫时**保留**已有清单里同 id、同 sha256 的跟读句（10.7 的 82 首标注不能因为
+//   重扫一次就全丢）。文件内容变了（sha256 不同）才丢弃那一条，并在输出里点名，提醒重新标注。
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -82,6 +83,22 @@ const overrides = fs.existsSync(overridesPath)
   ? JSON.parse(fs.readFileSync(overridesPath, 'utf8'))
   : {};
 
+// 上一次的清单：用来保住已标注的跟读句（lines）
+function loadPrevious(file) {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const map = new Map();
+    for (const item of parsed.items ?? []) map.set(item.id, item);
+    return map;
+  } catch {
+    return new Map();
+  }
+}
+
+const previousItems = loadPrevious(outResolved);
+let keptLineCount = 0;
+const droppedLines = [];
+
 const items = [];
 const groups = [
   { dir: path.join(args.media, 'files', 'songs'), kind: 'song', prefix: 'm:song-' },
@@ -96,6 +113,14 @@ for (const group of groups) {
     const stat = fs.statSync(file);
     const digest = await sha256File(file);
     const { streamable } = isStreamable(file);
+    const previous = previousItems.get(id);
+    const previousLines = previous?.lines ?? [];
+    // 文件换了，旧的时间轴就不可信了：宁可空着让孩子端显示「待标注」，也别对着错位的秒数跟读
+    const keepLines = previous?.sha256 === digest ? previousLines : [];
+    if (keepLines.length > 0) keptLineCount += keepLines.length;
+    if (previous && previousLines.length > 0 && previous.sha256 !== digest) {
+      droppedLines.push(id);
+    }
     items.push({
       id,
       title: base,
@@ -106,7 +131,7 @@ for (const group of groups) {
       sha256: digest,
       relPath: relToMedia,
       streamable,
-      lines: [],
+      lines: keepLines,
     });
     console.log(`${streamable ? '✓' : '✗'} ${id}  ${(stat.size / 1048576).toFixed(1)} MB`);
   }
@@ -134,4 +159,8 @@ fs.writeFileSync(outResolved, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 const totalBytes = items.reduce((sum, item) => sum + item.bytes, 0);
 const notStreamable = items.filter((item) => !item.streamable).length;
 console.log(`\n共 ${items.length} 项 · ${(totalBytes / 1073741824).toFixed(2)} GB · 不能秒开 ${notStreamable} 项`);
+if (keptLineCount > 0) console.log(`保留已标注的跟读句 ${keptLineCount} 条`);
+if (droppedLines.length > 0) {
+  console.warn(`这些文件内容变了，旧跟读句已丢弃，需要重新标注：${droppedLines.join('、')}`);
+}
 console.log(`已写入 ${outResolved}`);

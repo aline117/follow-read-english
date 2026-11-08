@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 
 // MARK: - 孩子与档案（tasks 6.5）
@@ -392,9 +393,11 @@ struct ParentSettingsView: View {
 // MARK: - 提醒
 
 /// 习惯提醒（tasks 19.4.2）：默认关闭，开了才排通知；完成反馈与每日提醒共用一次授权。
+/// 系统权限被拒时不能装作没事——开关看着是开的、通知永远不来，是最难查的那种"坏掉"。
 private struct ReminderSection: View {
     @State private var dailyEnabled = ReminderSettings.isDailyEnabled
     @State private var completionEnabled = ReminderSettings.isCompletionEnabled
+    @State private var notificationsBlocked = false
     @State private var remindAt: Date = {
         Calendar.current.date(bySettingHour: ReminderSettings.hour,
                               minute: ReminderSettings.minute,
@@ -411,19 +414,36 @@ private struct ReminderSection: View {
         } header: {
             Text("提醒")
         } footer: {
-            Text("默认关闭。提醒只在这台 iPad 上本地发出，不含任何学习数据；和兑换审核的通知共用一次系统授权。")
+            VStack(alignment: .leading, spacing: 10) {
+                Text("默认关闭。提醒只在这台 iPad 上本地发出，不含任何学习数据；和兑换审核的通知共用一次系统授权。")
+                if notificationsBlocked {
+                    Label("系统里把本 App 的通知关掉了，现在开了也弹不出来。",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(Theme.orangeDark)
+                        .accessibilityElement(children: .combine)
+                    Button("去系统设置打开通知") { openSystemNotificationSettings() }
+                        .font(.footnote.weight(.semibold))
+                }
+            }
         }
+        .task { await refreshAuthorization() }
         .onChange(of: dailyEnabled) { _, value in
             ReminderSettings.isDailyEnabled = value
             applyTime()
-            Task { await ReminderSettings.apply() }
+            Task {
+                await ReminderSettings.apply()
+                await refreshAuthorization()
+            }
         }
         .onChange(of: completionEnabled) { _, value in
             ReminderSettings.isCompletionEnabled = value
         }
         .onChange(of: remindAt) { _, _ in
             applyTime()
-            Task { await ReminderSettings.apply() }
+            Task {
+                await ReminderSettings.apply()
+                await refreshAuthorization()
+            }
         }
     }
 
@@ -431,5 +451,19 @@ private struct ReminderSection: View {
         let components = Calendar.current.dateComponents([.hour, .minute], from: remindAt)
         ReminderSettings.hour = components.hour ?? 19
         ReminderSettings.minute = components.minute ?? 0
+    }
+
+    /// 只在「家长已经要求提醒」时提示权限问题：没开提醒就不该拿系统设置来烦人
+    private func refreshAuthorization() async {
+        guard ReminderSettings.isDailyEnabled || ReminderSettings.isCompletionEnabled else {
+            notificationsBlocked = false
+            return
+        }
+        notificationsBlocked = !(await LocalNotifications.isAuthorized())
+    }
+
+    private func openSystemNotificationSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
     }
 }

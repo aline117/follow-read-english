@@ -81,6 +81,7 @@
 		E1E1E1E1E1E1E1E1E1E10013 /* MetricsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10014 /* MetricsStore.swift */; };
 		E1E1E1E1E1E1E1E1E1E10017 /* DailySnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10018 /* DailySnapshotStore.swift */; };
 		E1E1E1E1E1E1E1E1E1E10019 /* DailySnapshotStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10020 /* DailySnapshotStoreTests.swift */; };
+		E1E1E1E1E1E1E1E1E1E10022 /* ReminderSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10021 /* ReminderSettingsTests.swift */; };
 		E1E1E1E1E1E1E1E1E1E10006 /* BackupServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E1E1E1E1E1E1E1E1E10005 /* BackupServiceTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -171,6 +172,7 @@
 		E1E1E1E1E1E1E1E1E1E10014 /* MetricsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsStore.swift; sourceTree = "<group>"; };
 		E1E1E1E1E1E1E1E1E1E10018 /* DailySnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySnapshotStore.swift; sourceTree = "<group>"; };
 		E1E1E1E1E1E1E1E1E1E10020 /* DailySnapshotStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySnapshotStoreTests.swift; sourceTree = "<group>"; };
+		E1E1E1E1E1E1E1E1E1E10021 /* ReminderSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderSettingsTests.swift; sourceTree = "<group>"; };
 		E1E1E1E1E1E1E1E1E1E10005 /* BackupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -363,6 +365,7 @@
 				AAAAAAAAAAAAAAAAAAAAB013 /* AccuracyRuleTests.swift */,
 				E1E1E1E1E1E1E1E1E1E10005 /* BackupServiceTests.swift */,
 				E1E1E1E1E1E1E1E1E1E10020 /* DailySnapshotStoreTests.swift */,
+				E1E1E1E1E1E1E1E1E1E10021 /* ReminderSettingsTests.swift */,
 			);
 			path = Tests/EnglishLearningTests;
 			sourceTree = "<group>";
@@ -566,6 +569,7 @@
 				AAAAAAAAAAAAAAAAAAAAB023 /* AccuracyRuleTests.swift in Sources */,
 				E1E1E1E1E1E1E1E1E1E10006 /* BackupServiceTests.swift in Sources */,
 				E1E1E1E1E1E1E1E1E1E10019 /* DailySnapshotStoreTests.swift in Sources */,
+				E1E1E1E1E1E1E1E1E1E10022 /* ReminderSettingsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -42,8 +42,17 @@ enum LocalNotifications {
 
     private static let dailyReminderID = "daily-learning-reminder"
 
-    /// 每天固定时间的"该学英语了"。重复触发，由系统跨天保留
-    static func scheduleDailyReminder(hour: Int, minute: Int) async {
+    /// 系统层面是否允许弹通知（含临时授权）。
+    /// 家长端要据此提示："开关开了也弹不出来，是因为系统里关掉了"——沉默失败最坑人。
+    static func isAuthorized() async -> Bool {
+        let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        return status == .authorized || status == .provisional
+    }
+
+    /// 每天固定时间的"该学英语了"。重复触发，由系统跨天保留。
+    /// 返回是否真的排上了（没权限时为 false，由家长端提示去系统设置）。
+    @discardableResult
+    static func scheduleDailyReminder(hour: Int, minute: Int) async -> Bool {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [dailyReminderID])
 
@@ -51,8 +60,8 @@ enum LocalNotifications {
         if settings.authorizationStatus == .notDetermined {
             _ = try? await center.requestAuthorization(options: [.alert, .sound])
         }
-        guard await center.notificationSettings().authorizationStatus == .authorized else {
-            return
+        guard await isAuthorized() else {
+            return false
         }
 
         let content = UNMutableNotificationContent()
@@ -66,6 +75,7 @@ enum LocalNotifications {
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
         let request = UNNotificationRequest(identifier: dailyReminderID, content: content, trigger: trigger)
         try? await center.add(request)
+        return true
     }
 
     static func cancelDailyReminder() {
@@ -76,7 +86,7 @@ enum LocalNotifications {
     /// 今日任务完成的一次性反馈；文案不带任何学习数据（design：通知文案不含明细）
     static func dailyTaskCompleted() async {
         let center = UNUserNotificationCenter.current()
-        guard await center.notificationSettings().authorizationStatus == .authorized else { return }
+        guard await isAuthorized() else { return }
         let content = UNMutableNotificationContent()
         content.title = "今天学完啦"
         content.body = "20 分钟到，休息一下吧"
@@ -135,12 +145,14 @@ enum ReminderSettings {
         return true
     }
 
-    /// 偏好变化后调用：开就排、关就撤
-    static func apply() async {
+    /// 偏好变化后调用：开就排、关就撤。返回「当前设置是否真的生效」
+    @discardableResult
+    static func apply() async -> Bool {
         if isDailyEnabled {
-            await LocalNotifications.scheduleDailyReminder(hour: hour, minute: minute)
+            return await LocalNotifications.scheduleDailyReminder(hour: hour, minute: minute)
         } else {
             LocalNotifications.cancelDailyReminder()
+            return true
         }
     }
 }
