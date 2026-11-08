@@ -455,6 +455,11 @@ class Server(ThreadingHTTPServer):
         self.backups_dir = backups_dir
 
 
+# App 默认连的家里电脑内网 IP（与 app/Sources/.../ContentInstaller.swift 的
+# ContentServerAddress.defaultBaseURL 保持一致；换路由器时两边一起改）
+APP_DEFAULT_HOST = "192.168.1.11"
+
+
 def local_hints(port: int) -> list[str]:
     hints = [f"http://127.0.0.1:{port}"]
     host = socket.gethostname().split(".")[0]
@@ -484,13 +489,17 @@ def main() -> int:
         print(f"⚠ 学期包目录不存在：{packs_dir}（只提供媒体也能跑）", file=sys.stderr)
 
     server = Server((args.host, args.port), packs_dir, media_dir, os.path.join(root, "backups"))
+    # 输出被重定向到日志/管道时也立刻显示地址，别让家长盯着空窗口以为没起来
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(line_buffering=True)
     print(f"内容服务已启动：{root}")
     print(f"  学期包：{packs_dir}")
     print(f"  媒体库：{media_dir}")
     print(f"  学习备份：{os.path.join(root, 'backups')}（每设备保留 {BACKUP_KEEP_PER_DEVICE} 份）")
     for hint in local_hints(args.port):
         print(f"  {hint}")
-    print("Ctrl+C 停止；App 里填上面的地址（推荐 <host>.local）")
+    print(f"Ctrl+C 停止；App 默认连 http://{APP_DEFAULT_HOST}:{args.port}")
+    print(f"  上面的局域网 IP 若不是 {APP_DEFAULT_HOST}，请在 iPad「内容管理」里改成实际 IP")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

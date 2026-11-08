@@ -420,6 +420,8 @@ async function handleBackup(req, res, root, pathname) {
 async function handle(req, res, root) {
   const packsDir = path.join(root, 'packs');
   const mediaDir = path.join(root, 'media');
+  // 这里只是把相对路径解析成绝对 URL 的基准，不会发起任何请求；
+  // iPad 实际连的地址由 App 的 ContentServerAddress 决定（默认 192.168.1.11）
   const url = new URL(req.url, 'http://localhost');
   const pathname = decodeURIComponent(url.pathname);
 
@@ -490,6 +492,24 @@ async function handle(req, res, root) {
   sendJson(res, 404, { error: 'not found' });
 }
 
+// App 默认连的地址（与 app/Sources/.../ContentInstaller.swift 的
+// ContentServerAddress.defaultBaseURL 保持一致；换路由器时两边一起改）
+const APP_DEFAULT_HOST = '192.168.1.11';
+
+// 启动时把「这台电脑在局域网里到底叫什么」都打出来，方便核对 App 默认值对不对
+function localHints(port) {
+  const hints = [
+    `http://127.0.0.1:${port}`,
+    `http://${os.hostname().split('.')[0]}.local:${port}`,
+  ];
+  for (const list of Object.values(os.networkInterfaces())) {
+    for (const info of list || []) {
+      if (info.family === 'IPv4' && !info.internal) hints.push(`http://${info.address}:${port}`);
+    }
+  }
+  return [...new Set(hints)];
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   const packsDir = path.join(args.root, 'packs');
@@ -509,9 +529,9 @@ function main() {
     console.log(`  学期包：${packsDir}`);
     console.log(`  媒体库：${path.join(args.root, 'media')}`);
     console.log(`  学习备份：${path.join(args.root, 'backups')}（每设备保留 ${BACKUP_KEEP_PER_DEVICE} 份）`);
-    console.log(`  http://127.0.0.1:${args.port}`);
-    console.log(`  http://${os.hostname().split('.')[0]}.local:${args.port}`);
-    console.log('Ctrl+C 停止；App 里填上面的地址（推荐 <host>.local）');
+    for (const hint of localHints(args.port)) console.log(`  ${hint}`);
+    console.log(`Ctrl+C 停止；App 默认连 http://${APP_DEFAULT_HOST}:${args.port}`);
+    console.log(`  上面的局域网 IP 若不是 ${APP_DEFAULT_HOST}，请在 iPad「内容管理」里改成实际 IP`);
   });
 }
 

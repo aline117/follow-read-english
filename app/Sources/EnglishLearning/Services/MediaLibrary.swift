@@ -19,9 +19,6 @@ final class MediaLibrary {
     private(set) var manifest: MediaManifest?
     private(set) var isRefreshing = false
 
-    private static let baseURLKey = "contentServerBaseURL"
-    private static let defaultBaseURL = "http://localhost:8080"
-
     private init() {}
 
     static var directory: URL {
@@ -43,8 +40,7 @@ final class MediaLibrary {
     }
 
     var baseURL: URL? {
-        let raw = UserDefaults.standard.string(forKey: Self.baseURLKey) ?? Self.defaultBaseURL
-        return URL(string: raw)
+        URL(string: ContentServerAddress.resolvedBaseURL)
     }
 
     /// 串流地址：内容服务的 `/media/files/...`

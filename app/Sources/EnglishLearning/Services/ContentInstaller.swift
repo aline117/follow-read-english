@@ -33,20 +33,17 @@ final class ContentInstaller {
         }
     }
 
-    static let defaultBaseURL = "http://localhost:8080"
-    private static let baseURLKey = "contentServerBaseURL"
-
     private(set) var phase: Phase = .idle
     private(set) var packs: [ManifestPack] = []
     private(set) var serverSchemaVersion: Int?
     private(set) var progress: Progress?
     private(set) var lastError: String?
 
-    /// 服务地址（可在内容管理页手改；默认 localhost，真机改成 `<host>.local`）
+    /// 服务地址（可在内容管理页手改；默认连家里电脑的固定内网 IP 192.168.1.11）
     var baseURLString: String
 
     init() {
-        baseURLString = UserDefaults.standard.string(forKey: Self.baseURLKey) ?? Self.defaultBaseURL
+        baseURLString = ContentServerAddress.resolvedBaseURL
     }
 
     var baseURL: URL? { URL(string: baseURLString) }
@@ -54,8 +51,7 @@ final class ContentInstaller {
 
     /// 上次连接成功后存的地址（自动备份在后台用它，不必等家长打开内容管理页）
     static var storedBaseURL: URL? {
-        let raw = UserDefaults.standard.string(forKey: baseURLKey) ?? defaultBaseURL
-        return URL(string: raw)
+        URL(string: ContentServerAddress.resolvedBaseURL)
     }
 
     // MARK: - 探测 manifest
@@ -65,7 +61,7 @@ final class ContentInstaller {
             phase = .failed("服务地址格式不对")
             return
         }
-        UserDefaults.standard.set(baseURLString, forKey: Self.baseURLKey)
+        UserDefaults.standard.set(baseURLString, forKey: ContentServerAddress.storageKey)
         phase = .probing
         lastError = nil
         do {
@@ -265,6 +261,30 @@ final class ContentInstaller {
             }
         }
         return nsError.localizedDescription
+    }
+}
+
+/// 家里电脑上内容服务的地址（学期包 / 媒体 / 自动备份共用一处，别各写一份默认值）。
+///
+/// 路由器给这台电脑固定分配 `192.168.1.11`，所以 App 直接默认连它——旧的 `localhost`
+/// 在 iPad 上指的是 iPad 自己，永远连不上电脑。家长在「内容管理」里手填的地址优先，
+/// 想换回 `<host>.local` 或别的 IP 都行。
+enum ContentServerAddress {
+    static let defaultBaseURL = "http://192.168.1.11:8080"
+    static let storageKey = "contentServerBaseURL"
+
+    /// 旧版默认值（含本机回环写法），升级后当作「没存过」处理，避免老用户卡在连不上
+    private static let obsoleteDefaults = [
+        "http://localhost:8080",
+        "http://127.0.0.1:8080"
+    ]
+
+    /// 家长手填的地址优先；空值或旧默认值 → 回落到家里电脑的固定 IP
+    static var resolvedBaseURL: String {
+        let raw = UserDefaults.standard.string(forKey: storageKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !raw.isEmpty, !obsoleteDefaults.contains(raw) else { return defaultBaseURL }
+        return raw
     }
 }
 

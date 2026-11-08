@@ -51,7 +51,7 @@ struct ContentManagementView: View {
 
     private var serverSection: some View {
         Section {
-            TextField("http://<host>.local:8080", text: $installer.baseURLString)
+            TextField("http://192.168.1.11:8080", text: $installer.baseURLString)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.URL)
@@ -78,7 +78,7 @@ struct ContentManagementView: View {
         } header: {
             Text("内容服务地址")
         } footer: {
-            Text("电脑上跑 content-service/serve/serve.py（或 serve.js）后，这里填它打印的 `<host>.local:8080`。只有连接和下载需要局域网。")
+            Text("默认连家里电脑的固定地址 192.168.1.11:8080（电脑上运行 content-service/serve/serve.py 或 serve.js）。换路由器、电脑 IP 变了就填启动日志里打印的那个局域网 IP，也可以填 <host>.local。只有连接和下载需要局域网。")
         }
     }
 
