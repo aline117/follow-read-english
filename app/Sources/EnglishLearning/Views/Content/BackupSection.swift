@@ -125,6 +125,11 @@ struct BackupSection: View {
 private struct RemoteBackupPicker: View {
     let onPick: (RemoteBackupItem) -> Void
 
+    /// 显式 init：自动合成的逐成员初始化器因私有存储属性不可见，外部用不了
+    init(onPick: @escaping (RemoteBackupItem) -> Void) {
+        self.onPick = onPick
+    }
+
     @Environment(\.dismiss) private var dismiss
     private var remote = BackupRemoteService.shared
 

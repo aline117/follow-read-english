@@ -445,7 +445,8 @@ fileprivate struct TrendChart: View {
             let maxValue = max(points.map(\.value).max() ?? 1, 1)
             let step = points.count > 1 ? width / CGFloat(points.count - 1) : 0
 
-            func position(_ index: Int, _ value: Double) -> CGPoint {
+            // ViewBuilder 里不能声明局部 func（会报 explicit 'return' 错误），改用闭包
+            let pointPosition: (Int, Double) -> CGPoint = { index, value in
                 let x = points.count > 1 ? CGFloat(index) * step : width / 2
                 let ratio = CGFloat(value / maxValue)
                 return CGPoint(x: x, y: height - ratio * (height - 10) - 5)
@@ -462,11 +463,11 @@ fileprivate struct TrendChart: View {
 
                 Path { path in
                     for (index, point) in points.enumerated() {
-                        let position = position(index, point.value)
+                        let pt = pointPosition(index, point.value)
                         if index == 0 {
-                            path.move(to: position)
+                            path.move(to: pt)
                         } else {
-                            path.addLine(to: position)
+                            path.addLine(to: pt)
                         }
                     }
                 }
@@ -476,7 +477,7 @@ fileprivate struct TrendChart: View {
                     Circle()
                         .fill(point.hasReview ? Theme.blueInk : tint)
                         .frame(width: point.hasReview ? 6 : 4, height: point.hasReview ? 6 : 4)
-                        .position(position(index, point.value))
+                        .position(pointPosition(index, point.value))
                 }
             }
         }
