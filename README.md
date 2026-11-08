@@ -184,7 +184,7 @@ python3 content-service/build/build-media-pack.py \  # 媒体包 → content-ser
 
 细节见 [content-service/README.md](content-service/README.md)。
 
-iPad 上：右上角 🔒 → 内容管理 → 填 `<host>.local:8080` → 连接 → 下载「二年级上」。
+iPad 上：右上角 🔒 → 内容管理 → 地址已默认填好 `http://192.168.1.11:8080`，点「连接」→ 下载「二年级上」。
 下载一次后**断网也能学**（音频、图片都在本机 `Application Support/Curriculum/g2s1/`）。
 详见 [content-service/README.md](content-service/README.md)。
 
@@ -199,7 +199,7 @@ iPad 上：右上角 🔒 → 内容管理 → 填 `<host>.local:8080` → 连�
 
 `content-service/serve/serve.py` / `serve.js`（监听 8080）提供学期包、`manifest.json` 与媒体文件，并接收 App 上传的学习备份（`PUT /backup/...`，每设备滚动保留 30 份）；内容分发仍是只读语义，只绑内网、不做端口映射。
 
-iPad 端地址：`http://<host>.local:8080`（Bonjour 主机名，避免 IP 变化；设置页可手动改）。
+iPad 端地址：`http://192.168.1.11:8080`（家里电脑的固定内网 IP，App 默认值，不用手填）。换路由器或 DHCP 重新分配后电脑 IP 会变：看内容服务启动日志里打印的局域网 IP，在「内容管理」地址框改掉，也可改回 `<host>.local`（Bonjour 主机名不受 IP 变化影响）。
 
 ---
 

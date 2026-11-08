@@ -57,15 +57,15 @@ serve\serve.bat --runtime python
 
 两种实现（Python / Node）提供完全相同的接口；默认选 Node 是为了和 Windows 侧、以及 `build/` 里的 Node 工具保持一致。
 
-启动后会打印可用地址：
+启动后会打印可用地址（Node 版与 Python 版完全一致）：
 
 ```
-http://127.0.0.1:8080
-http://my-mac.local:8080
-http://192.168.1.23:8080
+http://127.0.0.1:8080        ← 电脑本机自测
+http://my-mac.local:8080     ← Bonjour 主机名（备选，不受 IP 变化影响）
+http://192.168.1.11:8080     ← 局域网 IP，iPad 用这个
 ```
 
-iPad 上填 `<host>.local` 那个（DHCP 换 IP 也不失效）。
+App 默认已填 `http://192.168.1.11:8080`（家里电脑的固定内网 IP）。**换路由器或 DHCP 重新分配后 IP 会变**：看启动日志里打印的局域网 IP，在 iPad「内容管理」改掉，或改回 `<host>.local`。
 
 ## 2. 打开与验证
 
@@ -78,10 +78,12 @@ iPad 上填 `<host>.local` 那个（DHCP 换 IP 也不失效）。
 自检：
 
 ```bash
-curl -I http://127.0.0.1:8080/media/files/songs/<file>.mp4
-curl -H "Range: bytes=0-1023" -i http://127.0.0.1:8080/media/files/songs/<file>.mp4
+curl -I http://192.168.1.11:8080/media/files/songs/<file>.mp4
+curl -H "Range: bytes=0-1023" -i http://192.168.1.11:8080/media/files/songs/<file>.mp4
 # 期望 206 + Content-Range: bytes 0-1023/<size>
 ```
+
+> 在电脑上本机自测时，把 `192.168.1.11` 换成 `127.0.0.1` 也一样；iPad 上只能用局域网 IP（或 `<host>.local`）。
 
 ## 3. 打学期包
 
@@ -212,7 +214,7 @@ App 下载后按 `sha256` 校验，失败可回退 `previous`；媒体按项校�
 
 家长模式 → 内容管理：
 
-1. 确认地址框里是 `http://<host>.local:8080`，点「连接」
+1. 地址框默认是 `http://192.168.1.11:8080`，点「连接」（电脑 IP 变了才需要手改）
 2. 首次会弹**本地网络权限**（在点下载/连接时才申请，不在启动时）
 3. 列表里选学期 → 下载 → 进度 → 校验 sha256 → 解压 → 安装完成
 4. 之后断网也能学；只有「下载新学期」需要局域网
@@ -242,16 +244,16 @@ App 侧：家长模式 → 内容管理 → 「备份」卡片。连上家里 Wi
 SHA=$(shasum -a 256 /tmp/b.json | cut -d' ' -f1)
 curl -X PUT --data-binary @/tmp/b.json \
   -H "X-Backup-Sha256: $SHA" \
-  http://127.0.0.1:8080/backup/dev-test/20261107-220000.json
+  http://192.168.1.11:8080/backup/dev-test/20261107-220000.json
 
-curl http://127.0.0.1:8080/backup/index.json
+curl http://192.168.1.11:8080/backup/index.json
 ```
 
 ## 9. 常见问题
 
 | 现象 | 原因 |
 |---|---|
-| iPad 连不上 `xxx.local` | 电脑防火墙只放行了「公共」网络；改为允许「专用网络」，或先用 IP 试通 |
+| iPad 连不上内容服务 | 先看启动日志里的局域网 IP 是不是还是 `192.168.1.11`（换路由器会变）；再查电脑防火墙只放行了「公共」网络，改为允许「专用网络」 |
 | App 提示「需要更新 App」 | 包里的 `schemaVersion` 比 App 支持的高：更新 App，或用旧版本包 |
 | 下载完提示「内容不兼容」 | `curriculum.json` 解码失败或资产缺失：重跑 `build_resources.py` 检查 |
 | 媒体列表不出现 | 还没有 `media/media.json`，或内容服务没提供 `/media.json` |

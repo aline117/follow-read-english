@@ -75,7 +75,7 @@ python3 content-service/build/build_resources.py     # 打包 → content-servic
 python3 content-service/serve/serve.py               # 起内容服务（或 node content-service/serve/serve.js）
 ```
 
-iPad 上：家长模式（右上角 🔒）→ 内容管理 → 填 `<host>.local:8080` → 连接 → 下载。
+iPad 上：家长模式（右上角 🔒）→ 内容管理 → 地址已默认填 `http://192.168.1.11:8080`，点「连接」→ 下载。
 细节见 `content-service/README.md`。
 
 ## 4. 已经踩过的坑

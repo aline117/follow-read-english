@@ -85,6 +85,7 @@
 - [x] 7.4 把二上资源迁出 App：`app/Resources/Curriculum/` → 学期包 `packs/g2s1.zip`（内含 `curriculum.json` + `audio/ words/ img/ sentences/`）
   - 2026-10-30：`build_resources.py` 产出 `packs/g2s1.zip`（41.4 MiB / 214 个文件，`sha256 = 04f54822…570c37`）+ `g2s1.meta.json`；App 侧已不再打包 `Resources/Curriculum/`（`catalog.json` + 下载安装是唯一入口）
 - [x] 7.5 实现 `content-service/serve/serve.js`（静态服务 + 扫描 `packs/` 生成 `manifest.json`：`schemaVersion` / `contentVersion` / size / sha256 / `previous`）与 `serve.bat`，并写 runbook（开机自启、防火墙只放行专用网络、`<host>.local` 主机名）
+  - 2026-11-08：服务地址改为家里电脑固定内网 IP `http://192.168.1.11:8080`（原默认 `localhost` 在 iPad 上指向自己，连不上电脑）。`ContentServerAddress` 统一默认值 + 存储键，并把已存的旧默认值当「没存过」迁移；家长手填地址不覆盖。`serve.js` 补打印局域网 IP（原先只有 Python 版有），两版启动提示统一；App 内 placeholder / footer 与全部文档同步。**两版启动输出与 4 个接口已实测**；App 侧未编译
 - [x] 7.6 内置 `catalog.json`（学期目录：id / 标题 / 大小 / 版本，不含任何媒体与词表）
 - [x] 7.7 管线入版本库：`content-service/build/*`（`build_resources.py`、`build-media-manifest.mjs`、`check-faststart.mjs`、`remux-faststart.mjs`）、`content-service/serve/*`、课程 JSON（`app/Resources/Curriculum/grade2.json`）与素材（mp3/png/wav 走 LFS 指针）均已入库
   - 2026-10-29：逐项核对 `git ls-files`，上述文件全部 tracked（`.app` 包内只有 `catalog.json`，内容本体不进包）。`jx_audio_manifest.json` / `words_raw.json` 是当年一次性抓取清单，磁盘上已不存在，且重打包不依赖它们（`build_resources.py` 只读 `grade2.json` + 资源目录），故不再补入。学期包备份拆到 7.9

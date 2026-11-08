@@ -85,26 +85,26 @@ node    content-service/serve/serve.js  --port 8080
 ./content-service/serve/serve.sh --runtime auto --port 8080
 ```
 
-启动日志会打印 `http://127.0.0.1:8080`、`http://<host>.local:8080`、`http://192.168.x.x:8080` 三个地址；iPad 用 `<host>.local` 那个。
+启动日志会打印 `http://127.0.0.1:8080`（电脑本机）、`http://<host>.local:8080` 与所有局域网 IP（含 `http://192.168.1.11:8080`）；iPad 用 `192.168.1.11` 那个，App 默认已填好。若日志里的局域网 IP 不是 `192.168.1.11`，在 iPad「内容管理」里改成实际 IP。
 
-自检（把 `<host>` 换成日志里的主机名或 IP）：
+自检（下面的 `192.168.1.11` 换成启动日志里的实际局域网 IP；在电脑上本机自测也可用 `127.0.0.1`）：
 
 ```bash
 # 清单能拉到，且条目数对得上
-curl -s http://<host>:8080/media.json | head -c 300
-curl -s http://<host>:8080/manifest.json | head -c 300
+curl -s http://192.168.1.11:8080/media.json | head -c 300
+curl -s http://192.168.1.11:8080/manifest.json | head -c 300
 
 # 支持 Range：应返回 206 + Content-Range + Accept-Ranges
-curl -I http://<host>:8080/media/files/songs/<id>.mp4
-curl -H 'Range: bytes=0-1023' -i http://<host>:8080/media/files/songs/<id>.mp4 | head -12
+curl -I http://192.168.1.11:8080/media/files/songs/<id>.mp4
+curl -H 'Range: bytes=0-1023' -i http://192.168.1.11:8080/media/files/songs/<id>.mp4 | head -12
 
 # 越界 Range 应返回 416（App 依赖它判断文件长度不一致）
-curl -H 'Range: bytes=99999999999-' -i http://<host>:8080/media/files/songs/<id>.mp4 | head -5
+curl -H 'Range: bytes=99999999999-' -i http://192.168.1.11:8080/media/files/songs/<id>.mp4 | head -5
 ```
 
 ## 5. App 侧验收
 
-1. 家长模式 → 内容管理：地址填 `http://<host>.local:8080`，点「连接内容服务」，确认 `media.json` 拉到（条目数 = 本地清单条数）。
+1. 家长模式 → 内容管理：地址默认 `http://192.168.1.11:8080`，点「连接内容服务」，确认 `media.json` 拉到（条目数 = 本地清单条数）。
 2. 孩子端「学习 → 课程列表」底部出现「听和看 · 儿歌与绘本」入口；**没有 `media.json` 时该入口不显示**（这是回滚验证点 17.2）。
 3. 打开第一条：应在 8 秒内起播；播放后 5 秒内状态落盘（退出重进位置偏差 ≤ 3 秒）。
 4. 家长模式 → 媒体设置 → 「今天看了什么」：今天的条目、累计时长、跟读通过句数都对得上。
