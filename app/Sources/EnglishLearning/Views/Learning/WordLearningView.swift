@@ -190,9 +190,14 @@ struct WordLearningView: View {
                     .minimumScaleFactor(0.5)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
+                    .accessibilityLabel(word.en)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilitySortPriority(2)
                 Text(Self.meaningOnly(word.zh))
                     .font(.system(size: 20))
                     .foregroundStyle(Theme.muted)
+                    .accessibilityLabel("中文意思：\(Self.meaningOnly(word.zh))")
+                    .accessibilitySortPriority(1)
             }
 
             HStack(spacing: 10) {
@@ -216,10 +221,13 @@ struct WordLearningView: View {
                 }
             }
             .animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: index)
+            // 一排小圆点只有颜色差异，读屏念出来是噪音；进度由下面那行文字说清楚
+            .accessibilityHidden(true)
 
             Text(statusLine)
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.faint)
+                .accessibilityLabel(statusLine)
         }
         .frame(maxWidth: .infinity)
     }
@@ -245,7 +253,14 @@ struct WordLearningView: View {
         .frame(width: 320, height: 236)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .onTapGesture { playReference() }
-        .accessibilityLabel("\(word.en) 的图片，点一下播放读音")
+        // 朗读顺序「图片 → 单词 → 中文」：图片这一站只说"图"，读音交给下面的单词，
+        // 免得同一个词被念两遍、孩子以为有两张不同的图
+        .accessibilityElement()
+        .accessibilityLabel("图片")
+        .accessibilityHint("点两下播放读音")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { playReference() }
+        .accessibilitySortPriority(3)
     }
 
     private func dotColor(_ offset: Int, _ item: UnitWord) -> Color {
@@ -265,11 +280,13 @@ struct WordLearningView: View {
         VStack(spacing: 14) {
             Text(unitCompleted ? "🎉" : (quotaReached ? "🌙" : "👋"))
                 .font(.system(size: 46))
+                .accessibilityHidden(true)
 
             Text(unitCompleted ? "Unit \(unit.number) 学完啦！"
                  : (quotaReached ? "今天的 \(newItemsThisSession) 个新词学完了" : "本次先学到这里"))
                 .font(.system(size: 24, weight: .heavy))
                 .foregroundStyle(Theme.ink)
+                .accessibilityAddTraits(.isHeader)
 
             if quotaReached && !unitCompleted {
                 Text("明天再学后面的词，今天先把这几个记牢")

@@ -111,6 +111,19 @@ struct SentenceLearningView: View {
             chip("说", active: step == .speak, done: step == .match)
             chip("认", active: step == .match, done: false)
         }
+        // 三个小胶囊只有颜色差异，合并成一句"现在在哪一步"更好懂
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("流程：听、说、认")
+        .accessibilityValue(currentStepLabel)
+    }
+
+    /// 当前步骤的口语化说法（给读屏用）
+    private var currentStepLabel: String {
+        switch step {
+        case .listen: return "正在听"
+        case .speak: return "正在说"
+        case .match: return "正在认"
+        }
     }
 
     private func chip(_ title: String, active: Bool, done: Bool) -> some View {

@@ -165,10 +165,22 @@ struct ListeningGameView: View {
                                   lineWidth: (isPicked || (revealed && isAnswer)) ? 2.5 : 1.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            // 对错不只靠绿/红：正确答案打勾、选错的打叉（色弱也能分辨）
+            .overlay(alignment: .topTrailing) {
+                if revealed && (isAnswer || isPicked) {
+                    Image(systemName: isAnswer ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundStyle(isAnswer ? Theme.greenInk : Theme.red)
+                        .padding(8)
+                        .accessibilityHidden(true)   // 状态已写进按钮的朗读文案，图形不必再念一遍
+                }
+            }
         }
         .buttonStyle(.plain)
         .disabled(revealed)
-        .accessibilityLabel(option.en)
+        .accessibilityLabel(revealed
+                            ? (isAnswer ? "\(option.en)，正确答案" : "\(option.en)\(isPicked ? "，选错了" : "")")
+                            : option.en)
     }
 
     @ViewBuilder
@@ -271,6 +283,10 @@ struct ListeningGameView: View {
             if case .granted = result { starsEarned += 1 }
         }
         try? modelContext.save()
+
+        // 结论直接念出来，不等孩子去读那行提示
+        KidAnnounce.say(passed ? "答对啦，这是 \(question.answer.en)"
+                               : "这次是 \(question.answer.en)")
 
         Task {
             try? await Task.sleep(nanoseconds: 900_000_000)

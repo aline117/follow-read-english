@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// 原型（`openspec/.../prototype/proto-*.html`）里的视觉常量，一处定义、各处引用。
 /// 取色与圆角都直接照抄原型 CSS 的 `:root` 变量。
@@ -249,5 +250,24 @@ struct UnitBadge: View {
     private var foreground: Color {
         if done { return Theme.greenInk }
         return locked ? Theme.faint : Theme.orangeDark
+    }
+}
+
+// MARK: - 无障碍
+
+/// VoiceOver 播报一句结论（VoiceOver 没开时系统直接忽略，不影响普通使用）。
+///
+/// 用在「结果出来了」这种要**立刻听到重点**的时机：孩子不必逐项滑动去找结论，
+/// 也避免只听到结果卡里的建议却漏了「过没过」。延迟一点点再播，
+/// 免得和界面切换的默认焦点播报叠在一起。
+enum KidAnnounce {
+    static func say(_ text: String, after delay: TimeInterval = 0.25) {
+        guard UIAccessibility.isVoiceOverRunning else { return }
+        Task { @MainActor in
+            if delay > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            }
+            UIAccessibility.post(notification: .announcement, argument: text)
+        }
     }
 }

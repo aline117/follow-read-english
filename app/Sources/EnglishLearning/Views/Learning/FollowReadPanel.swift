@@ -79,10 +79,15 @@ struct FollowReadPanel: View {
                     .scaleEffect(burst ? 1.15 : 0.6)
                     .opacity(burst ? 1 : 0)
                     .allowsHitTesting(false)
+                    .accessibilityHidden(true)
                     .animation(reduceMotion ? nil : .spring(response: 0.35, dampingFraction: 0.6), value: burst)
             }
         }
         .kidCard(padding: 20)
+        // 星星飘字不拦截点击（0.9 秒自己会消失），急性子的孩子点哪都能立刻跳过
+        .simultaneousGesture(TapGesture().onEnded {
+            if burst { burst = false }
+        })
         .onAppear {
             rate = Self.sanitizedRate(initialRate)
             recorder.onFinish = handleRecording
@@ -170,6 +175,8 @@ struct FollowReadPanel: View {
                 }
                 .buttonStyle(.plain)
                 .frame(maxWidth: .infinity)
+                .accessibilityLabel("配速 \(Self.rateLabel(value))")
+                .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
         .padding(4)
@@ -231,6 +238,7 @@ struct FollowReadPanel: View {
             .accessibilityLabel("结束录音")
 
             Waveform(level: recorder.level, tint: Theme.red)
+                .accessibilityHidden(true)
 
             Text("正在听你说…")
                 .font(.system(size: 16, weight: .semibold))
@@ -264,9 +272,17 @@ struct FollowReadPanel: View {
                     Image(systemName: assessment.isPassed ? "checkmark.seal.fill" : "arrow.clockwise.circle.fill")
                         .font(.system(size: 32))
                         .foregroundStyle(assessment.isPassed ? Theme.greenInk : Theme.orangeDark)
+                        // 图形只是给眼睛的冗余（不只靠颜色认结果），结论由文字说出来
+                        .accessibilityHidden(true)
                     Text(assessment.headline)
                         .font(.system(size: 20, weight: .heavy))
                         .foregroundStyle(Theme.ink)
+                        // 先读结论（"读得很像" / "再试一次"），再读建议
+                        .accessibilityLabel(assessment.isPassed
+                                            ? "通过了：\(assessment.headline)"
+                                            : "还差一点：\(assessment.headline)")
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilitySortPriority(3)
                 }
 
                 Text(assessment.advice)
@@ -275,12 +291,15 @@ struct FollowReadPanel: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
                     .padding(.horizontal, 6)
+                    .accessibilityLabel("建议：\(assessment.advice)")
+                    .accessibilitySortPriority(2)
 
                 if !assessment.isPassed, let heard = assessment.recognizedText, !heard.isEmpty {
                     Text("听到的是「\(heard)」" + (assessment.difference.map { " · \($0)" } ?? ""))
                         .font(.system(size: 12.5))
                         .foregroundStyle(Theme.orangeDark)
                         .lineLimit(2)
+                        .accessibilitySortPriority(1)
                 }
 
                 compareRow(assessment)
@@ -532,6 +551,10 @@ struct FollowReadPanel: View {
             if !result.isPassed { failures += 1 }
             if result.isPassed { playBurst() }
             phase = .result
+            // 结果一出来就播结论+建议：读屏用户不必自己滑到结果卡才知道过没过
+            KidAnnounce.say(result.isPassed
+                            ? "通过了。\(result.headline)。\(result.advice)"
+                            : "还差一点。\(result.headline)。\(result.advice)")
             onAssessment(result)
         }
     }
