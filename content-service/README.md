@@ -157,7 +157,36 @@ media/ids.json                   可选：{ "<相对路径>": "m:自定义id" }
 ```
 
 可跟读句写在 `media.json` 的 `lines[]`（`text` + `startSec` + `endSec`）；
-没标注时 App 的跟读入口会显示「待标注」。
+没标注时 App 的跟读入口会显示「待标注」并置灰。
+
+### 儿歌跟读句标注（tasks 10.7）
+
+82 首儿歌各要标 2–3 句，只能人听着标；脚本负责生成工作表、守住硬线、安全合并：
+
+```bash
+# ① 生成工作表：82 首各留 2–3 个空位，边听边记（起止秒 + 文本）
+python build/song-lines.py --worksheet ../docs/song-lines-worksheet.md
+
+# ② 更习惯填 JSON 就用这个骨架（结构同 media.json 的 lines[]）
+python build/song-lines.py --draft song-lines-draft.json
+
+# ③ 填完合并回去：校验全过才写；写前自动备份成 media.json.bak-<时间戳>，原子替换
+python build/song-lines.py --apply song-lines-draft.json
+
+# ④ 随时看进度 / 只校验不写
+python build/song-lines.py --status
+python build/song-lines.py --check
+```
+
+脚本会拦下这些（`--check` 与 `--apply` 同一套规则）：
+
+- 句数不是 2–3 句、`index` 不连续；
+- 文本空白、少于 2 个词、超过 10 个词或 80 字符、同首内重复；
+- 整句都是拟声/语气词（`La la la`、`Oh yeah`、`Hmm mmm`），或某个词连续 ≥ 3 次（`doo doo doo`）；
+- 单句短于 1 秒或长于 8 秒、起止时间为负、结束早于开始、与上一句重叠、超出 `durationSec`。
+
+标注改完不用重扫：`--apply` 直接改 `media.json`。若之后因为换素材重跑第 5 节的 ③，
+**同 id、同 sha256 的 `lines[]` 会被保留**；文件内容变了的那几条会打印出来并丢弃（时间轴已不可信），需要重新标。
 
 ## 6. manifest 协议
 

@@ -137,6 +137,9 @@
 - [x] 10.6 写内容侧 runbook（`docs/media-runbook.md`，仓库内只写流程不写本机绝对路径）：加一批新素材的完整步骤 + Range/faststart 自检命令；验证：按文档从空目录走一遍能产出可用 `media.json`
   - 2026-10-29：文档已写入 `docs/media-runbook.md`（含素材命名、faststart 体检/remux、清单生成、Range/416 自检、App 侧验收、排错表、回滚）。已用一段合成的 2 秒测试片从空目录按文档走通：`check-faststart`（moov 后置 → 退出码 2）→ `remux-faststart` → 复检通过 → `build-media-manifest` 产出字段齐全的 `media.json`（`m:` id / sha256 / relPath / streamable）；`--out` 指向仓库内非 `content-service/media/` 的位置实测退出码 3。真实 82 首儿歌 / 164 段绘本的批量走查仍属 10.1/10.7/10.8
 - [ ] 10.7 给 82 首儿歌各标注 2–3 个可跟读句（文本 + 起止秒），写入 `media.json` 的 `lines[]`，避开 `la la la`、拟声词与说唱段；验证：82 首全部 2–3 句，人工试读抽样 10 首一次性通过率 ≥ 70%，不达标的句子重标 **[素材]**
+  - 2026-11-08：配套工具已就位（`content-service/build/song-lines.py`）：`--worksheet` 产出 `docs/song-lines-worksheet.md`（82 首、各留 3 个空位）、`--draft` 出可填 JSON 骨架、`--check` 只校验、`--apply` 校验全过才合并（写前 `media.json.bak-<时间戳>`，原子替换）、`--status` 看进度。规则与实测：句数 2–3 / index 连续 / 文本 2–10 词且 ≥ 2 词 / 单句 1–8 秒 / 不重叠 / 不超时长 / 整句拟声（`La la la`）或同词连出 ≥ 3 次（`doo doo doo`）判不合格；四类坏样例（`la la la`、4 句+重叠、0.4 秒短句、重复句）实测按预期拦下（退出码 1、不写文件），合格样例实测写入 2 首并留备份、无 `.tmp` 残留。
+  - 同时修了会直接毁掉这项工作的隐患：`build-media-manifest.mjs` 原先重扫时把 `lines` 一律写空 → 改为**同 id 且 sha256 未变则保留**，文件内容变了才丢弃并点名提醒重标（夹具实测：保留 2 条 / 改文件后点名丢弃）。
+  - **数据仍是 0 / 82**：句子与起止秒只能人听着标，脚本不猜。标注完再跑 `--check` 与 10 条抽样试读。
 - [ ] 10.8 产出素材验收清单 `docs/media-acceptance.md` 并完成 10 条抽样（水印/片头广告、爆音与音量一致性、是否以英文为主、时长、首尾完整性）；验证：10 条记录齐全，不合格项从 `media.json` 移除并写明原因 **[素材]**
   - 2026-11-08：清单落到 `docs/media-acceptance.md`（7 项验收标准 + 可复现抽样脚本 + 10 条记录表 + 弃用处理流程）。**10 条抽样仍需人眼看过**——水印/裁切/音画同步脚本判不了
 - [x] 10.9 首批 246 项 remux 成 faststart 后重新导入（决定「串流能否秒开」，见 Decision 9）；验证：`check-faststart.mjs` 复检 246/246 通过 + `media.json` 的 `streamable` 全为 `true` **[素材]**
@@ -308,6 +311,7 @@
   - 2026-11-07：代码侧核对：`StarService.grant` 与预算判断都带 `profileID`，`MediaCacheStore` / `ParentAuth` / `DiagnosticsLog` 均为设备级、无 profile 维度。**真机双档案走查待做**
 - [ ] 19.4.2 每日学习提醒：家长可设时段（默认 19:00，可关），到点本地通知；完成反馈通知（可关）——默认关闭，共用一次通知授权；验证：开启后到点收到、关闭后无打扰、文案不含学习数据明细
   - 2026-11-07：`ReminderSettings`（UserDefaults，设备级，默认关闭 / 19:00）+ `LocalNotifications.scheduleDailyReminder`（`UNCalendarNotificationTrigger` 每日重复）/ `cancel` / `dailyTaskCompleted`；设置页新增「提醒」分区（开关 + 时间 + 完成提示）；首页 `onChange(dailyMinutesReached)` 触发一次「今天学完啦」（每天最多一条，文案不含明细）。**未编译未真机验证**
+  - 2026-11-08：补「沉默失败」的兜底——系统里通知被关掉时开关看着是开的、通知永远不来。现在 `LocalNotifications.isAuthorized()`（含 `provisional`）由 `ReminderSection` 在进页面与每次改动后查询，未授权时 footer 显示图标 +「系统里把本 App 的通知关掉了」+「去系统设置打开通知」按钮；`scheduleDailyReminder` 改为返回是否真的排上。新增 `Tests/EnglishLearningTests/ReminderSettingsTests.swift`（7 条：默认关+19:00、显式 00:00 不被兜底、补零格式、关掉不发、同一天只发一次、次日恢复、关掉后停发），pbxproj 已接线（ID `…0021/0022`，全库 140 个定义 ID 查重无冲突、括号配平）。**未编译**；「到点真的收到」仍需真机
 
 ### 内容更新知情
 - [x] 19.5.1 `manifest.json` 的 pack 增加可选 `changelog`，服务端写入；验证：缺失时家长端显示"内容已更新，无说明"
